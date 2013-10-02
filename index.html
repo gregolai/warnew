@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+
+	<link type="text/css" rel="stylesheet" href="style.css" />
+
+	<script type="text/javascript" src="vendor/jquery.min.js"></script>
+	<script type="text/javascript" src="vendor/knockout.min.js"></script>
+	<script type="text/javascript" src="Engine.js"></script>
+	<script type="text/javascript">
+
+		$(document).ready(function () {
+			var hash = window.location.hash;
+			var appName = (hash.length > 1 ? hash.substring(1) : "Breakout");
+			var container = $(document.getElementById("container"));
+			Engine.App.load(container, appName);
+		})
+
+	</script>
+
+</head>
+
+<body>
+	<div id="container"></div>
+</body>
+</html>

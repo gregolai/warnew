@@ -1,0 +1,19 @@
+<div id="editor">
+	<div class="topSpan">
+		<button class="backToMenu">Back to main menu</button>
+	</div>
+	<div class="fileMenu">
+		<button class="btnNew">New</button>
+		<div class="levelList" data-bind="foreach: levelList">
+			<div>
+				<div class="levelData">
+					<span data-bind="text: id"></span>.&nbsp<span data-bind="text: name"></span>
+				</div>
+				<div class="loadSave">
+					<button class="btnLoad">Load</button>
+					<button class="btnSave">Save</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

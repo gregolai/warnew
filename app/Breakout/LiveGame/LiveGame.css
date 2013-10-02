@@ -1,0 +1,1 @@
+#liveGame{position:absolute;top:0;right:0;bottom:0;left:0}#liveGame>.youLose{position:absolute;top:50%;left:50%;margin-left:-150px;margin-top:-150px;width:300px;height:300px;border:1px solid #cdf;background-color:#889}#liveGame>.youLose button{margin:0 auto;display:block}

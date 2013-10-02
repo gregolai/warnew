@@ -1,0 +1,39 @@
+.mixin_absolute(@top, @right, @bottom, @left){
+	position: absolute; top: @top; right: @right; bottom: @bottom; left: @left;
+}
+
+@menuWidth: 300px;
+@menuHeight: 400px;
+
+#mainMenu {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+
+	background-color: #555;
+
+	> .mainPage {
+
+		> .menu {
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			margin-left: -(@menuWidth/2);
+			margin-top: -(@menuHeight/2);
+			width: @menuWidth;
+			height: @menuHeight;
+
+			border: 1px solid #cdf;
+			background-color: #889;
+
+			> button {
+				margin: 0 auto;
+
+				display: block;
+			}
+
+		}
+
+	}
+
+}

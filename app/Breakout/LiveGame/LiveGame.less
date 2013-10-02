@@ -1,0 +1,28 @@
+.mixin_absolute(@top, @right, @bottom, @left){
+	position: absolute; top: @top; right: @right; bottom: @bottom; left: @left;
+}
+
+@youLoseHeight: 300px;
+@youLoseWidth: 300px;
+
+#liveGame {
+	.mixin_absolute(0, 0, 0, 0);
+
+	> .youLose {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		margin-left: -@youLoseWidth/2;
+		margin-top: -@youLoseHeight/2;
+		width: @youLoseWidth;
+		height: @youLoseHeight;
+		
+		border: 1px solid #cdf;
+		background-color: #889;
+
+		button {
+			margin: 0 auto;
+			display: block;
+		}
+	}
+}
