@@ -340,7 +340,11 @@ var Engine;
 
                     self._activeState(newState);
 
-                    self.__broadcastAppEvent("onAppStateChange", [oldState, newState]);
+                    self.onAppStateChange(oldState, newState);
+                    var states = self._states;
+                    for (var s = 0, ss = states.length; s < ss; ++s) {
+                        states[s].onAppStateChange(oldState, newState);
+                    }
 
                     self._resize();
 
@@ -356,36 +360,6 @@ var Engine;
         App.prototype.update = function (deltaTime) {
         };
         App.prototype.onAppStateChange = function (from, to) {
-        };
-        App.prototype.onResize = function (width, height) {
-        };
-        App.prototype.onKeyDown = function (key) {
-        };
-        App.prototype.onKeyUp = function (key) {
-        };
-        App.prototype.onMouseDown = function (x, y, button) {
-        };
-        App.prototype.onMouseUp = function (x, y, button) {
-        };
-        App.prototype.onMouseMove = function (x, y) {
-        };
-        App.prototype.onMouseEnter = function (x, y) {
-        };
-        App.prototype.onMouseLeave = function (x, y) {
-        };
-        App.prototype.onMouseWheel = function (deltaY) {
-        };
-        App.prototype.onGamepadConnect = function () {
-        };
-        App.prototype.onGamepadDisconnect = function () {
-        };
-        App.prototype.onGamepadTick = function (length) {
-        };
-        App.prototype.onGamepadButtonDown = function (control) {
-        };
-        App.prototype.onGamepadButtonUp = function (control) {
-        };
-        App.prototype.onGamepadAxisChanged = function (axis, value) {
         };
 
         App.prototype._loadVendors = function (callback) {
@@ -595,26 +569,18 @@ var Engine;
             this._prevTime = curTime;
         };
 
-        App.prototype.__broadcastAppEvent = function (onEventName, args) {
-            var method = this[onEventName];
-            method.apply(this, args);
-
-            var states = this._states;
-            for (var s = 0, ss = states.length; s < ss; ++s) {
-                var state = states[s];
-                var method = state[onEventName];
-                method.apply(state, args);
-            }
-        };
-
         App.prototype.__callAppEvent = function (onEventName, args) {
             var method = this[onEventName];
-            method.apply(this, args);
+            if (method) {
+                method.apply(this, args);
+            }
 
             var state = this._activeState();
             if (state) {
                 var method = state[onEventName];
-                method.apply(state, args);
+                if (method) {
+                    method.apply(state, args);
+                }
             }
         };
 
@@ -821,36 +787,6 @@ var Engine;
         AppState.prototype.update = function (deltaTime) {
         };
         AppState.prototype.onAppStateChange = function (from, to) {
-        };
-        AppState.prototype.onResize = function (width, height) {
-        };
-        AppState.prototype.onKeyDown = function (key) {
-        };
-        AppState.prototype.onKeyUp = function (key) {
-        };
-        AppState.prototype.onMouseDown = function (x, y, button) {
-        };
-        AppState.prototype.onMouseUp = function (x, y, button) {
-        };
-        AppState.prototype.onMouseMove = function (x, y) {
-        };
-        AppState.prototype.onMouseEnter = function (x, y) {
-        };
-        AppState.prototype.onMouseLeave = function (x, y) {
-        };
-        AppState.prototype.onMouseWheel = function (deltaY) {
-        };
-        AppState.prototype.onGamepadConnect = function () {
-        };
-        AppState.prototype.onGamepadDisconnect = function () {
-        };
-        AppState.prototype.onGamepadTick = function (length) {
-        };
-        AppState.prototype.onGamepadButtonDown = function (control) {
-        };
-        AppState.prototype.onGamepadButtonUp = function (control) {
-        };
-        AppState.prototype.onGamepadAxisChanged = function (axis, value) {
         };
 
         AppState.prototype.draw = function () {

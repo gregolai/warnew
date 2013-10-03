@@ -207,26 +207,7 @@ declare module Engine {
         title: string;
         customVendors?: string[];
     }
-    interface AppEventListener {
-        update(deltaTime: number): void;
-        onAppStateChange(from: Engine.AppState, to: Engine.AppState): void;
-        onResize(width: number, height: number): void;
-        onKeyDown(key: Engine.Key): void;
-        onKeyUp(key: Engine.Key): void;
-        onMouseDown(x: number, y: number, button: Engine.Key): void;
-        onMouseUp(x: number, y: number, button: Engine.Key): void;
-        onMouseMove(x: number, y: number): void;
-        onMouseEnter(x: number, y: number): void;
-        onMouseLeave(x: number, y: number): void;
-        onMouseWheel(deltaY: number): void;
-        onGamepadConnect(): void;
-        onGamepadDisconnect(): void;
-        onGamepadTick(length: number): void;
-        onGamepadButtonDown(control: string): void;
-        onGamepadButtonUp(control: string): void;
-        onGamepadAxisChanged(axis: string, value: number): void;
-    }
-    class App implements AppEventListener {
+    class App {
         private static _loadingContainer;
         static namespace: Object;
         static instance: App;
@@ -262,21 +243,6 @@ declare module Engine {
         public setState(state: Engine.AppState): void;
         public update(deltaTime: number): void;
         public onAppStateChange(from: Engine.AppState, to: Engine.AppState): void;
-        public onResize(width: number, height: number): void;
-        public onKeyDown(key: Engine.Key): void;
-        public onKeyUp(key: Engine.Key): void;
-        public onMouseDown(x: number, y: number, button: Engine.Key): void;
-        public onMouseUp(x: number, y: number, button: Engine.Key): void;
-        public onMouseMove(x: number, y: number): void;
-        public onMouseEnter(x: number, y: number): void;
-        public onMouseLeave(x: number, y: number): void;
-        public onMouseWheel(deltaY: number): void;
-        public onGamepadConnect(): void;
-        public onGamepadDisconnect(): void;
-        public onGamepadTick(length: number): void;
-        public onGamepadButtonDown(control: string): void;
-        public onGamepadButtonUp(control: string): void;
-        public onGamepadAxisChanged(axis: string, value: number): void;
         private _loadVendors(callback);
         private _initDom(container);
         private _createStates(callback);
@@ -285,7 +251,6 @@ declare module Engine {
         private _initInputHandlers();
         private _run();
         private _loop();
-        private __broadcastAppEvent(onEventName, args?);
         private __callAppEvent(onEventName, args?);
         private _resize();
         private _keyDown(evt);
@@ -309,7 +274,7 @@ declare module Engine {
     interface AppStateParams {
         hasUI: boolean;
     }
-    class AppState implements Engine.AppEventListener {
+    class AppState {
         private _params;
         private _sceneDom;
         private _uiDom;
@@ -328,21 +293,6 @@ declare module Engine {
         public end(): void;
         public update(deltaTime: number): void;
         public onAppStateChange(from: AppState, to: AppState): void;
-        public onResize(width: number, height: number): void;
-        public onKeyDown(key: Engine.Key): void;
-        public onKeyUp(key: Engine.Key): void;
-        public onMouseDown(x: number, y: number, button: Engine.Key): void;
-        public onMouseUp(x: number, y: number, button: Engine.Key): void;
-        public onMouseMove(x: number, y: number): void;
-        public onMouseEnter(x: number, y: number): void;
-        public onMouseLeave(x: number, y: number): void;
-        public onMouseWheel(deltaY: number): void;
-        public onGamepadConnect(): void;
-        public onGamepadDisconnect(): void;
-        public onGamepadTick(length: number): void;
-        public onGamepadButtonDown(control: string): void;
-        public onGamepadButtonUp(control: string): void;
-        public onGamepadAxisChanged(axis: string, value: number): void;
         public draw(): void;
     }
 }

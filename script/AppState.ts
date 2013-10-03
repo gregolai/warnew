@@ -6,7 +6,7 @@ module Engine {
 		hasUI: boolean;
 	}
 
-	export class AppState implements AppEventListener {
+	export class AppState {
 
 		private _params: AppStateParams;
 
@@ -65,6 +65,7 @@ module Engine {
 		}
 		onAppStateChange(from: AppState, to: AppState): void {
 		}
+		/*
 		onResize(width: number, height: number): void {
 		}
 		onKeyDown(key: Key): void {
@@ -95,7 +96,7 @@ module Engine {
 		}
 		onGamepadAxisChanged(axis: string, value: number): void {
 		}
-
+		*/
 		draw(): void {
 		}
 	}

@@ -18,27 +18,7 @@ module Engine {
 		customVendors?: string[];
 	}
 
-	export interface AppEventListener {
-		update(deltaTime: number): void;
-		onAppStateChange(from: AppState, to: AppState): void;
-		onResize(width: number, height: number): void;
-		onKeyDown(key: Key): void;
-		onKeyUp(key: Key): void;
-		onMouseDown(x: number, y: number, button: Key): void;
-		onMouseUp(x: number, y: number, button: Key): void;
-		onMouseMove(x: number, y: number): void;
-		onMouseEnter(x: number, y: number): void;
-		onMouseLeave(x: number, y: number): void;
-		onMouseWheel(deltaY: number): void;
-		onGamepadConnect(): void;
-		onGamepadDisconnect(): void;
-		onGamepadTick(length: number): void;
-		onGamepadButtonDown(control: string): void;
-		onGamepadButtonUp(control: string): void;
-		onGamepadAxisChanged(axis: string, value: number): void;
-	}
-
-	export class App implements AppEventListener {
+	export class App {
 
 		private static _loadingContainer: JQuery = null;
 
@@ -222,7 +202,11 @@ module Engine {
 
 					self._activeState(newState);
 
-					self.__broadcastAppEvent("onAppStateChange", [oldState, newState]);
+					self.onAppStateChange(oldState, newState);
+					var states = self._states;
+					for (var s = 0, ss = states.length; s < ss; ++s) {
+						states[s].onAppStateChange(oldState, newState);
+					}
 
 					self._resize();
 
@@ -242,6 +226,8 @@ module Engine {
 		}
 		onAppStateChange(from: AppState, to: AppState): void {
 		}
+
+		/*
 		onResize(width: number, height: number): void {
 		}
 		onKeyDown(key: Key): void {
@@ -272,6 +258,8 @@ module Engine {
 		}
 		onGamepadAxisChanged(axis: string, value: number): void {
 		}
+		*/
+
 
 		private _loadVendors(callback: () => void): void {
 
@@ -346,7 +334,7 @@ module Engine {
 					continue;
 				}
 
-				// e.x. AppLauncher.MyGame.Game extends App
+				// e.x. Engine.MyGame.Game extends App
 				var state = <AppState>new StateClass();
 				if (!(state instanceof AppState)) {
 					console.warn("INSTANCE OF " + stateName + " IS NOT AN INSTANCE OF APP STATE CLASS");
@@ -499,28 +487,20 @@ module Engine {
 			this._prevTime = curTime;
 		}
 
-		private __broadcastAppEvent(onEventName: string, args?: any[]): void {
-
-			var method = <Function>this[onEventName];
-			method.apply(this, args);
-
-			var states = this._states;
-			for (var s = 0, ss = states.length; s < ss; ++s) {
-				var state = states[s];
-				var method = <Function>state[onEventName];
-				method.apply(state, args);
-			}
-		}
 
 		private __callAppEvent(onEventName: string, args?: any[]): void {
 
 			var method = <Function>this[onEventName];
-			method.apply(this, args);
+			if (method) {
+				method.apply(this, args);
+			}
 
 			var state = this._activeState();
 			if (state) {
 				var method = <Function>state[onEventName];
-				method.apply(state, args);
+				if (method) {
+					method.apply(state, args);
+				}
 			}
 		}
 
