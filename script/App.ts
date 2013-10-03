@@ -18,7 +18,7 @@ module Engine {
 		customVendors?: string[];
 	}
 
-	export class App {
+	export class App implements InputListener {
 
 		private static _loadingContainer: JQuery = null;
 
@@ -72,8 +72,6 @@ module Engine {
 
 						// LOAD STATE ASSETS AND UI DOM
 						app._initStates(function () {
-
-							app._initInputHandlers();
 
 							setTimeout(function () {
 
@@ -131,11 +129,6 @@ module Engine {
 		private _prevTime: number;
 		private _elapsed: number;
 
-		// INPUTS
-		private _gamepadControls: { [name: string]: number; };
-		private _keysDown: boolean[];
-		private _mousePosition: Vec2;
-
 		get id() { return this._params.id; }
 		get title() { return this._params.title; }
 
@@ -154,18 +147,6 @@ module Engine {
 			this._activeState = ko.observable();
 			this._prevTime = 0;
 			this._elapsed = 0;
-
-			this._gamepadControls = {};
-			this._keysDown = [];
-			this._mousePosition = new Vec2();
-		}
-
-		isKeyDown(key: Key): boolean {
-			return this._keysDown[key] || false;
-		}
-
-		getMousePosition(): Vec2 {
-			return this._mousePosition;
 		}
 
 		getState(id: string): AppState {
@@ -208,7 +189,7 @@ module Engine {
 						states[s].onAppStateChange(oldState, newState);
 					}
 
-					self._resize();
+					Input.triggerResize();
 
 					self._changingStates = false;
 				});
@@ -227,8 +208,9 @@ module Engine {
 		onAppStateChange(from: AppState, to: AppState): void {
 		}
 
+
 		/*
-		onResize(width: number, height: number): void {
+		onWindowResize(width: number, height: number): void {
 		}
 		onKeyDown(key: Key): void {
 		}
@@ -302,6 +284,9 @@ module Engine {
 
 			this._container = container;
 
+			Input.init(container.get()[0]);
+			Input.register(this);
+
 			var p = this._params;
 
 			if (p.showStats) {
@@ -340,6 +325,9 @@ module Engine {
 					console.warn("INSTANCE OF " + stateName + " IS NOT AN INSTANCE OF APP STATE CLASS");
 					continue;
 				}
+
+				// Register state input
+				Input.register(state);
 
 				// MAP STATES BY ID
 				stateMap[state.id] = state;
@@ -405,56 +393,10 @@ module Engine {
 			unlock();
 		}
 
-		private _initInputHandlers(): void {
-
-			var self = this;
-			var handler = function (methodName: string) {
-				var method = <Function>self[methodName];
-				return function (evt: Event) { method.call(self, evt); };
-			};
-
-			var stopEvent = function (evt: Event) {
-				evt.preventDefault();
-				evt.stopPropagation();
-			};
-
-			var p = this._params;
-
-			window.addEventListener("resize", handler("_resize"));
-			window.addEventListener("keydown", handler("_keyDown"));
-			window.addEventListener("keyup", handler("_keyUp"));
-
-			var container = this._container;
-			container.on("mousedown", handler("_mouseDown"));
-			container.on("mouseup", handler("_mouseUp"));
-			container.on("mousemove", handler("_mouseMove"));
-			container.on("mouseover", handler("_mouseEnter"));
-			container.on("mouseout", handler("_mouseLeave"));
-			container.on("mousewheel", handler("_mouseWheel"));
-			container.on("DOMMouseScroll", handler("_mouseWheel"));	// FIREFOX
-
-			if (p.disableContextMenu) {
-				container.on("contextmenu", stopEvent);
-			}
-
-			if (p.allowGamepad) {
-				var gamepad = this._gamepad = new Gamepad();
-				gamepad.bind(Gamepad.Event.CONNECTED, handler("_gamepadConnect"));
-				gamepad.bind(Gamepad.Event.DISCONNECTED, handler("_gamepadDisconnect"));
-				gamepad.bind(Gamepad.Event.UNSUPPORTED, handler("_gamepadUnsupported"));
-				gamepad.bind(Gamepad.Event.TICK, handler("_gamepadTick"));
-				gamepad.bind(Gamepad.Event.BUTTON_DOWN, handler("_gamepadButtonDown"));
-				gamepad.bind(Gamepad.Event.BUTTON_UP, handler("_gamepadButtonUp"));
-				gamepad.bind(Gamepad.Event.AXIS_CHANGED, handler("_gamepadAxisChanged"));
-				gamepad.init();
-			}
-
-		}
-
 		private _run(): void {
 
 			// trigger initial resize
-			this._resize();
+			Input.triggerResize();
 
 			// set initial state
 			this.setState(this._params.initialState);
@@ -485,151 +427,6 @@ module Engine {
 				this._stats.update();
 			}
 			this._prevTime = curTime;
-		}
-
-
-		private __callAppEvent(onEventName: string, args?: any[]): void {
-
-			var method = <Function>this[onEventName];
-			if (method) {
-				method.apply(this, args);
-			}
-
-			var state = this._activeState();
-			if (state) {
-				var method = <Function>state[onEventName];
-				if (method) {
-					method.apply(state, args);
-				}
-			}
-		}
-
-		private _resize(): void {
-			var container = this._container;
-			var width = container.width();
-			var height = container.height();
-
-			this.__callAppEvent("onResize", [width, height]);
-		}
-
-		// STANDARD INPUT EVENTS
-		private _keyDown(evt: KeyboardEvent): void {
-			var key = <Key>evt.keyCode;
-
-			this._keysDown[key] = true;
-
-			this.__callAppEvent("onKeyDown", [key]);
-		}
-		private _keyUp(evt: KeyboardEvent): void {
-			var key = <Key>evt.keyCode;
-
-			this._keysDown[key] = false;
-
-			this.__callAppEvent("onKeyUp", [key]);
-		}
-		private _mouseDown(evt: MouseEvent): void {
-			var x = evt.offsetX;
-			var y = evt.offsetY;
-			var button = <Key>evt.button;
-			
-			this._keysDown[button] = true;
-			
-			this.__callAppEvent("onMouseDown", [x, y, button]);
-		}
-		private _mouseUp(evt: MouseEvent): void {
-			var x = evt.offsetX;
-			var y = evt.offsetY;
-			var button = <Key>evt.button;
-
-			this._keysDown[button] = false;
-
-			this.__callAppEvent("onMouseUp", [x, y, button]);
-		}
-		private _mouseMove(evt: MouseEvent): void {
-			var x = evt.offsetX;
-			var y = evt.offsetY;
-
-			var mp = this._mousePosition;
-			mp.x = x;
-			mp.y = y;
-
-			this.__callAppEvent("onMouseMove", [x, y]);
-		}
-		private _mouseEnter(evt: MouseEvent): void {
-			var x = evt.offsetX;
-			var y = evt.offsetY;
-
-			var mp = this._mousePosition;
-			mp.x = x;
-			mp.y = y;
-
-			this.__callAppEvent("onMouseEnter", [x, y]);
-		}
-		private _mouseLeave(evt: MouseEvent): void {
-			var x = evt.offsetX;
-			var y = evt.offsetY;
-
-			var mp = this._mousePosition;
-			mp.x = x;
-			mp.y = y;
-
-			this.__callAppEvent("onMouseLeave", [x, y]);
-		}
-		private _mouseWheel(evt: WheelEvent): void {
-			var deltaY = (<any>evt).wheelDeltaY
-
-			this.__callAppEvent("onMouseWheel", [deltaY]);
-		}
-
-		// GAMEPAD INPUT EVENTS
-		private _gamepadConnect(evt: GamepadConnectEvent): void {
-			console.log("GAMEPAD CONNECT");
-			console.log(evt);
-		
-			this.__callAppEvent("onGamepadConnect");
-		}
-		private _gamepadDisconnect(evt: GamepadConnectEvent): void {
-			console.log("GAMEPAD DISCONNECT");
-			console.log(evt);
-
-			this.__callAppEvent("onGamepadDisconnect");
-		}
-		private _gamepadUnsupported(evt: GamepadConnectEvent): void {
-			console.log("GAMEPAD UNSUPPORTED");
-			console.log(evt);
-
-			//__callAppEvent("onGamepadUnsupported");
-		}
-		private _gamepadTick(evt: GamepadTickEvent): void {
-			var length = evt.length;
-
-			this.__callAppEvent("onGamepadTick", [length]);
-		}
-		private _gamepadButtonDown(evt: GamepadButtonEventData): void {
-			var control = evt.control;
-			
-			this._gamepadControls[control] = 1;
-
-			this.__callAppEvent("onGamepadButtonDown", [control]);
-		}
-		private _gamepadButtonUp(evt: GamepadButtonEventData): void {
-			var control = evt.control;
-
-			this._gamepadControls[control] = 0;
-
-			this.__callAppEvent("onGamepadButtonUp", [control]);
-		}
-		private _gamepadAxisChanged(evt: GamepadAxisEventData): void {
-			var axis = evt.axis;
-			var value = evt.value;
-
-			if (Math.abs(value) < 0.08) {
-				value = 0;
-			}
-
-			this._gamepadControls[axis] = value;
-
-			this.__callAppEvent("onGamepadAxisChanged", [axis, value]);
 		}
 
 	}

@@ -6,7 +6,7 @@ module Engine {
 		hasUI: boolean;
 	}
 
-	export class AppState {
+	export class AppState implements InputListener {
 
 		private _params: AppStateParams;
 

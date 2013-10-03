@@ -759,14 +759,13 @@ var Engine;
                 var paddle = this._paddle;
 
                 if (this._appState instanceof Breakout.LiveGame) {
-                    var app = Engine.App.instance;
-                    if (app.isKeyDown(Engine.Key.KEY_MOUSE_LEFT)) {
+                    if (Engine.Input.isKeyDown(Engine.Key.KEY_MOUSE_LEFT)) {
                         paddle.releaseBall();
                     }
-                    if (app.isKeyDown(Engine.Key.KEY_LEFT)) {
+                    if (Engine.Input.isKeyDown(Engine.Key.KEY_LEFT)) {
                         paddle.moveLeft();
                     }
-                    if (app.isKeyDown(Engine.Key.KEY_RIGHT)) {
+                    if (Engine.Input.isKeyDown(Engine.Key.KEY_RIGHT)) {
                         paddle.moveRight();
                     }
                 }
@@ -990,12 +989,11 @@ var Engine;
             };
 
             Editor.prototype.update = function (dt) {
-                var app = Engine.App.instance;
                 var hoverSlot = this._hoverSlot();
 
-                if (app.isKeyDown(Engine.Key.KEY_MOUSE_LEFT)) {
+                if (Engine.Input.isKeyDown(Engine.Key.KEY_MOUSE_LEFT)) {
                     if (hoverSlot) {
-                        if (app.isKeyDown(Engine.Key.KEY_SHIFT)) {
+                        if (Engine.Input.isKeyDown(Engine.Key.KEY_SHIFT)) {
                             hoverSlot.removeBlock();
                         } else {
                             hoverSlot.addBlock(Breakout.BlockType.Solid);

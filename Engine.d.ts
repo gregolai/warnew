@@ -207,7 +207,7 @@ declare module Engine {
         title: string;
         customVendors?: string[];
     }
-    class App {
+    class App implements Engine.InputListener {
         private static _loadingContainer;
         static namespace: Object;
         static instance: App;
@@ -226,9 +226,6 @@ declare module Engine {
         private _activeState;
         private _prevTime;
         private _elapsed;
-        private _gamepadControls;
-        private _keysDown;
-        private _mousePosition;
         public id : string;
         public title : string;
         public width : number;
@@ -236,8 +233,6 @@ declare module Engine {
         public activeState : Engine.AppState;
         public elapsed : number;
         constructor(params: AppParams);
-        public isKeyDown(key: Engine.Key): boolean;
-        public getMousePosition(): Engine.Vec2;
         public getState(id: string): Engine.AppState;
         public setState(id: string): void;
         public setState(state: Engine.AppState): void;
@@ -248,33 +243,15 @@ declare module Engine {
         private _createStates(callback);
         private _createStateDom(state, callback);
         private _initStates(callback);
-        private _initInputHandlers();
         private _run();
         private _loop();
-        private __callAppEvent(onEventName, args?);
-        private _resize();
-        private _keyDown(evt);
-        private _keyUp(evt);
-        private _mouseDown(evt);
-        private _mouseUp(evt);
-        private _mouseMove(evt);
-        private _mouseEnter(evt);
-        private _mouseLeave(evt);
-        private _mouseWheel(evt);
-        private _gamepadConnect(evt);
-        private _gamepadDisconnect(evt);
-        private _gamepadUnsupported(evt);
-        private _gamepadTick(evt);
-        private _gamepadButtonDown(evt);
-        private _gamepadButtonUp(evt);
-        private _gamepadAxisChanged(evt);
     }
 }
 declare module Engine {
     interface AppStateParams {
         hasUI: boolean;
     }
-    class AppState {
+    class AppState implements Engine.InputListener {
         private _params;
         private _sceneDom;
         private _uiDom;
@@ -312,6 +289,51 @@ declare module Engine.FileUtil {
     function loadStylesheet(url: string, callback: () => void): void;
     function loadHtml(url: string, container: JQuery, callback: () => void): void;
     function loadCssAndHtml(prefix: string, container: JQuery, callback: () => void): void;
+}
+declare module Engine {
+    interface InputListener {
+        onKeyDown? (key: Engine.Key): void;
+        onKeyUp? (key: Engine.Key): void;
+        onMouseDown? (x: number, y: number, button: Engine.Key): void;
+        onMouseUp? (x: number, y: number, button: Engine.Key): void;
+        onMouseMove? (x: number, y: number): void;
+        onMouseWheel? (deltaY: number): void;
+        onResize? (width: number, height: number): void;
+        onGamepadConnect? (): void;
+        onGamepadDisconnect? (): void;
+        onGamepadTick? (length: number): void;
+        onGamepadButtonDown? (control: string): void;
+        onGamepadButtonUp? (control: string): void;
+        onGamepadAxisChanged? (axis: string, value: number): void;
+    }
+    class Input {
+        private static _container;
+        private static _mousePosition;
+        private static _keysDown;
+        private static _gamepad;
+        private static _gamepadControls;
+        private static _listeners;
+        static isKeyDown(key: Engine.Key): boolean;
+        static getMousePosition(): Engine.Vec2;
+        static init(container: HTMLElement): void;
+        static register(listener: InputListener): void;
+        static unregister(listener: InputListener): void;
+        static triggerResize(): void;
+        private static __broadcast(onEventName, args?);
+        private static _keyDown(evt);
+        private static _keyUp(evt);
+        private static _mouseDown(evt);
+        private static _mouseUp(evt);
+        private static _mouseMove(evt);
+        private static _mouseWheel(evt);
+        private static _resize();
+        private static _gamepadConnect(evt);
+        private static _gamepadDisconnect(evt);
+        private static _gamepadTick(evt);
+        private static _gamepadButtonDown(evt);
+        private static _gamepadButtonUp(evt);
+        private static _gamepadAxisChanged(evt);
+    }
 }
 declare module Engine.MathUtil {
     function clamp(v: number, min: number, max: number): number;

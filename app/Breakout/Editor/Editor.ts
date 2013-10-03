@@ -59,14 +59,12 @@ module Engine.Breakout {
 
 		update(dt: number): void {
 
-			var app = App.instance;
 			var hoverSlot = this._hoverSlot();
 
-			
-			if (app.isKeyDown(Key.KEY_MOUSE_LEFT)) {
+			if (Input.isKeyDown(Key.KEY_MOUSE_LEFT)) {
 				if (hoverSlot) {
 
-					if (app.isKeyDown(Key.KEY_SHIFT)) {
+					if (Input.isKeyDown(Key.KEY_SHIFT)) {
 						// REMOVE BLOCKS AT CURSOR
 						hoverSlot.removeBlock();
 					} else {

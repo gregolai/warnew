@@ -290,14 +290,13 @@ module Engine.Breakout {
 
 			if (this._appState instanceof LiveGame) {
 
-				var app = App.instance;
-				if (app.isKeyDown(Key.KEY_MOUSE_LEFT)) {
+				if (Input.isKeyDown(Key.KEY_MOUSE_LEFT)) {
 					paddle.releaseBall();
 				}
-				if (app.isKeyDown(Key.KEY_LEFT)) {
+				if (Input.isKeyDown(Key.KEY_LEFT)) {
 					paddle.moveLeft();
 				}
-				if (app.isKeyDown(Key.KEY_RIGHT)) {
+				if (Input.isKeyDown(Key.KEY_RIGHT)) {
 					paddle.moveRight();
 				}
 

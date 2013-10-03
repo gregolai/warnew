@@ -16,6 +16,7 @@
 /// <reference path="script/AppState.ts" />
 /// <reference path="script/AsyncLock.ts"/>
 /// <reference path="script/FileUtil.ts"/>
+/// <reference path="script/Input.ts"/>
 /// <reference path="script/MathUtil.ts"/>
 /// <reference path="script/MersenneTwister.ts"/>
 /// <reference path="script/Random.ts"/>

@@ -186,10 +186,6 @@ var Engine;
             this._activeState = ko.observable();
             this._prevTime = 0;
             this._elapsed = 0;
-
-            this._gamepadControls = {};
-            this._keysDown = [];
-            this._mousePosition = new Engine.Vec2();
         }
         App.load = function (container, name) {
             App._startLoading(container);
@@ -225,8 +221,6 @@ var Engine;
 
                     app._createStates(function () {
                         app._initStates(function () {
-                            app._initInputHandlers();
-
                             setTimeout(function () {
                                 App._endLoading();
 
@@ -303,14 +297,6 @@ var Engine;
             configurable: true
         });
 
-        App.prototype.isKeyDown = function (key) {
-            return this._keysDown[key] || false;
-        };
-
-        App.prototype.getMousePosition = function () {
-            return this._mousePosition;
-        };
-
         App.prototype.getState = function (id) {
             return this._stateMap[id] || null;
         };
@@ -346,7 +332,7 @@ var Engine;
                         states[s].onAppStateChange(oldState, newState);
                     }
 
-                    self._resize();
+                    Engine.Input.triggerResize();
 
                     self._changingStates = false;
                 });
@@ -402,6 +388,9 @@ var Engine;
         App.prototype._initDom = function (container) {
             this._container = container;
 
+            Engine.Input.init(container.get()[0]);
+            Engine.Input.register(this);
+
             var p = this._params;
 
             if (p.showStats) {
@@ -438,6 +427,8 @@ var Engine;
                     console.warn("INSTANCE OF " + stateName + " IS NOT AN INSTANCE OF APP STATE CLASS");
                     continue;
                 }
+
+                Engine.Input.register(state);
 
                 stateMap[state.id] = state;
 
@@ -489,54 +480,8 @@ var Engine;
             unlock();
         };
 
-        App.prototype._initInputHandlers = function () {
-            var self = this;
-            var handler = function (methodName) {
-                var method = self[methodName];
-                return function (evt) {
-                    method.call(self, evt);
-                };
-            };
-
-            var stopEvent = function (evt) {
-                evt.preventDefault();
-                evt.stopPropagation();
-            };
-
-            var p = this._params;
-
-            window.addEventListener("resize", handler("_resize"));
-            window.addEventListener("keydown", handler("_keyDown"));
-            window.addEventListener("keyup", handler("_keyUp"));
-
-            var container = this._container;
-            container.on("mousedown", handler("_mouseDown"));
-            container.on("mouseup", handler("_mouseUp"));
-            container.on("mousemove", handler("_mouseMove"));
-            container.on("mouseover", handler("_mouseEnter"));
-            container.on("mouseout", handler("_mouseLeave"));
-            container.on("mousewheel", handler("_mouseWheel"));
-            container.on("DOMMouseScroll", handler("_mouseWheel"));
-
-            if (p.disableContextMenu) {
-                container.on("contextmenu", stopEvent);
-            }
-
-            if (p.allowGamepad) {
-                var gamepad = this._gamepad = new Gamepad();
-                gamepad.bind(Gamepad.Event.CONNECTED, handler("_gamepadConnect"));
-                gamepad.bind(Gamepad.Event.DISCONNECTED, handler("_gamepadDisconnect"));
-                gamepad.bind(Gamepad.Event.UNSUPPORTED, handler("_gamepadUnsupported"));
-                gamepad.bind(Gamepad.Event.TICK, handler("_gamepadTick"));
-                gamepad.bind(Gamepad.Event.BUTTON_DOWN, handler("_gamepadButtonDown"));
-                gamepad.bind(Gamepad.Event.BUTTON_UP, handler("_gamepadButtonUp"));
-                gamepad.bind(Gamepad.Event.AXIS_CHANGED, handler("_gamepadAxisChanged"));
-                gamepad.init();
-            }
-        };
-
         App.prototype._run = function () {
-            this._resize();
+            Engine.Input.triggerResize();
 
             this.setState(this._params.initialState);
 
@@ -567,145 +512,6 @@ var Engine;
                 this._stats.update();
             }
             this._prevTime = curTime;
-        };
-
-        App.prototype.__callAppEvent = function (onEventName, args) {
-            var method = this[onEventName];
-            if (method) {
-                method.apply(this, args);
-            }
-
-            var state = this._activeState();
-            if (state) {
-                var method = state[onEventName];
-                if (method) {
-                    method.apply(state, args);
-                }
-            }
-        };
-
-        App.prototype._resize = function () {
-            var container = this._container;
-            var width = container.width();
-            var height = container.height();
-
-            this.__callAppEvent("onResize", [width, height]);
-        };
-
-        App.prototype._keyDown = function (evt) {
-            var key = evt.keyCode;
-
-            this._keysDown[key] = true;
-
-            this.__callAppEvent("onKeyDown", [key]);
-        };
-        App.prototype._keyUp = function (evt) {
-            var key = evt.keyCode;
-
-            this._keysDown[key] = false;
-
-            this.__callAppEvent("onKeyUp", [key]);
-        };
-        App.prototype._mouseDown = function (evt) {
-            var x = evt.offsetX;
-            var y = evt.offsetY;
-            var button = evt.button;
-
-            this._keysDown[button] = true;
-
-            this.__callAppEvent("onMouseDown", [x, y, button]);
-        };
-        App.prototype._mouseUp = function (evt) {
-            var x = evt.offsetX;
-            var y = evt.offsetY;
-            var button = evt.button;
-
-            this._keysDown[button] = false;
-
-            this.__callAppEvent("onMouseUp", [x, y, button]);
-        };
-        App.prototype._mouseMove = function (evt) {
-            var x = evt.offsetX;
-            var y = evt.offsetY;
-
-            var mp = this._mousePosition;
-            mp.x = x;
-            mp.y = y;
-
-            this.__callAppEvent("onMouseMove", [x, y]);
-        };
-        App.prototype._mouseEnter = function (evt) {
-            var x = evt.offsetX;
-            var y = evt.offsetY;
-
-            var mp = this._mousePosition;
-            mp.x = x;
-            mp.y = y;
-
-            this.__callAppEvent("onMouseEnter", [x, y]);
-        };
-        App.prototype._mouseLeave = function (evt) {
-            var x = evt.offsetX;
-            var y = evt.offsetY;
-
-            var mp = this._mousePosition;
-            mp.x = x;
-            mp.y = y;
-
-            this.__callAppEvent("onMouseLeave", [x, y]);
-        };
-        App.prototype._mouseWheel = function (evt) {
-            var deltaY = (evt).wheelDeltaY;
-
-            this.__callAppEvent("onMouseWheel", [deltaY]);
-        };
-
-        App.prototype._gamepadConnect = function (evt) {
-            console.log("GAMEPAD CONNECT");
-            console.log(evt);
-
-            this.__callAppEvent("onGamepadConnect");
-        };
-        App.prototype._gamepadDisconnect = function (evt) {
-            console.log("GAMEPAD DISCONNECT");
-            console.log(evt);
-
-            this.__callAppEvent("onGamepadDisconnect");
-        };
-        App.prototype._gamepadUnsupported = function (evt) {
-            console.log("GAMEPAD UNSUPPORTED");
-            console.log(evt);
-        };
-        App.prototype._gamepadTick = function (evt) {
-            var length = evt.length;
-
-            this.__callAppEvent("onGamepadTick", [length]);
-        };
-        App.prototype._gamepadButtonDown = function (evt) {
-            var control = evt.control;
-
-            this._gamepadControls[control] = 1;
-
-            this.__callAppEvent("onGamepadButtonDown", [control]);
-        };
-        App.prototype._gamepadButtonUp = function (evt) {
-            var control = evt.control;
-
-            this._gamepadControls[control] = 0;
-
-            this.__callAppEvent("onGamepadButtonUp", [control]);
-        };
-        App.prototype._gamepadAxisChanged = function (evt) {
-            var axis = evt.axis;
-            var value = evt.value;
-
-            if (Math.abs(value) < 0.08) {
-                value = 0;
-            }
-
-            this._gamepadControls[axis] = value;
-
-            this.__callAppEvent("onGamepadAxisChanged", [axis, value]);
         };
         App._loadingContainer = null;
         return App;
@@ -889,6 +695,157 @@ var Engine;
         FileUtil.loadCssAndHtml = loadCssAndHtml;
     })(Engine.FileUtil || (Engine.FileUtil = {}));
     var FileUtil = Engine.FileUtil;
+})(Engine || (Engine = {}));
+var Engine;
+(function (Engine) {
+    var Input = (function () {
+        function Input() {
+        }
+        Input.isKeyDown = function (key) {
+            return Input._keysDown[key] || false;
+        };
+
+        Input.getMousePosition = function () {
+            return Input._mousePosition;
+        };
+
+        Input.init = function (container) {
+            Input._container = container;
+            Input._mousePosition = new Engine.Vec2();
+            Input._keysDown = [];
+            Input._gamepad = null;
+            Input._gamepadControls = {};
+            Input._listeners = [];
+
+            window.addEventListener("keydown", Input._keyDown, false);
+            window.addEventListener("keyup", Input._keyUp, false);
+            container.addEventListener("mousedown", Input._mouseDown, false);
+            window.addEventListener("mouseup", Input._mouseUp, false);
+            window.addEventListener("mousemove", Input._mouseMove, false);
+            container.addEventListener("mousewheel", Input._mouseWheel, false);
+            container.addEventListener("DOMMouseScroll", Input._mouseWheel, false);
+            window.addEventListener("resize", Input._resize, false);
+
+            if (typeof Gamepad !== "undefined") {
+                var gamepad = Input._gamepad = new Gamepad();
+                gamepad.bind(Gamepad.Event.CONNECTED, Input._gamepadConnect);
+                gamepad.bind(Gamepad.Event.DISCONNECTED, Input._gamepadDisconnect);
+                gamepad.bind(Gamepad.Event.TICK, Input._gamepadTick);
+                gamepad.bind(Gamepad.Event.BUTTON_DOWN, Input._gamepadButtonDown);
+                gamepad.bind(Gamepad.Event.BUTTON_UP, Input._gamepadButtonUp);
+                gamepad.bind(Gamepad.Event.AXIS_CHANGED, Input._gamepadAxisChanged);
+                gamepad.init();
+            }
+        };
+
+        Input.register = function (listener) {
+            if (Input._listeners.indexOf(listener) !== -1) {
+                return;
+            }
+            Input._listeners.push(listener);
+        };
+
+        Input.unregister = function (listener) {
+            var index = Input._listeners.indexOf(listener);
+            if (index === -1) {
+                return;
+            }
+            Input._listeners.splice(index, 1);
+        };
+
+        Input.triggerResize = function () {
+            Input._resize();
+        };
+
+        Input.__broadcast = function (onEventName, args) {
+            var listeners = Input._listeners;
+            for (var i = 0, ii = listeners.length; i < ii; ++i) {
+                var listener = listeners[i];
+                var method = listener[onEventName];
+                if (method) {
+                    method.apply(listener, args);
+                }
+            }
+        };
+
+        Input._keyDown = function (evt) {
+            Input._keysDown[evt.keyCode] = true;
+
+            Input.__broadcast("onKeyDown", [evt.keyCode]);
+        };
+        Input._keyUp = function (evt) {
+            console.log("KEY UP");
+            Input._keysDown[evt.keyCode] = false;
+
+            Input.__broadcast("onKeyUp", [evt.keyCode]);
+        };
+        Input._mouseDown = function (evt) {
+            Input._keysDown[evt.button] = true;
+
+            Input.__broadcast("onMouseDown", [evt.offsetX, evt.offsetY, evt.button]);
+        };
+        Input._mouseUp = function (evt) {
+            Input._keysDown[evt.button] = false;
+
+            Input.__broadcast("onMouseUp", [evt.offsetX, evt.offsetY, evt.button]);
+        };
+        Input._mouseMove = function (evt) {
+            Input._mousePosition.x = evt.offsetX;
+            Input._mousePosition.y = evt.offsetY;
+
+            Input.__broadcast("onMouseMove", [evt.offsetX, evt.offsetY]);
+        };
+        Input._mouseWheel = function (evt) {
+            var delta = (evt).wheelDelta || evt.detail;
+
+            Input.__broadcast("onMouseWheel", [delta]);
+        };
+
+        Input._resize = function () {
+            var width = Input._container.offsetWidth;
+            var height = Input._container.offsetHeight;
+
+            Input.__broadcast("onResize", [width, height]);
+        };
+
+        Input._gamepadConnect = function (evt) {
+            console.log("GAMEPAD CONNECT");
+            console.log(evt);
+
+            Input.__broadcast("onGamepadConnect");
+        };
+        Input._gamepadDisconnect = function (evt) {
+            console.log("GAMEPAD DISCONNECT");
+            console.log(evt);
+
+            Input.__broadcast("onGamepadDisconnect");
+        };
+        Input._gamepadTick = function (evt) {
+            Input.__broadcast("onGamepadTick", [evt.length]);
+        };
+        Input._gamepadButtonDown = function (evt) {
+            Input._gamepadControls[evt.control] = 1;
+
+            Input.__broadcast("onGamepadButtonDown", [evt.control]);
+        };
+        Input._gamepadButtonUp = function (evt) {
+            Input._gamepadControls[evt.control] = 0;
+
+            Input.__broadcast("onGamepadButtonUp", [evt.control]);
+        };
+        Input._gamepadAxisChanged = function (evt) {
+            var value = evt.value;
+            if (Math.abs(value) < 0.08) {
+                value = 0;
+            }
+
+            Input._gamepadControls[evt.axis] = value;
+
+            Input.__broadcast("onGamepadAxisChanged", [evt.axis, value]);
+        };
+        return Input;
+    })();
+    Engine.Input = Input;
 })(Engine || (Engine = {}));
 var Engine;
 (function (Engine) {
