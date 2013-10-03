@@ -525,7 +525,6 @@ var Engine;
                 var u0 = contact.GetFixtureA().GetBody().GetUserData();
                 var u1 = contact.GetFixtureB().GetBody().GetUserData();
 
-                console.log("PostSolve");
                 var ball = null;
                 var paddle = null;
                 if (u0 instanceof Breakout.Ball && u1 instanceof Breakout.Paddle) {

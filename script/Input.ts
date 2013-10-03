@@ -39,7 +39,7 @@ module Engine {
 			return Input._mousePosition;
 		}
 
-		static init(container: HTMLElement): void {
+		static init(container: HTMLElement, listener: InputListener): void {
 			Input._container = container;
 			Input._mousePosition = new Vec2();
 			Input._keysDown = [];
@@ -66,17 +66,23 @@ module Engine {
 				gamepad.bind(Gamepad.Event.AXIS_CHANGED, Input._gamepadAxisChanged);
 				gamepad.init();
 			}
+
+			Input.register(listener);
 		}
 
 		static register(listener: InputListener): void {
 
-			if (Input._listeners.indexOf(listener) !== -1) {
+			if (!listener || Input._listeners.indexOf(listener) !== -1) {
 				return;
 			}
 			Input._listeners.push(listener);
 		}
 
 		static unregister(listener: InputListener): void {
+
+			if (!listener) {
+				return;
+			}
 
 			var index = Input._listeners.indexOf(listener);
 			if (index === -1) {
@@ -108,7 +114,7 @@ module Engine {
 			Input.__broadcast("onKeyDown", [evt.keyCode]);
 		}
 		private static _keyUp(evt: KeyboardEvent): void {
-			console.log("KEY UP");
+
 			Input._keysDown[evt.keyCode] = false;
 
 			Input.__broadcast("onKeyUp", [evt.keyCode]);

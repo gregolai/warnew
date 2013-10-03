@@ -211,7 +211,7 @@ declare module Engine {
         private static _loadingContainer;
         static namespace: Object;
         static instance: App;
-        static load(container: JQuery, name: string): void;
+        static load(name: string): void;
         private static _verifyAppName(name);
         private static _startLoading(container);
         private static _endLoading();

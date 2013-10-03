@@ -25,7 +25,11 @@ module Engine {
 		static namespace: Object;
 		static instance: App;
 
-		static load(container: JQuery, name: string): void {
+		static load(name: string): void {
+
+			var container = $(document.createElement("div"));
+			container.attr("id", "container");
+			container.appendTo(document.body);
 
 			App._startLoading(container);
 
@@ -174,6 +178,8 @@ module Engine {
 					oldState.end();
 				}
 
+				Input.unregister(oldState);
+
 				var self = this;
 				newState.begin(function () {
 
@@ -189,6 +195,7 @@ module Engine {
 						states[s].onAppStateChange(oldState, newState);
 					}
 
+					Input.register(newState);
 					Input.triggerResize();
 
 					self._changingStates = false;
@@ -284,8 +291,7 @@ module Engine {
 
 			this._container = container;
 
-			Input.init(container.get()[0]);
-			Input.register(this);
+			Input.init(container.get()[0], this);
 
 			var p = this._params;
 
@@ -325,9 +331,6 @@ module Engine {
 					console.warn("INSTANCE OF " + stateName + " IS NOT AN INSTANCE OF APP STATE CLASS");
 					continue;
 				}
-
-				// Register state input
-				Input.register(state);
 
 				// MAP STATES BY ID
 				stateMap[state.id] = state;

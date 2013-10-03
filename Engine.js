@@ -187,7 +187,11 @@ var Engine;
             this._prevTime = 0;
             this._elapsed = 0;
         }
-        App.load = function (container, name) {
+        App.load = function (name) {
+            var container = $(document.createElement("div"));
+            container.attr("id", "container");
+            container.appendTo(document.body);
+
             App._startLoading(container);
 
             if (!App._verifyAppName(name)) {
@@ -318,6 +322,8 @@ var Engine;
                     oldState.end();
                 }
 
+                Engine.Input.unregister(oldState);
+
                 var self = this;
                 newState.begin(function () {
                     if (oldState && newState !== oldState) {
@@ -332,6 +338,7 @@ var Engine;
                         states[s].onAppStateChange(oldState, newState);
                     }
 
+                    Engine.Input.register(newState);
                     Engine.Input.triggerResize();
 
                     self._changingStates = false;
@@ -427,8 +434,6 @@ var Engine;
                     console.warn("INSTANCE OF " + stateName + " IS NOT AN INSTANCE OF APP STATE CLASS");
                     continue;
                 }
-
-                Engine.Input.register(state);
 
                 stateMap[state.id] = state;
 
@@ -739,13 +744,17 @@ var Engine;
         };
 
         Input.register = function (listener) {
-            if (Input._listeners.indexOf(listener) !== -1) {
+            if (!listener || Input._listeners.indexOf(listener) !== -1) {
                 return;
             }
             Input._listeners.push(listener);
         };
 
         Input.unregister = function (listener) {
+            if (!listener) {
+                return;
+            }
+
             var index = Input._listeners.indexOf(listener);
             if (index === -1) {
                 return;
@@ -774,7 +783,6 @@ var Engine;
             Input.__broadcast("onKeyDown", [evt.keyCode]);
         };
         Input._keyUp = function (evt) {
-            console.log("KEY UP");
             Input._keysDown[evt.keyCode] = false;
 
             Input.__broadcast("onKeyUp", [evt.keyCode]);
