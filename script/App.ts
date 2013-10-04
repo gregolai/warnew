@@ -20,26 +20,28 @@ module Engine {
 
 	export class App implements InputListener {
 
-		private static _loadingContainer: JQuery = null;
+		private static _loadingContainer: HTMLDivElement = null;
 
+		static container: HTMLDivElement;
 		static namespace: Object;
 		static instance: App;
 
+		static get width() { return App.container.offsetWidth; }
+		static get height() { return App.container.offsetHeight; }
+
 		static load(name: string): void {
 
-			var container = $(document.createElement("div"));
-			container.attr("id", "container");
-			container.appendTo(document.body);
-
-			App._startLoading(container);
+			// CREATE CONTAINER
+			App.container = document.createElement("div");
+			App.container.id = "container";
+			document.body.appendChild(App.container);
 
 			// Verify that all characters are alpha-numeric, dash, or underscore
 			if (!App._verifyAppName(name)) {
 				throw "INVALID CHARACTERS IN APP NAME: " + name;
 			}
 
-			// load custom app module
-			FileUtil.loadScript("app/" + name + "/" + name + ".js", function () {
+			App._load(name, function () {
 
 				// e.x. Engine.MyGame
 				var AppNamespace = <Object>Engine[name];
@@ -69,7 +71,7 @@ module Engine {
 				// LOAD VENDORS
 				app._loadVendors(function () {
 
-					app._initDom(container);
+					app._initDom();
 
 					// CREATE STATES AND DOM FROM NAMES
 					app._createStates(function () {
@@ -92,7 +94,7 @@ module Engine {
 
 				}); // loadVendors
 
-			}); // FileUtil.loadScript (current App script)
+			}); // App._load
 
 		}
 
@@ -103,25 +105,55 @@ module Engine {
 			}
 			return false;
 		}
-		private static _startLoading(container: JQuery): void {
 
-			var loadingContainer = App._loadingContainer = $(document.createElement("div"));
-			loadingContainer.addClass("appLoading");
-			container.append(loadingContainer);
+		private static _load(appName: string, callback: ()=>void): void {
 
-			var _loadingText = $(document.createElement("p"));
-			_loadingText.text("Loading...");
-			loadingContainer.append(_loadingText);
+			document.body.style.backgroundColor = "#000";
+
+			// LOAD MAIN STYLESHEET
+			FileUtil.loadStylesheet(ROOT_DIRECTORY_FROM_APP + "style.css", function () {
+
+				// LOADING UI
+				var loadingContainer = App._loadingContainer = document.createElement("div");
+				loadingContainer.id = "appLoading";
+				App.container.appendChild(loadingContainer);
+			
+				var loadingText = document.createElement("p");
+				loadingText.innerText = "Loading...";
+				loadingContainer.appendChild(loadingText);
+
+
+				// LOAD DEFAULT VENDORS AND GAME
+				var async = new AsyncLock(callback);
+				var unlock = function () { async.unlock(); }
+
+				async.lock();
+				FileUtil.loadScript(ROOT_DIRECTORY_FROM_APP + "vendor/jquery.min.js", unlock);
+
+				async.lock();
+				FileUtil.loadScript(ROOT_DIRECTORY_FROM_APP + "vendor/knockout.min.js", unlock);
+
+				async.lock();
+				FileUtil.loadScript(appName + ".js", unlock);
+
+				unlock();
+			});
+			
+		}
+
+		private static _startLoading(): void {
+
+
 		}
 		private static _endLoading(): void {
-			App._loadingContainer.fadeOut(700);
+			$(App._loadingContainer).fadeOut(700);
 		}
 
 
 		private _params: AppParams;
 
 		// STAGE STUFF
-		private _container: JQuery;
+		private _container: HTMLDivElement;
 		private _appContainer: JQuery;
 		private _gamepad: Gamepad;
 		private _stats: Stats;
@@ -135,9 +167,6 @@ module Engine {
 
 		get id() { return this._params.id; }
 		get title() { return this._params.title; }
-
-		get width() { return this._container.width(); }
-		get height() { return this._container.height(); }
 
 		get activeState() { return this._activeState(); }
 		get elapsed() { return this._elapsed; }
@@ -174,18 +203,14 @@ module Engine {
 				}
 
 				var oldState = this._activeState();
-				if (newState === oldState) {
+				if (oldState) {
 					oldState.end();
+					Input.unregister(oldState);
+					this._activeState(null);
 				}
-
-				Input.unregister(oldState);
 
 				var self = this;
 				newState.begin(function () {
-
-					if (oldState && newState !== oldState) {
-						oldState.end();
-					}
 
 					self._activeState(newState);
 
@@ -256,19 +281,19 @@ module Engine {
 
 			var p = this._params;
 			if (p.showStats) {
-				vendors.push("vendor/stats.min.js");
+				vendors.push(ROOT_DIRECTORY_FROM_APP + "vendor/stats.min.js");
 			}
 
 			if (p.enable3d) {
-				vendors.push("vendor/three.min.js");
+				vendors.push(ROOT_DIRECTORY_FROM_APP + "vendor/three.min.js");
 			}
 
 			if (p.allowGamepad) {
-				vendors.push("vendor/gamepad.js");
+				vendors.push(ROOT_DIRECTORY_FROM_APP + "vendor/gamepad.js");
 			}
 
 			if (p.enable2dPhysics) {
-				vendors.push("vendor/Box2dWeb-2.1.a.3.min.js");
+				vendors.push(ROOT_DIRECTORY_FROM_APP + "vendor/Box2dWeb-2.1.a.3.min.js");
 			}
 
 			if (p.customVendors) {
@@ -287,11 +312,9 @@ module Engine {
 			unlock();
 		}
 
-		private _initDom(container: JQuery): void {
+		private _initDom(): void {
 
-			this._container = container;
-
-			Input.init(container.get()[0], this);
+			Input.register(this);
 
 			var p = this._params;
 
@@ -299,12 +322,12 @@ module Engine {
 				this._stats = new Stats();
 				this._stats.setMode(0);
 				this._stats.domElement.classList.add("stats");
-				container.append(this._stats.domElement);
+				App.container.appendChild(this._stats.domElement);
 			}
 
 			this._appContainer = $(document.createElement("div"))
 				.addClass("app")
-				.appendTo(container);
+				.appendTo(App.container);
 		}
 
 		private _createStates(callback: () => void): void {
@@ -358,7 +381,7 @@ module Engine {
 
 			if (state.hasUI) {
 
-				var prefix = "app/" + this.id + "/" + state.id + "/" + state.id;
+				var prefix = state.id + "/" + state.id;
 				FileUtil.loadStylesheet(prefix + ".css", function () {
 
 					FileUtil.loadHtml(prefix + ".html", state.uiDom, function () {

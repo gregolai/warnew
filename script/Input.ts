@@ -24,6 +24,7 @@ module Engine {
 
 	export class Input {
 
+		private static _initialized: boolean;
 		private static _container: HTMLElement;
 		private static _mousePosition: Vec2;
 		private static _keysDown: boolean[];
@@ -39,38 +40,12 @@ module Engine {
 			return Input._mousePosition;
 		}
 
-		static init(container: HTMLElement, listener: InputListener): void {
-			Input._container = container;
-			Input._mousePosition = new Vec2();
-			Input._keysDown = [];
-			Input._gamepad = null;
-			Input._gamepadControls = {};
-			Input._listeners = [];
-
-			window.addEventListener("keydown", Input._keyDown, false);
-			window.addEventListener("keyup", Input._keyUp, false);
-			container.addEventListener("mousedown", Input._mouseDown, false);
-			window.addEventListener("mouseup", Input._mouseUp, false);
-			window.addEventListener("mousemove", Input._mouseMove, false);
-			container.addEventListener("mousewheel", Input._mouseWheel, false);
-			container.addEventListener("DOMMouseScroll", Input._mouseWheel, false);
-			window.addEventListener("resize", Input._resize, false);
-
-			if (typeof Gamepad !== "undefined") {
-				var gamepad = Input._gamepad = new Gamepad();
-				gamepad.bind(Gamepad.Event.CONNECTED, Input._gamepadConnect);
-				gamepad.bind(Gamepad.Event.DISCONNECTED, Input._gamepadDisconnect);
-				gamepad.bind(Gamepad.Event.TICK, Input._gamepadTick);
-				gamepad.bind(Gamepad.Event.BUTTON_DOWN, Input._gamepadButtonDown);
-				gamepad.bind(Gamepad.Event.BUTTON_UP, Input._gamepadButtonUp);
-				gamepad.bind(Gamepad.Event.AXIS_CHANGED, Input._gamepadAxisChanged);
-				gamepad.init();
-			}
-
-			Input.register(listener);
-		}
-
 		static register(listener: InputListener): void {
+
+			if (!Input._initialized) {
+				Input._init();
+				Input._initialized = true;
+			}
 
 			if (!listener || Input._listeners.indexOf(listener) !== -1) {
 				return;
@@ -94,6 +69,37 @@ module Engine {
 		static triggerResize(): void {
 			Input._resize();
 		}
+
+		private static _init(): void {
+			Input._mousePosition = new Vec2();
+			Input._keysDown = [];
+			Input._gamepad = null;
+			Input._gamepadControls = {};
+			Input._listeners = [];
+
+			window.addEventListener("keydown", Input._keyDown, false);
+			window.addEventListener("keyup", Input._keyUp, false);
+
+			App.container.addEventListener("mousedown", Input._mouseDown, false);
+			window.addEventListener("mouseup", Input._mouseUp, false);
+			window.addEventListener("mousemove", Input._mouseMove, false);
+			App.container.addEventListener("mousewheel", Input._mouseWheel, false);
+			App.container.addEventListener("DOMMouseScroll", Input._mouseWheel, false);
+
+			window.addEventListener("resize", Input._resize, false);
+
+			if (typeof Gamepad !== "undefined") {
+				var gamepad = Input._gamepad = new Gamepad();
+				gamepad.bind(Gamepad.Event.CONNECTED, Input._gamepadConnect);
+				gamepad.bind(Gamepad.Event.DISCONNECTED, Input._gamepadDisconnect);
+				gamepad.bind(Gamepad.Event.TICK, Input._gamepadTick);
+				gamepad.bind(Gamepad.Event.BUTTON_DOWN, Input._gamepadButtonDown);
+				gamepad.bind(Gamepad.Event.BUTTON_UP, Input._gamepadButtonUp);
+				gamepad.bind(Gamepad.Event.AXIS_CHANGED, Input._gamepadAxisChanged);
+				gamepad.init();
+			}
+		}
+
 
 		private static __broadcast(onEventName: string, args?: any[]): void {
 
@@ -147,8 +153,8 @@ module Engine {
 
 		private static _resize(): void {
 
-			var width = Input._container.offsetWidth;
-			var height = Input._container.offsetHeight;
+			var width = App.container.offsetWidth;
+			var height = App.container.offsetHeight;
 
 			Input.__broadcast("onResize", [width, height]);
 		}

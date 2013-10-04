@@ -173,6 +173,8 @@ var Engine;
     Engine.BIT_28 = 0x10000000;
     Engine.BIT_29 = 0x20000000;
     Engine.BIT_30 = 0x40000000;
+
+    Engine.ROOT_DIRECTORY_FROM_APP = "../../";
 })(Engine || (Engine = {}));
 var Engine;
 (function (Engine) {
@@ -187,18 +189,31 @@ var Engine;
             this._prevTime = 0;
             this._elapsed = 0;
         }
-        App.load = function (name) {
-            var container = $(document.createElement("div"));
-            container.attr("id", "container");
-            container.appendTo(document.body);
+        Object.defineProperty(App, "width", {
+            get: function () {
+                return App.container.offsetWidth;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(App, "height", {
+            get: function () {
+                return App.container.offsetHeight;
+            },
+            enumerable: true,
+            configurable: true
+        });
 
-            App._startLoading(container);
+        App.load = function (name) {
+            App.container = document.createElement("div");
+            App.container.id = "container";
+            document.body.appendChild(App.container);
 
             if (!App._verifyAppName(name)) {
                 throw "INVALID CHARACTERS IN APP NAME: " + name;
             }
 
-            Engine.FileUtil.loadScript("app/" + name + "/" + name + ".js", function () {
+            App._load(name, function () {
                 var AppNamespace = Engine[name];
                 if (!AppNamespace) {
                     throw "APP NAMESPACE NOT FOUND: " + name;
@@ -221,7 +236,7 @@ var Engine;
                 document.title = app.title;
 
                 app._loadVendors(function () {
-                    app._initDom(container);
+                    app._initDom();
 
                     app._createStates(function () {
                         app._initStates(function () {
@@ -243,17 +258,41 @@ var Engine;
             }
             return false;
         };
-        App._startLoading = function (container) {
-            var loadingContainer = App._loadingContainer = $(document.createElement("div"));
-            loadingContainer.addClass("appLoading");
-            container.append(loadingContainer);
 
-            var _loadingText = $(document.createElement("p"));
-            _loadingText.text("Loading...");
-            loadingContainer.append(_loadingText);
+        App._load = function (appName, callback) {
+            document.body.style.backgroundColor = "#000";
+
+            Engine.FileUtil.loadStylesheet(Engine.ROOT_DIRECTORY_FROM_APP + "style.css", function () {
+                var loadingContainer = App._loadingContainer = document.createElement("div");
+                loadingContainer.id = "appLoading";
+                App.container.appendChild(loadingContainer);
+
+                var loadingText = document.createElement("p");
+                loadingText.innerText = "Loading...";
+                loadingContainer.appendChild(loadingText);
+
+                var async = new Engine.AsyncLock(callback);
+                var unlock = function () {
+                    async.unlock();
+                };
+
+                async.lock();
+                Engine.FileUtil.loadScript(Engine.ROOT_DIRECTORY_FROM_APP + "vendor/jquery.min.js", unlock);
+
+                async.lock();
+                Engine.FileUtil.loadScript(Engine.ROOT_DIRECTORY_FROM_APP + "vendor/knockout.min.js", unlock);
+
+                async.lock();
+                Engine.FileUtil.loadScript(appName + ".js", unlock);
+
+                unlock();
+            });
+        };
+
+        App._startLoading = function () {
         };
         App._endLoading = function () {
-            App._loadingContainer.fadeOut(700);
+            $(App._loadingContainer).fadeOut(700);
         };
 
         Object.defineProperty(App.prototype, "id", {
@@ -266,21 +305,6 @@ var Engine;
         Object.defineProperty(App.prototype, "title", {
             get: function () {
                 return this._params.title;
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        Object.defineProperty(App.prototype, "width", {
-            get: function () {
-                return this._container.width();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(App.prototype, "height", {
-            get: function () {
-                return this._container.height();
             },
             enumerable: true,
             configurable: true
@@ -318,18 +342,14 @@ var Engine;
                 }
 
                 var oldState = this._activeState();
-                if (newState === oldState) {
+                if (oldState) {
                     oldState.end();
+                    Engine.Input.unregister(oldState);
+                    this._activeState(null);
                 }
-
-                Engine.Input.unregister(oldState);
 
                 var self = this;
                 newState.begin(function () {
-                    if (oldState && newState !== oldState) {
-                        oldState.end();
-                    }
-
                     self._activeState(newState);
 
                     self.onAppStateChange(oldState, newState);
@@ -360,19 +380,19 @@ var Engine;
 
             var p = this._params;
             if (p.showStats) {
-                vendors.push("vendor/stats.min.js");
+                vendors.push(Engine.ROOT_DIRECTORY_FROM_APP + "vendor/stats.min.js");
             }
 
             if (p.enable3d) {
-                vendors.push("vendor/three.min.js");
+                vendors.push(Engine.ROOT_DIRECTORY_FROM_APP + "vendor/three.min.js");
             }
 
             if (p.allowGamepad) {
-                vendors.push("vendor/gamepad.js");
+                vendors.push(Engine.ROOT_DIRECTORY_FROM_APP + "vendor/gamepad.js");
             }
 
             if (p.enable2dPhysics) {
-                vendors.push("vendor/Box2dWeb-2.1.a.3.min.js");
+                vendors.push(Engine.ROOT_DIRECTORY_FROM_APP + "vendor/Box2dWeb-2.1.a.3.min.js");
             }
 
             if (p.customVendors) {
@@ -392,10 +412,7 @@ var Engine;
             unlock();
         };
 
-        App.prototype._initDom = function (container) {
-            this._container = container;
-
-            Engine.Input.init(container.get()[0]);
+        App.prototype._initDom = function () {
             Engine.Input.register(this);
 
             var p = this._params;
@@ -404,10 +421,10 @@ var Engine;
                 this._stats = new Stats();
                 this._stats.setMode(0);
                 this._stats.domElement.classList.add("stats");
-                container.append(this._stats.domElement);
+                App.container.appendChild(this._stats.domElement);
             }
 
-            this._appContainer = $(document.createElement("div")).addClass("app").appendTo(container);
+            this._appContainer = $(document.createElement("div")).addClass("app").appendTo(App.container);
         };
 
         App.prototype._createStates = function (callback) {
@@ -453,7 +470,7 @@ var Engine;
             container.append(state.uiDom);
 
             if (state.hasUI) {
-                var prefix = "app/" + this.id + "/" + state.id + "/" + state.id;
+                var prefix = state.id + "/" + state.id;
                 Engine.FileUtil.loadStylesheet(prefix + ".css", function () {
                     Engine.FileUtil.loadHtml(prefix + ".html", state.uiDom, function () {
                         ko.applyBindings(state, container.get()[0]);
@@ -691,13 +708,6 @@ var Engine;
             });
         }
         FileUtil.loadHtml = loadHtml;
-
-        function loadCssAndHtml(prefix, container, callback) {
-            loadStylesheet(prefix + ".css", function () {
-                loadHtml(prefix + ".html", container, callback);
-            });
-        }
-        FileUtil.loadCssAndHtml = loadCssAndHtml;
     })(Engine.FileUtil || (Engine.FileUtil = {}));
     var FileUtil = Engine.FileUtil;
 })(Engine || (Engine = {}));
@@ -714,36 +724,12 @@ var Engine;
             return Input._mousePosition;
         };
 
-        Input.init = function (container) {
-            Input._container = container;
-            Input._mousePosition = new Engine.Vec2();
-            Input._keysDown = [];
-            Input._gamepad = null;
-            Input._gamepadControls = {};
-            Input._listeners = [];
-
-            window.addEventListener("keydown", Input._keyDown, false);
-            window.addEventListener("keyup", Input._keyUp, false);
-            container.addEventListener("mousedown", Input._mouseDown, false);
-            window.addEventListener("mouseup", Input._mouseUp, false);
-            window.addEventListener("mousemove", Input._mouseMove, false);
-            container.addEventListener("mousewheel", Input._mouseWheel, false);
-            container.addEventListener("DOMMouseScroll", Input._mouseWheel, false);
-            window.addEventListener("resize", Input._resize, false);
-
-            if (typeof Gamepad !== "undefined") {
-                var gamepad = Input._gamepad = new Gamepad();
-                gamepad.bind(Gamepad.Event.CONNECTED, Input._gamepadConnect);
-                gamepad.bind(Gamepad.Event.DISCONNECTED, Input._gamepadDisconnect);
-                gamepad.bind(Gamepad.Event.TICK, Input._gamepadTick);
-                gamepad.bind(Gamepad.Event.BUTTON_DOWN, Input._gamepadButtonDown);
-                gamepad.bind(Gamepad.Event.BUTTON_UP, Input._gamepadButtonUp);
-                gamepad.bind(Gamepad.Event.AXIS_CHANGED, Input._gamepadAxisChanged);
-                gamepad.init();
-            }
-        };
-
         Input.register = function (listener) {
+            if (!Input._initialized) {
+                Input._init();
+                Input._initialized = true;
+            }
+
             if (!listener || Input._listeners.indexOf(listener) !== -1) {
                 return;
             }
@@ -764,6 +750,36 @@ var Engine;
 
         Input.triggerResize = function () {
             Input._resize();
+        };
+
+        Input._init = function () {
+            Input._mousePosition = new Engine.Vec2();
+            Input._keysDown = [];
+            Input._gamepad = null;
+            Input._gamepadControls = {};
+            Input._listeners = [];
+
+            window.addEventListener("keydown", Input._keyDown, false);
+            window.addEventListener("keyup", Input._keyUp, false);
+
+            Engine.App.container.addEventListener("mousedown", Input._mouseDown, false);
+            window.addEventListener("mouseup", Input._mouseUp, false);
+            window.addEventListener("mousemove", Input._mouseMove, false);
+            Engine.App.container.addEventListener("mousewheel", Input._mouseWheel, false);
+            Engine.App.container.addEventListener("DOMMouseScroll", Input._mouseWheel, false);
+
+            window.addEventListener("resize", Input._resize, false);
+
+            if (typeof Gamepad !== "undefined") {
+                var gamepad = Input._gamepad = new Gamepad();
+                gamepad.bind(Gamepad.Event.CONNECTED, Input._gamepadConnect);
+                gamepad.bind(Gamepad.Event.DISCONNECTED, Input._gamepadDisconnect);
+                gamepad.bind(Gamepad.Event.TICK, Input._gamepadTick);
+                gamepad.bind(Gamepad.Event.BUTTON_DOWN, Input._gamepadButtonDown);
+                gamepad.bind(Gamepad.Event.BUTTON_UP, Input._gamepadButtonUp);
+                gamepad.bind(Gamepad.Event.AXIS_CHANGED, Input._gamepadAxisChanged);
+                gamepad.init();
+            }
         };
 
         Input.__broadcast = function (onEventName, args) {
@@ -810,8 +826,8 @@ var Engine;
         };
 
         Input._resize = function () {
-            var width = Input._container.offsetWidth;
-            var height = Input._container.offsetHeight;
+            var width = Engine.App.container.offsetWidth;
+            var height = Engine.App.container.offsetHeight;
 
             Input.__broadcast("onResize", [width, height]);
         };

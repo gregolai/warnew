@@ -2,6 +2,9 @@
 
 module Engine {
 
+	// USEFUL FOR BIT-FLAGGED DATA
+	export interface BitFlags<T> { number; }
+
 	// TOUCH EVENTS
 	export interface Touch {
 		identifier: number;

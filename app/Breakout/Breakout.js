@@ -1238,7 +1238,7 @@ var Engine;
 
             LiveGame.prototype._loadLevel = function (id, callback) {
                 var self = this;
-                $.post("app/breakout/server/loadLevel.php", {
+                $.post("server/loadLevel.php", {
                     id: id
                 }, function (msg) {
                     var data;

@@ -1,25 +1,112 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title></title>
+	<style type="text/css">
 
-	<link type="text/css" rel="stylesheet" href="style.css" />
+		body {
+			background-color: #998;
+			margin: 0;
+			padding: 0;
+		}
 
-	<script type="text/javascript" src="vendor/jquery.min.js"></script>
-	<script type="text/javascript" src="vendor/knockout.min.js"></script>
-	<script type="text/javascript" src="Engine.js"></script>
-	<script type="text/javascript">
+		#panel {
+			position: absolute;
+			width: 300px;
+			height: 100%;
+			overflow-y: scroll;
+			background-color: #99b;
+		}
 
-		$(document).ready(function () {
-			var hash = window.location.hash;
-			var appName = (hash.length > 1 ? hash.substring(1) : "Breakout");
-			Engine.App.load(appName);
-		})
+		#panel #list {
+			padding: 10px 20px;
+			line-height: 18px;
+		}
 
-	</script>
+		#panel #list .link {
+			color: #ddd;
+			text-decoration: none;
+			cursor: pointer;
+		}
 
+		#panel #list .selected {
+			color: #fff;
+			text-decoration: underline;
+		}
+
+		#panel #list .link:hover {
+			text-decoration: underline;
+		}
+		
+		#viewer {
+			position: absolute;
+			left: 300px;
+			width: -webkit-calc(100% - 300px); /* Safari */
+			width: calc(100% - 300px);
+			height: 100%;
+			border: 0;
+		}
+	</style>
 </head>
 <body>
+	<div id="panel">
+		<div id="list">
+			<h1>Games</h1>
+			<br />
+		</div>
+	</div>
+	<iframe id="viewer"></iframe>
+	<script type="text/javascript">
+	
+		var files = [
+				"Breakout",
+				"Zoofery"
+		];
+	
+		var list = document.getElementById("list");
+		var viewer = document.getElementById("viewer");
+		
+		var container = document.createElement("div");
+		list.appendChild(container);
+		
+		var divs = {};
+		var selected = null;
+		
+		function createFileDiv(name){
+		
+			var div = document.createElement("div");
+			div.className = "link";
+			div.textContent = name;
+			div.addEventListener( 'click', function () {
+				load(name);
+			});
+			container.appendChild(div);
+
+			divs[name] = div;
+		}
+		
+		function load(appName){
+		
+			if(selected !== null)
+				divs[selected].className = "link";
+		
+			divs[appName].className = "link selected";
+		
+			window.location.hash = appName;
+			selected = appName;
+			
+			viewer.src = "app/" + appName;
+			viewer.focus();
+		}
+		
+		for(var f=0, ff=files.length; f<ff; ++f){
+			createFileDiv(files[f]);
+		}
+
+		if(window.location.hash !== ""){
+			load("Breakout");
+		}
+		
+	</script>
 </body>
 
 </html>

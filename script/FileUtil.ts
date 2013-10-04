@@ -36,11 +36,6 @@ module Engine {
 			});
 		}
 
-		export function loadCssAndHtml(prefix: string, container: JQuery, callback: () => void): void {
-			loadStylesheet(prefix + ".css", function () {
-				loadHtml(prefix + ".html", container, callback);
-			});
-		}
 	}
 
 }

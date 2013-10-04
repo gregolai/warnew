@@ -192,6 +192,7 @@ declare module Engine {
     var BIT_28: number;
     var BIT_29: number;
     var BIT_30: number;
+    var ROOT_DIRECTORY_FROM_APP: string;
 }
 declare module Engine {
     interface AppParams {
@@ -209,11 +210,15 @@ declare module Engine {
     }
     class App implements Engine.InputListener {
         private static _loadingContainer;
+        static container: HTMLDivElement;
         static namespace: Object;
         static instance: App;
+        static width : number;
+        static height : number;
         static load(name: string): void;
         private static _verifyAppName(name);
-        private static _startLoading(container);
+        private static _load(appName, callback);
+        private static _startLoading();
         private static _endLoading();
         private _params;
         private _container;
@@ -228,8 +233,6 @@ declare module Engine {
         private _elapsed;
         public id : string;
         public title : string;
-        public width : number;
-        public height : number;
         public activeState : Engine.AppState;
         public elapsed : number;
         constructor(params: AppParams);
@@ -239,7 +242,7 @@ declare module Engine {
         public update(deltaTime: number): void;
         public onAppStateChange(from: Engine.AppState, to: Engine.AppState): void;
         private _loadVendors(callback);
-        private _initDom(container);
+        private _initDom();
         private _createStates(callback);
         private _createStateDom(state, callback);
         private _initStates(callback);
@@ -288,7 +291,6 @@ declare module Engine.FileUtil {
     function loadScript(url: string, callback: () => void): void;
     function loadStylesheet(url: string, callback: () => void): void;
     function loadHtml(url: string, container: JQuery, callback: () => void): void;
-    function loadCssAndHtml(prefix: string, container: JQuery, callback: () => void): void;
 }
 declare module Engine {
     interface InputListener {
@@ -307,6 +309,7 @@ declare module Engine {
         onGamepadAxisChanged? (axis: string, value: number): void;
     }
     class Input {
+        private static _initialized;
         private static _container;
         private static _mousePosition;
         private static _keysDown;
@@ -315,10 +318,10 @@ declare module Engine {
         private static _listeners;
         static isKeyDown(key: Engine.Key): boolean;
         static getMousePosition(): Engine.Vec2;
-        static init(container: HTMLElement): void;
         static register(listener: InputListener): void;
         static unregister(listener: InputListener): void;
         static triggerResize(): void;
+        private static _init();
         private static __broadcast(onEventName, args?);
         private static _keyDown(evt);
         private static _keyUp(evt);

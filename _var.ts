@@ -37,4 +37,5 @@ module Engine {
 	export var BIT_30 = 0x40000000;
 	// NO BIT 31, BECAUSE OF ISSUES WITH SIGNED/UNSIGNED NUMBERS
 
+	export var ROOT_DIRECTORY_FROM_APP = "../../";
 }

@@ -69,7 +69,7 @@ module Engine.Breakout {
 		private _loadLevel(id: number, callback: () => void): void {
 
 			var self = this;
-			$.post("app/breakout/server/loadLevel.php", {
+			$.post("server/loadLevel.php", {
 				id: id
 			}, function (msg: string) {
 
