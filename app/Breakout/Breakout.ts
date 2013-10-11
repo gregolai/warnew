@@ -6,7 +6,6 @@ module Engine.Breakout {
 
 		constructor() {
 			super({
-				id: "Breakout",
 				initialState: "MainMenu",
 				states: [
 					"Editor",
@@ -17,11 +16,11 @@ module Engine.Breakout {
 
 				allowGamepad: true,
 				allowTouch: true,
+				cacheAssets: false,
 				disableContextMenu: false,
 				enable2dPhysics: true,
 				enable3d: true,
-				showStats: true,
-				title: "Breakout!",
+				showStats: true
 				
 			});
 		}

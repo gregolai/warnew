@@ -30,6 +30,11 @@ var Engine;
         Breakout.PADDLE_JOINT_HORIZ_DIST = 100;
         Breakout.PADDLE_MAX_BOUNCE_ANGLE = Math.PI / 2.3;
 
+        Breakout.SERVER_DIRECTORY = "server/";
+        Breakout.SERVER_GET_LEVEL_LIST = Breakout.SERVER_DIRECTORY + "getLevelList.php";
+        Breakout.SERVER_LOAD_LEVEL = Breakout.SERVER_DIRECTORY + "loadLevel.php";
+        Breakout.SERVER_SAVE_LEVEL = Breakout.SERVER_DIRECTORY + "saveLevel.php";
+
         Breakout.parseServerMessage = function (msg) {
             var obj = JSON.parse(msg);
             if (!obj.success) {
@@ -1034,7 +1039,7 @@ var Engine;
 
             Editor.prototype._refreshLevelList = function () {
                 var self = this;
-                $.post("app/breakout/server/getLevelList.php", {}, function (msg) {
+                $.post(Breakout.SERVER_GET_LEVEL_LIST, {}, function (msg) {
                     var wrappers;
                     try  {
                         wrappers = Breakout.parseServerMessage(msg);
@@ -1060,7 +1065,7 @@ var Engine;
 
             Editor.prototype._loadLevel = function (id, callback) {
                 var self = this;
-                $.post("app/breakout/server/loadLevel.php", {
+                $.post(Breakout.SERVER_LOAD_LEVEL, {
                     id: id
                 }, function (msg) {
                     var data;
@@ -1086,12 +1091,13 @@ var Engine;
                 data.name = "Level " + (id + 1);
                 data.stage = this._stage.save();
 
-                $.post("app/breakout/server/saveLevel.php", {
+                $.post(Breakout.SERVER_SAVE_LEVEL, {
                     id: id,
                     data: JSON.stringify(data)
                 }, function (msg) {
                     try  {
                         var success = Breakout.parseServerMessage(msg);
+                        console.log("save success");
                     } catch (ex) {
                         console.log("Failed to save level: " + ex);
                         return;
@@ -1207,7 +1213,10 @@ var Engine;
             };
 
             LiveGame.prototype.begin = function (callback) {
-                this._reset(callback);
+                var self = this;
+                Engine.AssetManager.load({}, function () {
+                    self._reset(callback);
+                });
             };
 
             LiveGame.prototype._reset = function (callback) {
@@ -1267,7 +1276,6 @@ var Engine;
             __extends(Game, _super);
             function Game() {
                 _super.call(this, {
-                    id: "Breakout",
                     initialState: "MainMenu",
                     states: [
                         "Editor",
@@ -1276,11 +1284,11 @@ var Engine;
                     ],
                     allowGamepad: true,
                     allowTouch: true,
+                    cacheAssets: false,
                     disableContextMenu: false,
                     enable2dPhysics: true,
                     enable3d: true,
-                    showStats: true,
-                    title: "Breakout!"
+                    showStats: true
                 });
             }
             return Game;

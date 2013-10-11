@@ -36,7 +36,12 @@ module Engine.Breakout {
 		}
 
 		begin(callback: () => void): void {
-			this._reset(callback);
+			var self = this;
+			AssetManager.load({
+
+			}, function () {
+				self._reset(callback);
+			});
 		}
 
 		private _reset(callback: () => void): void {

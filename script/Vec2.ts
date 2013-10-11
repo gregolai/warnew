@@ -23,6 +23,19 @@ module Engine {
 			return this.x + ", " + this.y;
 		}
 
+		toArray(): number[] {
+			return [this.x, this.y];
+		}
+		fromArray(v: number[]): void {
+			this.x = v[0] || 0;
+			this.y = v[1] || 0;
+		}
+
+		fromVec2(v: Vec2): void {
+			this.x = v.x;
+			this.y = v.y;
+		}
+
 		add(rhs: Vec2): void {
 			this.x += rhs.x;
 			this.y += rhs.y;
@@ -37,28 +50,12 @@ module Engine {
 		multiply(rhs: Vec2): void;
 		multiply(rhs: any): void {
 			if (rhs instanceof Vec2) {
-				rhs = <Vec2>rhs;
 				this.x *= rhs.x;
 				this.y *= rhs.y;
 			}
 			else {
-				this.x *= <number>rhs;
-				this.y *= <number>rhs;
-			}
-		}
-
-		divide(rhs: number): void;
-		divide(rhs: Vec2): void;
-		divide(rhs: any): void {
-			if (rhs instanceof Vec2) {
-				rhs = <Vec2>rhs;
-				this.x /= rhs.x;
-				this.y /= rhs.y;
-			}
-			else {
-				var inv: number = 1.0 / <number>rhs;
-				this.x *= inv;
-				this.y *= inv;
+				this.x *= rhs;
+				this.y *= rhs;
 			}
 		}
 
@@ -73,26 +70,14 @@ module Engine {
 		}
 
 		normalize(): void {
-			var len: number = this.length;
-			if (len === 0) {
+			if (this.lengthSqr === 0) {
 				this.x = 0;
 				this.y = 1;
 			} else {
-				var invLen: number = 1.0 / len;
+				var invLen = 1.0 / this.length;
 				this.x *= invLen;
 				this.y *= invLen;
 			}
-		}
-
-		clamp(min: Vec2, max: Vec2): void {
-			if (this.x < min.x)
-				this.x = min.x;
-			else if (this.x > max.x)
-				this.x = max.x;
-			if (this.y < min.y)
-				this.y = min.y;
-			else if (this.y > max.y)
-				this.y = max.y;
 		}
 
 		static inverse(vec: Vec2): Vec2 {
@@ -116,19 +101,8 @@ module Engine {
 				return new Vec2(left.x * <number>right, left.y * <number>right);
 		}
 
-		static divide(left: Vec2, right: number): Vec2;
-		static divide(left: Vec2, right: Vec2): Vec2;
-		static divide(left: Vec2, right: any): Vec2 {
-			if (right instanceof Vec2)
-				return new Vec2(left.x / right.x, left.y / right.y);
-			else {
-				var invRight = 1.0 / <number>right;
-				return new Vec2(left.x * invRight, left.y * invRight);
-			}
-		}
-
 		static lerp(left: Vec2, right: Vec2, t: number): Vec2 {
-			return Vec2.add(left, Vec2.multiply(Vec2.subtract(right, left), t));
+			return new Vec2(left.x + t * (right.x - left.x), left.y + t * (right.y - left.y));
 		}
 
 		static dot(left: Vec2, right: Vec2): number {

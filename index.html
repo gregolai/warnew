@@ -11,7 +11,7 @@
 
 		#panel {
 			position: absolute;
-			width: 300px;
+			width: 200px;
 			height: 100%;
 			overflow-y: scroll;
 			background-color: #99b;
@@ -39,9 +39,9 @@
 		
 		#viewer {
 			position: absolute;
-			left: 300px;
-			width: -webkit-calc(100% - 300px); /* Safari */
-			width: calc(100% - 300px);
+			left: 200px;
+			width: -webkit-calc(100% - 200px); /* Safari */
+			width: calc(100% - 200px);
 			height: 100%;
 			border: 0;
 		}
@@ -58,8 +58,8 @@
 	<script type="text/javascript">
 	
 		var files = [
-				"Breakout",
-				"Zoofery"
+			"Breakout",
+			"WarNew"
 		];
 	
 		var list = document.getElementById("list");
@@ -94,7 +94,7 @@
 			window.location.hash = appName;
 			selected = appName;
 			
-			viewer.src = "app/" + appName;
+			viewer.src = "app/" + appName + "/?" + Date.now();
 			viewer.focus();
 		}
 		
@@ -103,7 +103,7 @@
 		}
 
 		if(window.location.hash !== ""){
-			load("Breakout");
+			load("WarNew");
 		}
 		
 	</script>

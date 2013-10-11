@@ -27,6 +27,7 @@
   <ItemGroup>
     <Content Include="Block.ts" />
     <Content Include="Ball.ts" />
+    <Content Include="index.html" />
     <Content Include="LiveGame\LiveGame.html" />
     <Content Include="Wall.ts" />
     <Content Include="Slot.ts" />
@@ -40,7 +41,7 @@
     <Content Include="Editor\_include.ts" />
     <Content Include="LiveGame\LiveGame.ts" />
     <Content Include="LiveGame\_include.ts" />
-    <TypeScriptCompile Include="MainMenu\MainMenu.ts" />
+    <Content Include="MainMenu\MainMenu.ts" />
     <Content Include="MainMenu\MainMenu.html" />
     <Content Include="MainMenu\_include.ts" />
     <Content Include="_include.ts" />

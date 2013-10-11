@@ -2,6 +2,54 @@
 
 module Engine {
 
+	export enum FontStyle {
+		Regular			= 0x001,
+		Italic			= 0x002,
+		
+		SemiBold		= 0x004,
+		SemiBoldItalic	= 0x008,
+
+		Bold			= 0x010,
+		BoldItalic		= 0x020,
+		
+		ExtraBold		= 0x040,
+		ExtraBoldItalic	= 0x080,
+
+		Light			= 0x100,
+		LightItalic		= 0x200,
+
+		ExtraLight		= 0x400,
+		ExtraLightItalic= 0x800
+	} 
+
+	// GAMEPAD CONTROLS
+	export class GamepadControl {
+
+		// DISCREET HITS
+		static A = "FACE_1";
+		static B = "FACE_2";
+		static X = "FACE_3";
+		static Y = "FACE_4";
+		static RightShoulderFront = "RIGHT_TOP_SHOULDER";
+		static LeftShoulderFront = "LEFT_TOP_SHOULDER";
+		static DPadLeft = "DPAD_LEFT";
+		static DPadUp = "DPAD_UP";
+		static DPadRight = "DPAD_RIGHT";
+		static DPadDown = "DPAD_DOWN";
+		static LeftStickHit = "LEFT_STICK";
+		static RightStickHit = "RIGHT_STICK";
+		static Back = "Raw Button 8";
+		static Start = "Raw Button 9";
+
+		// PARTIAL HITS
+		static RightShoulderBack = "RIGHT_BOTTOM_SHOULDER";
+		static LeftShoulderBack = "LEFT_BOTTOM_SHOULDER";
+		static LeftStickX = "LEFT_STICK_X";
+		static LeftStickY = "LEFT_STICK_Y";
+		static RightStickX = "RIGHT_STICK_X";
+		static RightStickY = "RIGHT_STICK_Y";
+	}
+
 	export enum Key {
 		None = 0xff, //255
 
@@ -111,33 +159,5 @@ module Engine {
 		KEY_CLOSE_BRACKET = 221,
 		KEY_SINGLE_QUOTE = 222
 	};
-
-	// GAMEPAD CONTROLS
-	export class GamepadControl {
-
-		// DISCREET HITS
-		static A = "FACE_1";
-		static B = "FACE_2";
-		static X = "FACE_3";
-		static Y = "FACE_4";
-		static RightShoulderFront = "RIGHT_TOP_SHOULDER";
-		static LeftShoulderFront = "LEFT_TOP_SHOULDER";
-		static DPadLeft = "DPAD_LEFT";
-		static DPadUp = "DPAD_UP";
-		static DPadRight = "DPAD_RIGHT";
-		static DPadDown = "DPAD_DOWN";
-		static LeftStickHit = "LEFT_STICK";
-		static RightStickHit = "RIGHT_STICK";
-		static Back = "Raw Button 8";
-		static Start = "Raw Button 9";
-
-		// PARTIAL HITS
-		static RightShoulderBack = "RIGHT_BOTTOM_SHOULDER";
-		static LeftShoulderBack = "LEFT_BOTTOM_SHOULDER";
-		static LeftStickX = "LEFT_STICK_X";
-		static LeftStickY = "LEFT_STICK_Y";
-		static RightStickX = "RIGHT_STICK_X";
-		static RightStickY = "RIGHT_STICK_Y";
-	}
 
 }

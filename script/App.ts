@@ -3,19 +3,21 @@
 module Engine {
 
 	export interface AppParams {
-		id: string;
 		initialState: string;
 		states: string[];
 
+
+
 		allowGamepad: boolean;
 		allowTouch: boolean;
+		cacheAssets: boolean;
 		disableContextMenu: boolean;
 		enable2dPhysics: boolean;
 		enable3d: boolean;
 		showStats: boolean;
-		title: string;
 
 		customVendors?: string[];
+		statesDirectory?: string;
 	}
 
 	export class App implements InputListener {
@@ -64,9 +66,6 @@ module Engine {
 				App.namespace = AppNamespace;
 
 				App.instance = app;
-
-				// Set title
-				document.title = app.title;
 
 				// LOAD VENDORS
 				app._loadVendors(function () {
@@ -124,27 +123,27 @@ module Engine {
 
 
 				// LOAD DEFAULT VENDORS AND GAME
-				var async = new AsyncLock(callback);
+				var async = new AsyncLock(function () {
+
+					// LOAD APP
+					FileUtil.loadScript(appName + ".js", callback);
+
+				});
 				var unlock = function () { async.unlock(); }
 
+				// LOAD JQUERY
 				async.lock();
-				FileUtil.loadScript(ROOT_DIRECTORY_FROM_APP + "vendor/jquery.min.js", unlock);
+				FileUtil.loadScript(ROOT_VENDOR_DIRECTORY + "jquery.min.js", unlock);
 
+				// LOAD KNOCKOUT
 				async.lock();
-				FileUtil.loadScript(ROOT_DIRECTORY_FROM_APP + "vendor/knockout.min.js", unlock);
-
-				async.lock();
-				FileUtil.loadScript(appName + ".js", unlock);
+				FileUtil.loadScript(ROOT_VENDOR_DIRECTORY + "knockout.min.js", unlock);
 
 				unlock();
 			});
 			
 		}
 
-		private static _startLoading(): void {
-
-
-		}
 		private static _endLoading(): void {
 			$(App._loadingContainer).fadeOut(700);
 		}
@@ -165,8 +164,8 @@ module Engine {
 		private _prevTime: number;
 		private _elapsed: number;
 
-		get id() { return this._params.id; }
-		get title() { return this._params.title; }
+		get cacheAssets() { return this._params.cacheAssets; }
+		get disableContextMenu() { return this._params.disableContextMenu; }
 
 		get activeState() { return this._activeState(); }
 		get elapsed() { return this._elapsed; }
@@ -190,7 +189,7 @@ module Engine {
 		setState(state: AppState): void;
 		setState(s: any) {
 
-			try {
+			//try {
 
 				if (this._changingStates) {
 					return;
@@ -226,11 +225,10 @@ module Engine {
 					self._changingStates = false;
 				});
 
-			} catch(ex) {
-				console.log("UNABLE TO SET STATE: " + ex);
-
-				this._changingStates = false;
-			}
+			//} catch(ex) {
+			//	console.log("UNABLE TO SET STATE: " + ex);
+			//	this._changingStates = false;
+			//}
 
 		}
 
@@ -281,19 +279,19 @@ module Engine {
 
 			var p = this._params;
 			if (p.showStats) {
-				vendors.push(ROOT_DIRECTORY_FROM_APP + "vendor/stats.min.js");
+				vendors.push(ROOT_VENDOR_DIRECTORY + "stats.min.js");
 			}
 
 			if (p.enable3d) {
-				vendors.push(ROOT_DIRECTORY_FROM_APP + "vendor/three.min.js");
+				vendors.push(ROOT_VENDOR_DIRECTORY + "three.min.js");
 			}
 
 			if (p.allowGamepad) {
-				vendors.push(ROOT_DIRECTORY_FROM_APP + "vendor/gamepad.js");
+				vendors.push(ROOT_VENDOR_DIRECTORY + "gamepad.js");
 			}
 
 			if (p.enable2dPhysics) {
-				vendors.push(ROOT_DIRECTORY_FROM_APP + "vendor/Box2dWeb-2.1.a.3.min.js");
+				vendors.push(ROOT_VENDOR_DIRECTORY + "Box2dWeb-2.1.a.3.min.js");
 			}
 
 			if (p.customVendors) {
@@ -381,7 +379,7 @@ module Engine {
 
 			if (state.hasUI) {
 
-				var prefix = state.id + "/" + state.id;
+				var prefix = (this._params.statesDirectory || "") + state.id + "/" + state.id;
 				FileUtil.loadStylesheet(prefix + ".css", function () {
 
 					FileUtil.loadHtml(prefix + ".html", state.uiDom, function () {

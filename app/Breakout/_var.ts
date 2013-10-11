@@ -20,6 +20,11 @@ module Engine.Breakout {
 	export var PADDLE_JOINT_HORIZ_DIST = 100;
 	export var PADDLE_MAX_BOUNCE_ANGLE = Math.PI / 2.3;
 
+	export var SERVER_DIRECTORY = "server/";
+	export var SERVER_GET_LEVEL_LIST = SERVER_DIRECTORY + "getLevelList.php";
+	export var SERVER_LOAD_LEVEL = SERVER_DIRECTORY + "loadLevel.php";
+	export var SERVER_SAVE_LEVEL = SERVER_DIRECTORY + "saveLevel.php";
+
 	export var parseServerMessage = function (msg: string): any {
 		var obj = JSON.parse(msg);
 		if (!obj.success) {

@@ -114,7 +114,7 @@ module Engine.Breakout {
 		private _refreshLevelList(): void {
 
 			var self = this;
-			$.post("app/breakout/server/getLevelList.php", {}, function (msg: string) {
+			$.post(SERVER_GET_LEVEL_LIST, {}, function (msg: string) {
 				var wrappers: any[];
 				try {
 					wrappers = parseServerMessage(msg);
@@ -144,7 +144,7 @@ module Engine.Breakout {
 		private _loadLevel(id: number, callback?: () => void): void {
 
 			var self = this;
-			$.post("app/breakout/server/loadLevel.php", {
+			$.post(SERVER_LOAD_LEVEL, {
 				id: id
 			}, function (msg: string) {
 
@@ -173,13 +173,14 @@ module Engine.Breakout {
 			data.name = "Level " + (id+1);
 			data.stage = this._stage.save();
 
-			$.post("app/breakout/server/saveLevel.php", {
+			$.post(SERVER_SAVE_LEVEL, {
 				id: id,
 				data: JSON.stringify(data)
 			}, function (msg: string) {
 
 				try {
 					var success = parseServerMessage(msg);
+					console.log("save success");
 
 				} catch(ex) {
 					console.log("Failed to save level: " + ex);

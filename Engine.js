@@ -1,5 +1,54 @@
 ﻿var Engine;
 (function (Engine) {
+    (function (FontStyle) {
+        FontStyle[FontStyle["Regular"] = 0x001] = "Regular";
+        FontStyle[FontStyle["Italic"] = 0x002] = "Italic";
+
+        FontStyle[FontStyle["SemiBold"] = 0x004] = "SemiBold";
+        FontStyle[FontStyle["SemiBoldItalic"] = 0x008] = "SemiBoldItalic";
+
+        FontStyle[FontStyle["Bold"] = 0x010] = "Bold";
+        FontStyle[FontStyle["BoldItalic"] = 0x020] = "BoldItalic";
+
+        FontStyle[FontStyle["ExtraBold"] = 0x040] = "ExtraBold";
+        FontStyle[FontStyle["ExtraBoldItalic"] = 0x080] = "ExtraBoldItalic";
+
+        FontStyle[FontStyle["Light"] = 0x100] = "Light";
+        FontStyle[FontStyle["LightItalic"] = 0x200] = "LightItalic";
+
+        FontStyle[FontStyle["ExtraLight"] = 0x400] = "ExtraLight";
+        FontStyle[FontStyle["ExtraLightItalic"] = 0x800] = "ExtraLightItalic";
+    })(Engine.FontStyle || (Engine.FontStyle = {}));
+    var FontStyle = Engine.FontStyle;
+
+    var GamepadControl = (function () {
+        function GamepadControl() {
+        }
+        GamepadControl.A = "FACE_1";
+        GamepadControl.B = "FACE_2";
+        GamepadControl.X = "FACE_3";
+        GamepadControl.Y = "FACE_4";
+        GamepadControl.RightShoulderFront = "RIGHT_TOP_SHOULDER";
+        GamepadControl.LeftShoulderFront = "LEFT_TOP_SHOULDER";
+        GamepadControl.DPadLeft = "DPAD_LEFT";
+        GamepadControl.DPadUp = "DPAD_UP";
+        GamepadControl.DPadRight = "DPAD_RIGHT";
+        GamepadControl.DPadDown = "DPAD_DOWN";
+        GamepadControl.LeftStickHit = "LEFT_STICK";
+        GamepadControl.RightStickHit = "RIGHT_STICK";
+        GamepadControl.Back = "Raw Button 8";
+        GamepadControl.Start = "Raw Button 9";
+
+        GamepadControl.RightShoulderBack = "RIGHT_BOTTOM_SHOULDER";
+        GamepadControl.LeftShoulderBack = "LEFT_BOTTOM_SHOULDER";
+        GamepadControl.LeftStickX = "LEFT_STICK_X";
+        GamepadControl.LeftStickY = "LEFT_STICK_Y";
+        GamepadControl.RightStickX = "RIGHT_STICK_X";
+        GamepadControl.RightStickY = "RIGHT_STICK_Y";
+        return GamepadControl;
+    })();
+    Engine.GamepadControl = GamepadControl;
+
     (function (Key) {
         Key[Key["None"] = 0xff] = "None";
 
@@ -109,34 +158,6 @@
     })(Engine.Key || (Engine.Key = {}));
     var Key = Engine.Key;
     ;
-
-    var GamepadControl = (function () {
-        function GamepadControl() {
-        }
-        GamepadControl.A = "FACE_1";
-        GamepadControl.B = "FACE_2";
-        GamepadControl.X = "FACE_3";
-        GamepadControl.Y = "FACE_4";
-        GamepadControl.RightShoulderFront = "RIGHT_TOP_SHOULDER";
-        GamepadControl.LeftShoulderFront = "LEFT_TOP_SHOULDER";
-        GamepadControl.DPadLeft = "DPAD_LEFT";
-        GamepadControl.DPadUp = "DPAD_UP";
-        GamepadControl.DPadRight = "DPAD_RIGHT";
-        GamepadControl.DPadDown = "DPAD_DOWN";
-        GamepadControl.LeftStickHit = "LEFT_STICK";
-        GamepadControl.RightStickHit = "RIGHT_STICK";
-        GamepadControl.Back = "Raw Button 8";
-        GamepadControl.Start = "Raw Button 9";
-
-        GamepadControl.RightShoulderBack = "RIGHT_BOTTOM_SHOULDER";
-        GamepadControl.LeftShoulderBack = "LEFT_BOTTOM_SHOULDER";
-        GamepadControl.LeftStickX = "LEFT_STICK_X";
-        GamepadControl.LeftStickY = "LEFT_STICK_Y";
-        GamepadControl.RightStickX = "RIGHT_STICK_X";
-        GamepadControl.RightStickY = "RIGHT_STICK_Y";
-        return GamepadControl;
-    })();
-    Engine.GamepadControl = GamepadControl;
 })(Engine || (Engine = {}));
 var Engine;
 (function (Engine) {
@@ -175,6 +196,7 @@ var Engine;
     Engine.BIT_30 = 0x40000000;
 
     Engine.ROOT_DIRECTORY_FROM_APP = "../../";
+    Engine.ROOT_VENDOR_DIRECTORY = Engine.ROOT_DIRECTORY_FROM_APP + "vendor/";
 })(Engine || (Engine = {}));
 var Engine;
 (function (Engine) {
@@ -233,8 +255,6 @@ var Engine;
 
                 App.instance = app;
 
-                document.title = app.title;
-
                 app._loadVendors(function () {
                     app._initDom();
 
@@ -271,40 +291,37 @@ var Engine;
                 loadingText.innerText = "Loading...";
                 loadingContainer.appendChild(loadingText);
 
-                var async = new Engine.AsyncLock(callback);
+                var async = new Engine.AsyncLock(function () {
+                    Engine.FileUtil.loadScript(appName + ".js", callback);
+                });
                 var unlock = function () {
                     async.unlock();
                 };
 
                 async.lock();
-                Engine.FileUtil.loadScript(Engine.ROOT_DIRECTORY_FROM_APP + "vendor/jquery.min.js", unlock);
+                Engine.FileUtil.loadScript(Engine.ROOT_VENDOR_DIRECTORY + "jquery.min.js", unlock);
 
                 async.lock();
-                Engine.FileUtil.loadScript(Engine.ROOT_DIRECTORY_FROM_APP + "vendor/knockout.min.js", unlock);
-
-                async.lock();
-                Engine.FileUtil.loadScript(appName + ".js", unlock);
+                Engine.FileUtil.loadScript(Engine.ROOT_VENDOR_DIRECTORY + "knockout.min.js", unlock);
 
                 unlock();
             });
         };
 
-        App._startLoading = function () {
-        };
         App._endLoading = function () {
             $(App._loadingContainer).fadeOut(700);
         };
 
-        Object.defineProperty(App.prototype, "id", {
+        Object.defineProperty(App.prototype, "cacheAssets", {
             get: function () {
-                return this._params.id;
+                return this._params.cacheAssets;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(App.prototype, "title", {
+        Object.defineProperty(App.prototype, "disableContextMenu", {
             get: function () {
-                return this._params.title;
+                return this._params.disableContextMenu;
             },
             enumerable: true,
             configurable: true
@@ -330,44 +347,38 @@ var Engine;
         };
 
         App.prototype.setState = function (s) {
-            try  {
-                if (this._changingStates) {
-                    return;
-                }
-                this._changingStates = true;
-
-                var newState = (s instanceof Engine.AppState ? s : this._stateMap[s]);
-                if (!newState) {
-                    throw "State not found: " + s;
-                }
-
-                var oldState = this._activeState();
-                if (oldState) {
-                    oldState.end();
-                    Engine.Input.unregister(oldState);
-                    this._activeState(null);
-                }
-
-                var self = this;
-                newState.begin(function () {
-                    self._activeState(newState);
-
-                    self.onAppStateChange(oldState, newState);
-                    var states = self._states;
-                    for (var s = 0, ss = states.length; s < ss; ++s) {
-                        states[s].onAppStateChange(oldState, newState);
-                    }
-
-                    Engine.Input.register(newState);
-                    Engine.Input.triggerResize();
-
-                    self._changingStates = false;
-                });
-            } catch (ex) {
-                console.log("UNABLE TO SET STATE: " + ex);
-
-                this._changingStates = false;
+            if (this._changingStates) {
+                return;
             }
+            this._changingStates = true;
+
+            var newState = (s instanceof Engine.AppState ? s : this._stateMap[s]);
+            if (!newState) {
+                throw "State not found: " + s;
+            }
+
+            var oldState = this._activeState();
+            if (oldState) {
+                oldState.end();
+                Engine.Input.unregister(oldState);
+                this._activeState(null);
+            }
+
+            var self = this;
+            newState.begin(function () {
+                self._activeState(newState);
+
+                self.onAppStateChange(oldState, newState);
+                var states = self._states;
+                for (var s = 0, ss = states.length; s < ss; ++s) {
+                    states[s].onAppStateChange(oldState, newState);
+                }
+
+                Engine.Input.register(newState);
+                Engine.Input.triggerResize();
+
+                self._changingStates = false;
+            });
         };
 
         App.prototype.update = function (deltaTime) {
@@ -380,19 +391,19 @@ var Engine;
 
             var p = this._params;
             if (p.showStats) {
-                vendors.push(Engine.ROOT_DIRECTORY_FROM_APP + "vendor/stats.min.js");
+                vendors.push(Engine.ROOT_VENDOR_DIRECTORY + "stats.min.js");
             }
 
             if (p.enable3d) {
-                vendors.push(Engine.ROOT_DIRECTORY_FROM_APP + "vendor/three.min.js");
+                vendors.push(Engine.ROOT_VENDOR_DIRECTORY + "three.min.js");
             }
 
             if (p.allowGamepad) {
-                vendors.push(Engine.ROOT_DIRECTORY_FROM_APP + "vendor/gamepad.js");
+                vendors.push(Engine.ROOT_VENDOR_DIRECTORY + "gamepad.js");
             }
 
             if (p.enable2dPhysics) {
-                vendors.push(Engine.ROOT_DIRECTORY_FROM_APP + "vendor/Box2dWeb-2.1.a.3.min.js");
+                vendors.push(Engine.ROOT_VENDOR_DIRECTORY + "Box2dWeb-2.1.a.3.min.js");
             }
 
             if (p.customVendors) {
@@ -470,7 +481,7 @@ var Engine;
             container.append(state.uiDom);
 
             if (state.hasUI) {
-                var prefix = state.id + "/" + state.id;
+                var prefix = (this._params.statesDirectory || "") + state.id + "/" + state.id;
                 Engine.FileUtil.loadStylesheet(prefix + ".css", function () {
                     Engine.FileUtil.loadHtml(prefix + ".html", state.uiDom, function () {
                         ko.applyBindings(state, container.get()[0]);
@@ -625,6 +636,183 @@ var Engine;
 })(Engine || (Engine = {}));
 var Engine;
 (function (Engine) {
+    (function (AssetManager) {
+        var _refreshAppend;
+
+        var _cursors = {};
+        var _fonts = {};
+        var _images = {};
+        var _shaders = {};
+        var _sounds = {};
+
+        function load(assets, callback) {
+            var async = new Engine.AsyncLock(callback);
+            var unlock = function () {
+                async.unlock();
+            };
+
+            _refreshAppend = (Engine.App.instance.cacheAssets ? "" : (_refreshAppend || "?" + Date.now()));
+
+            var cursors = assets.cursors || [];
+            for (var i = 0, ii = cursors.length; i < ii; ++i) {
+                async.lock();
+                _loadCursor(cursors[i], unlock);
+            }
+
+            var fonts = assets.fonts || [];
+            for (var i = 0, ii = fonts.length; i < ii; ++i) {
+                async.lock();
+                _loadFont(fonts[i], unlock);
+            }
+
+            var images = assets.images || [];
+            for (var i = 0, ii = images.length; i < ii; ++i) {
+                async.lock();
+                _loadImage(images[i], unlock);
+            }
+
+            var shaders = assets.shaders || [];
+            for (var i = 0, ii = shaders.length; i < ii; ++i) {
+                async.lock();
+                _loadShader(shaders[i], unlock);
+            }
+
+            var sounds = assets.sounds || [];
+            for (var i = 0, ii = sounds.length; i < ii; ++i) {
+                async.lock();
+                _loadSound(sounds[i], unlock);
+            }
+
+            unlock();
+        }
+        AssetManager.load = load;
+
+        function getCursor(id) {
+            return _cursors[id] || null;
+        }
+        AssetManager.getCursor = getCursor;
+
+        function getFont(id) {
+            return _fonts[id] || null;
+        }
+        AssetManager.getFont = getFont;
+
+        function getImage(id) {
+            return _images[id] || null;
+        }
+        AssetManager.getImage = getImage;
+
+        function getShader(id) {
+            return _shaders[id] || null;
+        }
+        AssetManager.getShader = getShader;
+
+        function getSound(id) {
+            return _sounds[id] || null;
+        }
+        AssetManager.getSound = getSound;
+
+        function _loadCursor(asset, callback) {
+            var id = asset.id;
+            var url = _makeUrl("cursor", asset.filename);
+
+            if (_cursors[id]) {
+                _cursors[id].dispose();
+            }
+            _cursors[id] = new Engine.Cursor(id, url, asset.x, asset.y);
+
+            callback();
+        }
+
+        function _loadFont(asset, callback) {
+            var id = asset.id;
+
+            var url = _makeUrl("font", id + "/stylesheet.css");
+
+            Engine.FileUtil.loadStylesheet(url, function () {
+                _fonts[id] = new Engine.Font(id, asset.styles);
+                callback();
+            });
+        }
+
+        function _loadImage(asset, callback) {
+            var url = _makeUrl("image", asset.filename);
+
+            var img = new Image();
+            img.onload = function () {
+                _images[asset.id] = img;
+                callback();
+            };
+            img.onerror = function () {
+                throw "Error loading image: " + url;
+            };
+            img.src = url;
+        }
+
+        function _loadShader(asset, callback) {
+            var url = _makeUrl("shader", asset.filename);
+
+            $.ajax({
+                url: url,
+                dataType: "text",
+                success: function (text) {
+                    var type = "DEFAULT";
+                    var struct = { DEFAULT: [], VERTEX: [], FRAGMENT: [] };
+                    var lines = text.split("\n");
+                    for (var i = 0, ii = lines.length; i < ii; ++i) {
+                        var line = lines[i].trim();
+                        if (line !== "") {
+                            if (line.indexOf("#start ") === 0) {
+                                type = line.substring(7);
+                            } else if (line.indexOf("#end") === 0) {
+                                type = "DEFAULT";
+                            } else {
+                                var arr = struct[type];
+                                if (typeof arr !== "undefined")
+                                    arr.push(line);
+                            }
+                        }
+                    }
+
+                    _shaders[asset.id] = {
+                        vertexShader: struct.DEFAULT.concat(struct.VERTEX).join("\n"),
+                        fragmentShader: struct.DEFAULT.concat(struct.FRAGMENT).join("\n")
+                    };
+                    callback();
+                },
+                error: function (jqXHR, textStatus, errorThrow) {
+                    throw "Error loading shader (" + errorThrow + "): " + url;
+                }
+            });
+        }
+
+        function _loadSound(asset, callback) {
+            var mp3Url = _makeUrl("sound", asset.filename + ".mp3");
+            var oggUrl = _makeUrl("sound", asset.filename + ".ogg");
+            var m4aUrl = _makeUrl("sound", asset.filename + ".m4a");
+            var wavUrl = _makeUrl("sound", asset.filename + ".wav");
+
+            var url = wavUrl;
+
+            var sound = new Audio();
+            sound.addEventListener("loadeddata", function () {
+                _sounds[asset.id] = sound;
+                callback();
+            });
+            sound.addEventListener("error", function () {
+                throw "Error loading sound: " + url;
+            });
+            sound.src = url;
+        }
+
+        function _makeUrl(type, filename) {
+            return "asset/" + type + "/" + filename + _refreshAppend;
+        }
+    })(Engine.AssetManager || (Engine.AssetManager = {}));
+    var AssetManager = Engine.AssetManager;
+})(Engine || (Engine = {}));
+var Engine;
+(function (Engine) {
     var AsyncLock = (function () {
         function AsyncLock(callback) {
             this._locks = 1;
@@ -662,6 +850,116 @@ var Engine;
         return AsyncLock;
     })();
     Engine.AsyncLock = AsyncLock;
+})(Engine || (Engine = {}));
+var Engine;
+(function (Engine) {
+    (function (CtxUtil) {
+        function path(ctx, points, offset, joinLast) {
+            if (typeof joinLast === "undefined") { joinLast = true; }
+            var numPoints = points.length;
+            if (numPoints === 0) {
+                return;
+            }
+
+            var offX, offY;
+            if (offset) {
+                offX = offset.x;
+                offY = offset.y;
+            } else {
+                offX = offY = 0;
+            }
+
+            var p = points[0];
+            ctx.moveTo(p.x - offX, p.y - offY);
+            for (var i = 1; i !== numPoints; ++i) {
+                p = points[i];
+                ctx.lineTo(p.x - offX, p.y - offY);
+            }
+
+            if (joinLast === true && numPoints !== 1) {
+                p = points[0];
+                ctx.lineTo(p.x - offX, p.y - offY);
+            }
+        }
+        CtxUtil.path = path;
+
+        (function (TextAlign) {
+            TextAlign[TextAlign["Left"] = 0] = "Left";
+            TextAlign[TextAlign["Center"] = 1] = "Center";
+            TextAlign[TextAlign["Right"] = 2] = "Right";
+        })(CtxUtil.TextAlign || (CtxUtil.TextAlign = {}));
+        var TextAlign = CtxUtil.TextAlign;
+        function fillTextWrapped(ctx, text, lineHeight, align, marginX, marginY, width) {
+            width = width - 2 * marginX;
+
+            var getLeft = function (line) {
+                var metrics = ctx.measureText(line);
+                if (align == TextAlign.Left) {
+                    return marginX;
+                }
+                if (align == TextAlign.Center) {
+                    return marginX + (width - metrics.width) * 0.5;
+                }
+                return marginX + width - metrics.width;
+            };
+            var line = "";
+            var x = marginX;
+            var y = marginY + lineHeight;
+            var words = text.split(" ");
+            for (var w = 0, ww = words.length; w < ww; ++w) {
+                var word = words[w];
+                var testLine = line + word + " ";
+                var metrics = ctx.measureText(testLine);
+                if (metrics.width > width) {
+                    x = getLeft(line);
+                    ctx.fillText(line, x, y);
+                    y += lineHeight;
+                    line = word + " ";
+                } else {
+                    line = testLine;
+                }
+            }
+            x = getLeft(line);
+            ctx.fillText(line, x, y);
+
+            return y - marginY;
+        }
+        CtxUtil.fillTextWrapped = fillTextWrapped;
+    })(Engine.CtxUtil || (Engine.CtxUtil = {}));
+    var CtxUtil = Engine.CtxUtil;
+})(Engine || (Engine = {}));
+var Engine;
+(function (Engine) {
+    var Cursor = (function () {
+        function Cursor(id, url, offX, offY) {
+            this._id = id;
+
+            var style = this._style = document.createElement("style");
+            style.type = "text/css";
+            style.innerHTML = ".custom_cursor_" + id + " { cursor: url(\"" + url + "\") " + offX + " " + offY + ", none; }";
+            document.getElementsByTagName("head")[0].appendChild(style);
+        }
+        Cursor.prototype.dispose = function () {
+            document.getElementsByTagName("head")[0].removeChild(this._style);
+            this._style = null;
+            if (Cursor._currentCursorId === this._id) {
+                Engine.App.container.classList.remove("custom_cursor_" + Cursor._currentCursorId);
+                Cursor._currentCursorId = "";
+            }
+        };
+
+        Cursor.prototype.apply = function () {
+            if (Cursor._currentCursorId !== this._id) {
+                var container = Engine.App.container;
+                container.classList.remove("custom_cursor_" + Cursor._currentCursorId);
+                container.classList.add("custom_cursor_" + this._id);
+                Cursor._currentCursorId = this._id;
+            }
+        };
+        Cursor._currentCursorId = "";
+        return Cursor;
+    })();
+    Engine.Cursor = Cursor;
 })(Engine || (Engine = {}));
 var Engine;
 (function (Engine) {
@@ -713,77 +1011,169 @@ var Engine;
 })(Engine || (Engine = {}));
 var Engine;
 (function (Engine) {
-    var Input = (function () {
-        function Input() {
-        }
-        Input.isKeyDown = function (key) {
-            return Input._keysDown[key] || false;
-        };
+    var Font = (function () {
+        function Font(id, styles) {
+            this._id = id;
+            this._styles = styles;
 
-        Input.getMousePosition = function () {
-            return Input._mousePosition;
-        };
-
-        Input.register = function (listener) {
-            if (!Input._initialized) {
-                Input._init();
-                Input._initialized = true;
+            if (!Font._map) {
+                Font._initMap();
             }
 
-            if (!listener || Input._listeners.indexOf(listener) !== -1) {
+            for (var i = 0, ii = Font._map.length; i < ii; ++i) {
+                var style = (1 << i);
+                if (this._styleFound(style)) {
+                    var family = id + "_" + Font._map[style];
+                    Font._fontLoadHack(family);
+                }
+            }
+        }
+        Object.defineProperty(Font.prototype, "styles", {
+            get: function () {
+                return this._styles;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Font.prototype.getString = function (style, size) {
+            var family;
+            if (this._styleFound(style)) {
+                family = this._id + "_" + Font._map[style];
+            } else if (this._styleFound(Engine.FontStyle.Regular)) {
+                family = this._id + "_" + Font._map[Engine.FontStyle.Regular];
+            } else {
+                family = "Arial";
+            }
+            return "normal normal " + size + "px " + family;
+        };
+
+        Font.prototype._styleFound = function (style) {
+            return (this._styles & style) !== 0;
+        };
+
+        Font._fontLoadHack = function (family) {
+            var ctx = (Font._dummyCanvas || (Font._dummyCanvas = document.createElement("canvas"))).getContext("2d");
+            ctx.font = "normal normal 10px " + family;
+            ctx.fillText("x", 0, 0);
+        };
+        Font._initMap = function () {
+            var map = Font._map = [];
+            map[Engine.FontStyle.Regular] = "regular";
+            map[Engine.FontStyle.Italic] = "italic";
+            map[Engine.FontStyle.SemiBold] = "semibold";
+            map[Engine.FontStyle.SemiBoldItalic] = "semibold_italic";
+            map[Engine.FontStyle.Bold] = "bold";
+            map[Engine.FontStyle.BoldItalic] = "bold_italic";
+            map[Engine.FontStyle.ExtraBold] = "extrabold";
+            map[Engine.FontStyle.ExtraBoldItalic] = "extrabold_italic";
+            map[Engine.FontStyle.Light] = "light";
+            map[Engine.FontStyle.LightItalic] = "light_italic";
+            map[Engine.FontStyle.ExtraLight] = "extralight";
+            map[Engine.FontStyle.ExtraLightItalic] = "extralight_italic";
+        };
+        return Font;
+    })();
+    Engine.Font = Font;
+})(Engine || (Engine = {}));
+var Engine;
+(function (Engine) {
+    (function (Input) {
+        var _initialized;
+        var _container;
+        var _mousePosition;
+        var _keysDown;
+        var _gamepad;
+        var _gamepadControls;
+        var _listeners;
+
+        function isKeyDown(key) {
+            return _keysDown[key] || false;
+        }
+        Input.isKeyDown = isKeyDown;
+
+        function getMousePosition() {
+            return _mousePosition;
+        }
+        Input.getMousePosition = getMousePosition;
+
+        function register(listener) {
+            if (!_initialized) {
+                _init();
+                _initialized = true;
+            }
+
+            if (!listener || _listeners.indexOf(listener) !== -1) {
                 return;
             }
-            Input._listeners.push(listener);
-        };
+            _listeners.push(listener);
+        }
+        Input.register = register;
 
-        Input.unregister = function (listener) {
+        function unregister(listener) {
             if (!listener) {
                 return;
             }
 
-            var index = Input._listeners.indexOf(listener);
+            var index = _listeners.indexOf(listener);
             if (index === -1) {
                 return;
             }
-            Input._listeners.splice(index, 1);
-        };
+            _listeners.splice(index, 1);
+        }
+        Input.unregister = unregister;
 
-        Input.triggerResize = function () {
-            Input._resize();
-        };
+        function triggerResize() {
+            _resize();
+        }
+        Input.triggerResize = triggerResize;
 
-        Input._init = function () {
-            Input._mousePosition = new Engine.Vec2();
-            Input._keysDown = [];
-            Input._gamepad = null;
-            Input._gamepadControls = {};
-            Input._listeners = [];
+        function _init() {
+            _mousePosition = new Engine.Vec2();
+            _keysDown = [];
+            _gamepad = null;
+            _gamepadControls = {};
+            _listeners = [];
 
-            window.addEventListener("keydown", Input._keyDown, false);
-            window.addEventListener("keyup", Input._keyUp, false);
+            window.addEventListener("contextmenu", _contextMenu, true);
+            window.addEventListener("blur", _blur, true);
+            window.addEventListener("keydown", _keyDown, false);
+            window.addEventListener("keyup", _keyUp, false);
 
-            Engine.App.container.addEventListener("mousedown", Input._mouseDown, false);
-            window.addEventListener("mouseup", Input._mouseUp, false);
-            window.addEventListener("mousemove", Input._mouseMove, false);
-            Engine.App.container.addEventListener("mousewheel", Input._mouseWheel, false);
-            Engine.App.container.addEventListener("DOMMouseScroll", Input._mouseWheel, false);
+            window.addEventListener("mouseout", _mouseMove, false);
+            window.addEventListener("mouseover", _mouseMove, false);
 
-            window.addEventListener("resize", Input._resize, false);
+            Engine.App.container.addEventListener("mousedown", _mouseDown, false);
+            window.addEventListener("mouseup", _mouseUp, false);
+            window.addEventListener("mousemove", _mouseMove, false);
+            Engine.App.container.addEventListener("mousewheel", _mouseWheel, false);
+            Engine.App.container.addEventListener("DOMMouseScroll", _mouseWheel, false);
+
+            window.addEventListener("resize", _resize, false);
 
             if (typeof Gamepad !== "undefined") {
-                var gamepad = Input._gamepad = new Gamepad();
-                gamepad.bind(Gamepad.Event.CONNECTED, Input._gamepadConnect);
-                gamepad.bind(Gamepad.Event.DISCONNECTED, Input._gamepadDisconnect);
-                gamepad.bind(Gamepad.Event.TICK, Input._gamepadTick);
-                gamepad.bind(Gamepad.Event.BUTTON_DOWN, Input._gamepadButtonDown);
-                gamepad.bind(Gamepad.Event.BUTTON_UP, Input._gamepadButtonUp);
-                gamepad.bind(Gamepad.Event.AXIS_CHANGED, Input._gamepadAxisChanged);
+                var gamepad = _gamepad = new Gamepad();
+                gamepad.bind(Gamepad.Event.CONNECTED, _gamepadConnect);
+                gamepad.bind(Gamepad.Event.DISCONNECTED, _gamepadDisconnect);
+                gamepad.bind(Gamepad.Event.TICK, _gamepadTick);
+                gamepad.bind(Gamepad.Event.BUTTON_DOWN, _gamepadButtonDown);
+                gamepad.bind(Gamepad.Event.BUTTON_UP, _gamepadButtonUp);
+                gamepad.bind(Gamepad.Event.AXIS_CHANGED, _gamepadAxisChanged);
                 gamepad.init();
             }
-        };
+        }
 
-        Input.__broadcast = function (onEventName, args) {
-            var listeners = Input._listeners;
+        function _resetAllKeys() {
+            console.log("RESETTING ALL KEYS");
+            for (var i = 0, ii = _keysDown.length; i < ii; ++i) {
+                if (_keysDown[i]) {
+                    __keyUp(i);
+                }
+            }
+        }
+
+        function __broadcast(onEventName, args) {
+            var listeners = _listeners;
             for (var i = 0, ii = listeners.length; i < ii; ++i) {
                 var listener = listeners[i];
                 var method = listener[onEventName];
@@ -791,85 +1181,103 @@ var Engine;
                     method.apply(listener, args);
                 }
             }
-        };
+        }
 
-        Input._keyDown = function (evt) {
-            Input._keysDown[evt.keyCode] = true;
+        function _contextMenu(evt) {
+            if (Engine.App.instance.disableContextMenu) {
+                if (isKeyDown(Engine.Key.KEY_CTRL) && isKeyDown(Engine.Key.KEY_SHIFT)) {
+                } else {
+                    evt.preventDefault();
+                }
+            }
 
-            Input.__broadcast("onKeyDown", [evt.keyCode]);
-        };
-        Input._keyUp = function (evt) {
-            Input._keysDown[evt.keyCode] = false;
+            _resetAllKeys();
+        }
 
-            Input.__broadcast("onKeyUp", [evt.keyCode]);
-        };
-        Input._mouseDown = function (evt) {
-            Input._keysDown[evt.button] = true;
+        function _blur(evt) {
+            _resetAllKeys();
+        }
 
-            Input.__broadcast("onMouseDown", [evt.offsetX, evt.offsetY, evt.button]);
-        };
-        Input._mouseUp = function (evt) {
-            Input._keysDown[evt.button] = false;
+        function _keyDown(evt) {
+            _keysDown[evt.keyCode] = true;
 
-            Input.__broadcast("onMouseUp", [evt.offsetX, evt.offsetY, evt.button]);
-        };
-        Input._mouseMove = function (evt) {
-            Input._mousePosition.x = evt.offsetX;
-            Input._mousePosition.y = evt.offsetY;
+            __broadcast("onKeyDown", [evt.keyCode]);
+        }
 
-            Input.__broadcast("onMouseMove", [evt.offsetX, evt.offsetY]);
-        };
-        Input._mouseWheel = function (evt) {
+        function __keyUp(key) {
+            _keysDown[key] = false;
+
+            __broadcast("onKeyUp", [key]);
+        }
+        function _keyUp(evt) {
+            __keyUp(evt.keyCode);
+        }
+        function _mouseDown(evt) {
+            _keysDown[evt.button] = true;
+
+            __broadcast("onMouseDown", [evt.pageX, evt.pageY, evt.button]);
+        }
+        function _mouseUp(evt) {
+            _keysDown[evt.button] = false;
+
+            __broadcast("onMouseUp", [evt.pageX, evt.pageY, evt.button]);
+        }
+        function _mouseMove(evt) {
+            _mousePosition.x = evt.pageX;
+            _mousePosition.y = evt.pageY;
+
+            __broadcast("onMouseMove", [evt.pageX, evt.pageY]);
+        }
+        function _mouseWheel(evt) {
             var delta = (evt).wheelDelta || evt.detail;
 
-            Input.__broadcast("onMouseWheel", [delta]);
-        };
+            __broadcast("onMouseWheel", [delta]);
+        }
 
-        Input._resize = function () {
-            var width = Engine.App.container.offsetWidth;
-            var height = Engine.App.container.offsetHeight;
+        function _resize() {
+            var width = Math.max(Engine.App.container.offsetWidth, 1);
+            var height = Math.max(Engine.App.container.offsetHeight, 1);
 
-            Input.__broadcast("onResize", [width, height]);
-        };
+            __broadcast("onResize", [width, height]);
+        }
 
-        Input._gamepadConnect = function (evt) {
+        function _gamepadConnect(evt) {
             console.log("GAMEPAD CONNECT");
             console.log(evt);
 
-            Input.__broadcast("onGamepadConnect");
-        };
-        Input._gamepadDisconnect = function (evt) {
+            __broadcast("onGamepadConnect");
+        }
+        function _gamepadDisconnect(evt) {
             console.log("GAMEPAD DISCONNECT");
             console.log(evt);
 
-            Input.__broadcast("onGamepadDisconnect");
-        };
-        Input._gamepadTick = function (evt) {
-            Input.__broadcast("onGamepadTick", [evt.length]);
-        };
-        Input._gamepadButtonDown = function (evt) {
-            Input._gamepadControls[evt.control] = 1;
+            __broadcast("onGamepadDisconnect");
+        }
+        function _gamepadTick(evt) {
+            __broadcast("onGamepadTick", [evt.length]);
+        }
+        function _gamepadButtonDown(evt) {
+            _gamepadControls[evt.control] = 1;
 
-            Input.__broadcast("onGamepadButtonDown", [evt.control]);
-        };
-        Input._gamepadButtonUp = function (evt) {
-            Input._gamepadControls[evt.control] = 0;
+            __broadcast("onGamepadButtonDown", [evt.control]);
+        }
+        function _gamepadButtonUp(evt) {
+            _gamepadControls[evt.control] = 0;
 
-            Input.__broadcast("onGamepadButtonUp", [evt.control]);
-        };
-        Input._gamepadAxisChanged = function (evt) {
+            __broadcast("onGamepadButtonUp", [evt.control]);
+        }
+        function _gamepadAxisChanged(evt) {
             var value = evt.value;
             if (Math.abs(value) < 0.08) {
                 value = 0;
             }
 
-            Input._gamepadControls[evt.axis] = value;
+            _gamepadControls[evt.axis] = value;
 
-            Input.__broadcast("onGamepadAxisChanged", [evt.axis, value]);
-        };
-        return Input;
-    })();
-    Engine.Input = Input;
+            __broadcast("onGamepadAxisChanged", [evt.axis, value]);
+        }
+    })(Engine.Input || (Engine.Input = {}));
+    var Input = Engine.Input;
 })(Engine || (Engine = {}));
 var Engine;
 (function (Engine) {
@@ -1114,9 +1522,28 @@ var Engine;
             return new Rect(this.x, this.y, this.width, this.height);
         };
 
+        Rect.prototype.set = function (x, y, width, height) {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+        };
+
+        Rect.prototype.setXY = function (x, y) {
+            this.x = x;
+            this.y = y;
+        };
+
         Rect.prototype.setSize = function (width, height) {
             this.width = width;
             this.height = height;
+        };
+
+        Rect.prototype.fromPoints = function (p0, p1) {
+            this.x = Math.min(p0.x, p1.x);
+            this.y = Math.min(p0.y, p1.y);
+            this.width = Math.abs(p0.x - p1.x);
+            this.height = Math.abs(p0.y - p1.y);
         };
 
         Rect.prototype.containsPoint = function (p, y) {
@@ -1174,20 +1601,38 @@ var Engine;
 })(Engine || (Engine = {}));
 var Engine;
 (function (Engine) {
+    (function (StringUtil) {
+        function format(stringIn) {
+            var args = [];
+            for (var _i = 0; _i < (arguments.length - 1); _i++) {
+                args[_i] = arguments[_i + 1];
+            }
+            var ret = stringIn;
+            for (var i = 0, ii = args.length; i < ii; ++i) {
+                ret = ret.replace(new RegExp("\\{" + i + "\\}", "gm"), args[i]);
+            }
+            return ret;
+        }
+        StringUtil.format = format;
+    })(Engine.StringUtil || (Engine.StringUtil = {}));
+    var StringUtil = Engine.StringUtil;
+})(Engine || (Engine = {}));
+var Engine;
+(function (Engine) {
     var Surface2D = (function () {
-        function Surface2D(container) {
-            this._canvas = document.createElement("canvas");
-            this._canvas.style.position = "absolute";
+        function Surface2D(c) {
+            if (c instanceof HTMLCanvasElement) {
+                this._canvas = c;
+            } else {
+                this._canvas = document.createElement("canvas");
+                this._canvas.style.position = "absolute";
+                c.appendChild(this._canvas);
+            }
 
             this._context = this._canvas.getContext("2d");
 
             this.zIndex = 0;
-            this.x = 0;
-            this.y = 0;
-            this.width = 1;
-            this.height = 1;
-
-            container.appendChild(this._canvas);
+            this._rect = new Engine.Rect(0, 0, 1, 1);
         }
         Object.defineProperty(Surface2D.prototype, "context", {
             get: function () {
@@ -1211,11 +1656,11 @@ var Engine;
 
         Object.defineProperty(Surface2D.prototype, "x", {
             get: function () {
-                return this._x;
+                return this._rect.x;
             },
             set: function (value) {
                 this._canvas.style.left = value + "px";
-                this._x = value;
+                this._rect.x = value;
             },
             enumerable: true,
             configurable: true
@@ -1223,11 +1668,11 @@ var Engine;
 
         Object.defineProperty(Surface2D.prototype, "y", {
             get: function () {
-                return this._y;
+                return this._rect.y;
             },
             set: function (value) {
                 this._canvas.style.top = value + "px";
-                this._y = value;
+                this._rect.y = value;
             },
             enumerable: true,
             configurable: true
@@ -1235,11 +1680,11 @@ var Engine;
 
         Object.defineProperty(Surface2D.prototype, "width", {
             get: function () {
-                return this._width;
+                return this._rect.width;
             },
             set: function (value) {
                 this._canvas.width = value;
-                this._width = value;
+                this._rect.width = value;
             },
             enumerable: true,
             configurable: true
@@ -1247,11 +1692,25 @@ var Engine;
 
         Object.defineProperty(Surface2D.prototype, "height", {
             get: function () {
-                return this._height;
+                return this._rect.height;
             },
             set: function (value) {
                 this._canvas.height = value;
-                this._height = value;
+                this._rect.height = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(Surface2D.prototype, "rect", {
+            get: function () {
+                return this._rect;
+            },
+            set: function (value) {
+                this.x = value.x;
+                this.y = value.y;
+                this.width = value.width;
+                this.height = value.height;
             },
             enumerable: true,
             configurable: true
@@ -1300,6 +1759,19 @@ var Engine;
             return this.x + ", " + this.y;
         };
 
+        Vec2.prototype.toArray = function () {
+            return [this.x, this.y];
+        };
+        Vec2.prototype.fromArray = function (v) {
+            this.x = v[0] || 0;
+            this.y = v[1] || 0;
+        };
+
+        Vec2.prototype.fromVec2 = function (v) {
+            this.x = v.x;
+            this.y = v.y;
+        };
+
         Vec2.prototype.add = function (rhs) {
             this.x += rhs.x;
             this.y += rhs.y;
@@ -1312,24 +1784,11 @@ var Engine;
 
         Vec2.prototype.multiply = function (rhs) {
             if (rhs instanceof Vec2) {
-                rhs = rhs;
                 this.x *= rhs.x;
                 this.y *= rhs.y;
             } else {
                 this.x *= rhs;
                 this.y *= rhs;
-            }
-        };
-
-        Vec2.prototype.divide = function (rhs) {
-            if (rhs instanceof Vec2) {
-                rhs = rhs;
-                this.x /= rhs.x;
-                this.y /= rhs.y;
-            } else {
-                var inv = 1.0 / rhs;
-                this.x *= inv;
-                this.y *= inv;
             }
         };
 
@@ -1344,26 +1803,14 @@ var Engine;
         };
 
         Vec2.prototype.normalize = function () {
-            var len = this.length;
-            if (len === 0) {
+            if (this.lengthSqr === 0) {
                 this.x = 0;
                 this.y = 1;
             } else {
-                var invLen = 1.0 / len;
+                var invLen = 1.0 / this.length;
                 this.x *= invLen;
                 this.y *= invLen;
             }
-        };
-
-        Vec2.prototype.clamp = function (min, max) {
-            if (this.x < min.x)
-                this.x = min.x;
-else if (this.x > max.x)
-                this.x = max.x;
-            if (this.y < min.y)
-                this.y = min.y;
-else if (this.y > max.y)
-                this.y = max.y;
         };
 
         Vec2.inverse = function (vec) {
@@ -1385,17 +1832,8 @@ else
                 return new Vec2(left.x * right, left.y * right);
         };
 
-        Vec2.divide = function (left, right) {
-            if (right instanceof Vec2)
-                return new Vec2(left.x / right.x, left.y / right.y);
-else {
-                var invRight = 1.0 / right;
-                return new Vec2(left.x * invRight, left.y * invRight);
-            }
-        };
-
         Vec2.lerp = function (left, right, t) {
-            return Vec2.add(left, Vec2.multiply(Vec2.subtract(right, left), t));
+            return new Vec2(left.x + t * (right.x - left.x), left.y + t * (right.y - left.y));
         };
 
         Vec2.dot = function (left, right) {
@@ -1420,4 +1858,149 @@ else {
         return Vec2;
     })();
     Engine.Vec2 = Vec2;
+})(Engine || (Engine = {}));
+var Engine;
+(function (Engine) {
+    var Vec3 = (function () {
+        function Vec3(x, y, z) {
+            if (typeof x === "undefined") { x = 0; }
+            if (typeof y === "undefined") { y = 0; }
+            if (typeof z === "undefined") { z = 0; }
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+        Object.defineProperty(Vec3.prototype, "length", {
+            get: function () {
+                return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Vec3.prototype, "lengthSqr", {
+            get: function () {
+                return this.x * this.x + this.y * this.y + this.z * this.z;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Vec3.prototype.clone = function () {
+            return new Vec3(this.x, this.y, this.z);
+        };
+
+        Vec3.prototype.toString = function () {
+            return this.x + ", " + this.y + ", " + this.z;
+        };
+
+        Vec3.prototype.toArray = function () {
+            return [this.x, this.y, this.z];
+        };
+        Vec3.prototype.fromArray = function (v) {
+            this.x = v[0] || 0;
+            this.y = v[1] || 0;
+            this.z = v[2] || 0;
+        };
+
+        Vec3.prototype.fromVec3 = function (v) {
+            this.x = v.x;
+            this.y = v.y;
+            this.z = v.z;
+        };
+
+        Vec3.prototype.add = function (rhs) {
+            this.x += rhs.x;
+            this.y += rhs.y;
+            this.z += rhs.z;
+        };
+
+        Vec3.prototype.subtract = function (rhs) {
+            this.x -= rhs.x;
+            this.y -= rhs.y;
+            this.z -= rhs.z;
+        };
+
+        Vec3.prototype.multiply = function (rhs) {
+            if (rhs instanceof Vec3) {
+                this.x *= rhs.x;
+                this.y *= rhs.y;
+                this.z *= rhs.z;
+            } else {
+                this.x *= rhs;
+                this.y *= rhs;
+                this.z *= rhs;
+            }
+        };
+
+        Vec3.prototype.invert = function () {
+            this.x = -this.x;
+            this.y = -this.y;
+            this.z = -this.z;
+        };
+
+        Vec3.prototype.setLength = function (length) {
+            this.normalize();
+            this.multiply(length);
+        };
+
+        Vec3.prototype.normalize = function () {
+            if (this.lengthSqr === 0) {
+                this.x = 0;
+                this.y = 1;
+                this.z = 0;
+            } else {
+                var invLen = 1.0 / this.length;
+                this.x *= invLen;
+                this.y *= invLen;
+                this.z *= invLen;
+            }
+        };
+
+        Vec3.inverse = function (vec) {
+            return new Vec3(-vec.x, -vec.y, -vec.z);
+        };
+
+        Vec3.add = function (left, right) {
+            return new Vec3(left.x + right.x, left.y + right.y, left.z + right.z);
+        };
+
+        Vec3.subtract = function (left, right) {
+            return new Vec3(left.x - right.x, left.y - right.y, left.z - right.z);
+        };
+
+        Vec3.multiply = function (left, right) {
+            if (right instanceof Vec3)
+                return new Vec3(left.x * right.x, left.y * right.y, left.z * right.z);
+else
+                return new Vec3(left.x * right, left.y * right, left.z * right);
+        };
+
+        Vec3.lerp = function (left, right, t) {
+            return new Vec3(left.x + t * (right.x - left.x), left.y + t * (right.y - left.y), left.z + t * (right.z - left.z));
+        };
+
+        Vec3.dot = function (left, right) {
+            return left.x * right.x + left.y * right.y + left.z + right.z;
+        };
+
+        Vec3.distance = function (left, right) {
+            var dx = right.x - left.x;
+            var dy = right.y - left.y;
+            var dz = right.z - left.z;
+            return Math.sqrt(dx * dx + dy * dy + dz * dz);
+        };
+
+        Vec3.distanceSqr = function (left, right) {
+            var dx = right.x - left.x;
+            var dy = right.y - left.y;
+            var dz = right.z - left.z;
+            return dx * dx + dy * dy + dz * dz;
+        };
+
+        Vec3.equals = function (a, b) {
+            return (a.x === b.x && a.y === b.y && a.z === b.z);
+        };
+        return Vec3;
+    })();
+    Engine.Vec3 = Vec3;
 })(Engine || (Engine = {}));
