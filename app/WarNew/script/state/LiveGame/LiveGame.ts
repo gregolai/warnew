@@ -2,10 +2,8 @@
 
 module Engine.WarNew {
 
-
 	export class LiveGame extends AppState {
 
-		private _dom: JQuery;
 		private _world: World;
 		private _camera: Camera2D;
 		private _player: KnockoutObservable<Player>;
@@ -14,12 +12,24 @@ module Engine.WarNew {
 
 		private _userState: UserState;
 		private _selectionStart: Vec2;
-		private _selectionEnd: Vec2;
+		private _worldMouseCoords: Vec2;
+		private _mouseInView: boolean;
+
 		private _selectionRect: Rect;
 		private _selectedEntities: KnockoutObservableArray<Entity>;
 
-		private _entityGroupIndex: KnockoutObservable<number>;
-		private _entityGroups: KnockoutComputed<Entity[][]>;
+		private _hoverTarget: KnockoutObservable<WorldTarget>;
+		private _hoverTile: KnockoutObservable<Tile>;
+
+		private _groupIndicesIndex: KnockoutObservable<number>;
+		private _groupIndices: KnockoutComputed<number[]>;
+
+		// LEFT PANEL
+		private _hoverButton: KnockoutObservable<IconButton>;
+		private _downButton: KnockoutObservable<IconButton>;
+		private _tooltip: KnockoutObservable<string>;
+		private _tooltipExtended: KnockoutObservable<string>;
+		private _statusBarText: KnockoutComputed<string>;
 
 		get player() { return this._player(); }
 
@@ -28,7 +38,12 @@ module Engine.WarNew {
 		get oneEntitySelected() { return this._selectedEntities().length === 1; }
 		get multipleEntitiesSelected() { return this._selectedEntities().length > 1; }
 
-		//get hoverButton() { return this._hoverButton(); }
+		// LEFT PANEL
+		get hoverButton() { return this._hoverButton(); }
+		get downButton() { return this._downButton(); }
+		get tooltip() { return this._tooltip(); }
+		get tooltipExtended() { return this._tooltipExtended(); }
+		get statusBarText() { return this._statusBarText(); }
 
 		constructor() {
 			super({
@@ -37,33 +52,97 @@ module Engine.WarNew {
 
 			this._player = ko.observable();
 
-			this._mainSurface = this.create2dSurface();
-
 			this._selectedEntities = ko.observableArray();
 
-			this._entityGroupIndex = ko.observable(0);
+			this._hoverTarget = ko.observable();
+			this._hoverTile = ko.observable();
+
+			// TODO: GROUP SELECTION INDEX
+			this._groupIndicesIndex = ko.observable(0);
 
 			var self = this;
-			this._entityGroups = ko.computed(function () {
+			this._groupIndices = ko.computed(function () {
 				
-				var groups: Entity[][] = [];
-				return groups;
+				var indices: number[] = [];
+				var prevType = -1;
+				var selected = self._selectedEntities();
+				for (var i = 0, ii = selected.length; i < ii; ++i) {
+
+					var type = selected[i].type;
+					if (type !== prevType) {
+						indices.push(i);
+						prevType = type;
+					}
+
+				}
+
+				// SET GROUP INDICES INDEX TO 0 IF OUT OF BOUNDS
+				if (self._groupIndicesIndex() >= indices.length) {
+					self._groupIndicesIndex(0);
+				}
+
+				return indices;
+			});
+
+			// LEFT PANEL STUFF
+			this._hoverButton = ko.observable();
+			this._downButton = ko.observable();
+			this._tooltip = ko.observable();
+			this._tooltipExtended = ko.observable();
+			this._statusBarText = ko.computed(function () {
+
+				var btn = self._hoverButton();
+				if (btn) {
+					var ent = <Entity>ko.dataFor(btn);
+					if (ent) {
+						return ent.name;
+					}
+				}
+
+				var target = self._hoverTarget();
+				if (target instanceof Entity) {
+					return (<Entity>target).name;
+				}
 			});
 		}
 
 		onUICreated(dom: JQuery): void {
 
-			this._dom = dom.find("#LiveGame");
-
 			var self = this;
+			dom.find(".toMainMenu").click(function () {
+
+				App.instance.setState("MainMenu");
+
+			});
+
 			dom.on("click", ".entityButton", function () {
 				var ent = <Entity>ko.dataFor(this);
 				var selected = self._selectedEntities();
-				if (selected.length === 1) {
+				if(selected.length === 1) {
+
+					// CENTER CAMERA ON ENTITY
 					self._camera.setCenter(ent.position);
+
 				} else {
+
+					// SELECT ONE ENTITY
 					self._selectedEntities([ent]);
+
 				}
+			});
+
+			dom.on("mouseover", ".entityButton", function () {
+				self._hoverButton(<IconButton>this);
+			});
+			dom.on("mouseout", ".entityButton", function () {
+				self._hoverButton(null);
+			});
+
+			dom.on("mousedown", ".entityButton", function () {
+				self._downButton(<IconButton>this);
+			});
+			dom.on("mouseup", ".entityButton", function () {
+				self._downButton(null);
 			});
 		}
 
@@ -92,80 +171,57 @@ module Engine.WarNew {
 
 		begin(callback: ()=>void): void {
 
-			var self = this;
-			this._loadAssets(function () {
-				self._beginWorld(callback);
-			});
-		}
-
-		selectEntities(ents: Entity[], add: boolean): void {
-
-			this._filterEntities(ents);
-
-			if (add) {
-
-				/*
-				var selected = this._selectedEntities();
-				for (var i = selected.length - 1; i !== -1; --i) {
-					var sel = selected[i];
-					if (ents.indexOf(sel) === -1)
-						ents.push(ent);
-				}
-				this._selectedEntities(selected);
-				*/
-
-			} else {
-				this._selectedEntities(ents);
-			}
-		}
-
-		private _loadAssets(callback: () => void): void {
-
+			
 			var raceName = "human";
 			var terrainType = "forest";
 
+			var self = this;
 			AssetManager.load({
 
 				cursors: [
-					{ id: "magnify",			x: 0,	y: 0,	filename: "magnify.gif" },
-					{ id: "select",				x: 8,	y: 8,	filename: "select.gif" },
-					{ id: "hand",				x: 2,	y: 0,	filename: raceName + "_hand.gif" },
-					{ id: "hand_invalid",		x: 2,	y: 0,	filename: raceName + "_hand_invalid.gif" },
-					{ id: "red_crosshairs",		x: 14,	y: 14,	filename: raceName + "_red_crosshairs.gif" },
-					{ id: "yellow_crosshairs",	x: 14,	y: 14,	filename: raceName + "_yellow_crosshairs.gif" },
-					{ id: "green_crosshairs",	x: 14,	y: 14,	filename: raceName + "_green_crosshairs.gif" }
+					{ id: "magnify",			x: 0,	y: 0,		filename: "magnify.gif" },
+					{ id: "select",				x: 8,	y: 8,		filename: "select.gif" },
+					{ id: "hand",				x: 2,	y: 0,		filename: raceName + "_hand.gif" },
+					{ id: "hand_invalid",		x: 2,	y: 0,		filename: raceName + "_hand_invalid.gif" },
+					{ id: "red_crosshairs",		x: 14,	y: 14,		filename: raceName + "_red_crosshairs.gif" },
+					{ id: "yellow_crosshairs",	x: 14,	y: 14,		filename: raceName + "_yellow_crosshairs.gif" },
+					{ id: "green_crosshairs",	x: 14,	y: 14,		filename: raceName + "_green_crosshairs.gif" }
 				],
 
 				images: [
 					// TERRAIN
-					{ id: "terrain",			filename: "terrain/" + terrainType + ".png" },
+					{ id: "terrain",					filename: "terrain/" + terrainType + ".png" },
 
 					// ICONS
-					{ id: "icons",				filename: "icon/" + terrainType + ".png" },
+					{ id: "icons",						filename: "icon/" + terrainType + ".png" },
 
 					// UNITS
-					{ id: "footman",			filename: "unit/footman.png" },
-					{ id: "knight",				filename: "unit/knight.png" },
-					{ id: "peasant",			filename: "unit/peasant.png" },
+					{ id: "footman",					filename: "unit/footman.png" },
+					{ id: "knight",						filename: "unit/knight.png" },
+					{ id: "peasant",					filename: "unit/peasant.png" },
 
 					// STRUCTURES (NEUTRAL)
-					{ id: "gold_mine",			filename: "structure/" + terrainType + "/neutral/gold_mine.png" },
-					{ id: "oil_patch",			filename: "structure/" + terrainType + "/neutral/oil_patch.png" },
+					{ id: "gold_mine",					filename: "structure/" + terrainType + "/neutral/gold_mine.png" },
+					{ id: "oil_patch",					filename: "structure/" + terrainType + "/neutral/oil_patch.png" },
 
 					// STRUCTURES (PLAYER-CONTROLLED)
-					{ id: "farm",				filename: "structure/" + terrainType + "/farm.png" },
-					{ id: "town_hall",			filename: "structure/" + terrainType + "/town_hall.png" }
+					{ id: "farm",						filename: "structure/" + terrainType + "/farm.png" },
+					{ id: "town_hall",					filename: "structure/" + terrainType + "/town_hall.png" }
 				],
 
 				shaders: [
-					{ id: "terrain", filename: "terrain.shader" }
+					{ id: "terrain",	filename: "terrain.shader" }
 				]
 
-			}, callback);
+			}, function(){
+
+				self._begin();
+				callback();
+
+			});
 
 		}
-
-		private _beginWorld(callback: () => void): void {
+		private _begin(): void {
 
 			var world = this._world = new World();
 			world.decode(TEST_WORLD_DATA);
@@ -175,15 +231,98 @@ module Engine.WarNew {
 			// TODO: LOAD RAW USER DATA
 			this._player(world.getPlayerById(2));
 
+			this._mainSurface = this.create2dSurface();
+
 			this._userState = UserState.Default;
 			this._selectionStart = new Vec2();
-			this._selectionEnd = new Vec2();
+			this._worldMouseCoords = new Vec2();
+			this._mouseInView = false;
+
 			this._selectionRect = new Rect();
 			this._selectedEntities([]);
+			this._hoverTile(null);
+			this._hoverTarget(null);
 
-			this._dom.attr("race", "human");
+			this._groupIndicesIndex(0);
+			//this._groupIndices		// computed
 
-			callback();
+			this._hoverButton(null);
+			this._downButton(null);
+			this._tooltip(null);
+			this._tooltipExtended(null);
+			//this._statusBarText		// computed
+
+		}
+		end(): void {
+
+			this._world.dispose();
+			this._world = null;
+
+			this._camera.dispose();
+			this._camera = null;
+
+			//this._player.dispose();	// handled by world
+			this._player(null);
+
+			this._mainSurface.dispose();
+			this._mainSurface = null;
+
+			//this._userState
+			this._selectionStart = null;
+			this._worldMouseCoords = null;
+			//this._mouseInView
+
+			this._selectionRect = null;
+			this._selectedEntities([]);
+			this._hoverTarget(null);
+			this._hoverTile(null);
+
+			this._groupIndicesIndex(0);
+			//this._groupIndices		// computed
+
+			this._hoverButton(null);
+			this._downButton(null);
+			this._tooltip(null);
+			this._tooltipExtended(null);
+			//this._statusBarText		// computed
+		}
+
+		selectEntities(ents: Entity[], add: boolean): void {
+
+			var list = ents;
+
+			if (add) {
+
+				var selected = this._selectedEntities();
+
+				if (ents.length === 1) {
+
+					var index = selected.indexOf(ents[0]);
+					if (index === -1) {
+						// ADD SINGLE ENTITY
+						selected.push(ents[0]);
+					} else {
+						// REMOVE SINGLE ENTITY FROM SELECTED
+						selected.splice(index, 1);
+					}
+
+				} else {
+
+					// PUSH ENTITIES THAT AREN'T ALREADY SELECTED
+					for (var i = ents.length - 1; i !== -1; --i) {
+						var ent = ents[i];
+						if (selected.indexOf(ent) === -1)
+							selected.push(ent);
+					}
+
+				}
+
+				list = selected;
+			}
+
+			this._filterEntities(list);
+
+			this._selectedEntities(list);
 		}
 
 		private _startSelection(pageX: number, pageY: number): void {
@@ -194,19 +333,6 @@ module Engine.WarNew {
 				pageY - rect.y,
 				this._selectionStart
 			);
-			this._selectionEnd.fromVec2(this._selectionStart);
-
-			this._selectionRect.fromPoints(this._selectionStart, this._selectionEnd);
-		}
-		private _updateSelection(pageX: number, pageY: number): void {
-			var rect = this._mainSurface.rect;
-			this._camera.getPointAt(
-				pageX - rect.x,
-				pageY - rect.y,
-				this._selectionEnd
-			);
-
-			this._selectionRect.fromPoints(this._selectionStart, this._selectionEnd);
 		}
 		private _endSelection(): void {
 			
@@ -222,7 +348,7 @@ module Engine.WarNew {
 
 			if (ents.length !== 0) {
 
-				this.selectEntities(ents, false);
+				this.selectEntities(ents, Input.isKeyDown(Key.KEY_SHIFT));
 
 			}
 		}
@@ -259,9 +385,7 @@ module Engine.WarNew {
 			} else {
 
 				ents.sort(function (a: Entity, b: Entity) {
-
-					// SORT BY PRIORITIES FIRST, TYPES SECOND
-					return (b.priority - a.priority) + (b.type - a.type) * 0.00001;
+					return b.sortOrder - a.sortOrder;
 				});
 
 				if (ents.length > ENTITY_MAX_SELECTION) {
@@ -277,6 +401,9 @@ module Engine.WarNew {
 			var camera = this._camera;
 			var rect = this._mainSurface.rect;
 			var mousePos = Input.getMousePosition();
+
+			// IS MOUSE IN VIEW
+			this._mouseInView = rect.containsPoint(mousePos);
 
 			// UPDATE CAMERA BY KEYBOARD
 			if (Input.isKeyDown(Key.KEY_LEFT)) {
@@ -306,13 +433,40 @@ module Engine.WarNew {
 				camera.scrollDown(dt);
 			}
 
+			// UPDATE WORLD MOUSE COORDINATES
+			camera.getPointAt(
+				mousePos.x - rect.x,
+				mousePos.y - rect.y,
+				this._worldMouseCoords
+			);
 
-			
+			// IF MOUSE IS IN VIEW, GET HOVER TILE AND HOVER TARGET
+			if (this._mouseInView) {
+
+				// GET HOVER TILE AT POINT
+				this._hoverTile(this._world.terrain.getTileAtPoint(this._worldMouseCoords, false));
+
+
+				// GET ENTITIES AT POINT, AND FILTER SELECTION RECTS
+				var ents = this._world.getEntitiesAtPoint(this._worldMouseCoords);
+				for (var i = ents.length - 1; i !== -1; --i) {
+					var ent = ents[i];
+					if (!ent.selectionRect.containsPoint(this._worldMouseCoords)) {
+						ents.splice(i, 1);
+					}
+				}
+				this._hoverTarget(ents[0] || this._hoverTile);
+
+			} else {
+				this._hoverTile(null);
+				this._hoverTarget(null);
+			}
+
 			var userState = this._userState;
 			if (userState === UserState.Selecting) {
 
 				// UPDATE SELECTION
-				this._updateSelection(mousePos.x, mousePos.y);
+				this._selectionRect.fromPoints(this._selectionStart, this._worldMouseCoords);
 			}
 		}
 
@@ -432,6 +586,12 @@ module Engine.WarNew {
 					this._endSelection();
 				}
 
+			}
+
+
+			// CLEAR DOWN BUTTON
+			if (button === Key.KEY_MOUSE_LEFT) {
+				this._downButton(null);
 			}
 		}
 

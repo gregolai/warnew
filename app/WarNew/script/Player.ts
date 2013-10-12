@@ -2,12 +2,13 @@
 
 module Engine.WarNew {
 
-	
+
 	export class Player {
 
-		
+
 		private _id: number;
 		private _world: World;
+		private _race: string;
 
 		private _type: PlayerType;
 		private _gold: number;
@@ -15,8 +16,9 @@ module Engine.WarNew {
 		private _oil: number;
 		private _foodUsed: number;
 		private _foodCreated: number;
-		
+
 		get id() { return this._id; }
+		get race() { return this._race; }
 
 		get gold() { return this._gold; }
 		get lumber() { return this._lumber; }
@@ -42,7 +44,8 @@ module Engine.WarNew {
 		decode(raw?: RawPlayerData): void {
 
 			this._type = raw ? raw.playerType : PlayerType.None;
-			
+
+			this._race = "human";
 
 		}
 	}

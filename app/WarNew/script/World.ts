@@ -23,7 +23,12 @@ module Engine.WarNew {
 		dispose(): void {
 			this._terrain.dispose();
 			this._quadtree.dispose();
-			
+
+			var players = this._players;
+			for (var i = 0, ii = players.length; i < ii; ++i) {
+				players[i].dispose();
+			}
+
 			// TODO: Dispose players, entities, teams
 		}
 
@@ -91,9 +96,13 @@ module Engine.WarNew {
 		getPlayerById(pid: number): Player {
 			return this._players[pid] || null;
 		}
-
+		
 		getEntityById(id: number): Entity {
 			return this._entitiesById[id] || null;
+		}
+
+		getEntitiesAtPoint(p: Vec2): Entity[] {
+			return <Entity[]>this._quadtree.getItemsAtPoint(p);
 		}
 
 		getEntitiesInRect(rect: Rect): Entity[] {

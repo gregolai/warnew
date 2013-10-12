@@ -29,6 +29,11 @@ module Engine.WarNew {
 
 			this._clampCenter();
 		}
+		dispose(): void {
+			this._center = null;
+			this._dimensions = null;
+			this._rect = null;
+		}
 
 		setCenter(center: Vec2): void {
 			this._center = center.clone();

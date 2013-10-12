@@ -304,6 +304,12 @@ module Engine.WarNew {
 			delete this._map[id];
 		}
 
+		getItemsAtPoint(p: Vec2): IQuadtreeItem[] {
+			var items: IQuadtreeItem[] = [];
+			this._root.getItemsAtPoint(p, items);
+			return items;
+		}
+
 		getItemsInRect(rect: Rect): IQuadtreeItem[] {
 			var items: IQuadtreeItem[] = [];
 			this._root.getItemsInRect(rect, items);

@@ -19,6 +19,7 @@ module Engine.WarNew.Data {
 		name: "Default Entity",
 		oilCost: 0,
 		occupyFlags: Occupy.None | 0,
+		pointValue: 0,
 		priority: 0,
 		selectable: true,
 		sequences: {
@@ -123,6 +124,7 @@ module Engine.WarNew.Data {
 		hotkey: Key.KEY_F,
 		iconId: "icon-footman",
 		name: "Footman",
+		pointValue: 50,
 		sequences: {
 			type: SequenceType.Directional,
 			imageID: "footman",
@@ -171,6 +173,7 @@ module Engine.WarNew.Data {
 		hotkey: Key.KEY_P,
 		iconId: "icon-peasant",
 		name: "Peasant",
+		pointValue: 30,
 		sequences: {
 			type: SequenceType.Directional,
 			imageID: "peasant",
@@ -236,6 +239,7 @@ module Engine.WarNew.Data {
 		iconId: "icon-knight",
 		lumberCost: 100,
 		name: "Knight",
+		pointValue: 100,
 		sequences: {
 			type: SequenceType.Directional,
 			imageID: "knight",
@@ -278,6 +282,7 @@ module Engine.WarNew.Data {
 		iconId: "icon-town-hall",
 		lumberCost: 800,
 		name: "Town Hall",
+		pointValue: 200,
 		sequences: {
 			type: SequenceType.Vertical,
 			imageID: "town_hall",
@@ -319,6 +324,7 @@ module Engine.WarNew.Data {
 		iconId: "icon-farm",
 		lumberCost: 250,
 		name: "Farm",
+		pointValue: 100,
 		sequences: {
 			type: SequenceType.Vertical,
 			imageID: "farm",

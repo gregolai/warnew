@@ -51,6 +51,7 @@ module Engine.WarNew {
 		name: string;
 		oilCost: number;
 		occupyFlags: BitFlags<Occupy>;
+		pointValue: number;
 		priority: number;
 		selectable: boolean;
 		sequences: AnimationSequences;
@@ -83,6 +84,9 @@ module Engine.WarNew {
 		moveSpeed: number;
 	}
 
+	export interface IconButton extends HTMLDivElement {
+	}
+
 	export interface ImageCanvas extends HTMLCanvasElement, HTMLImageElement { };
 
 	export interface RawTeamData {
@@ -113,4 +117,7 @@ module Engine.WarNew {
 		entities: number[][];
 	}
 
+	export interface WorldTarget {
+		getID(): number;
+	}
 }

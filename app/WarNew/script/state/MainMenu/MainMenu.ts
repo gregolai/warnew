@@ -16,6 +16,12 @@ module Engine.WarNew {
 
 			var self = this;
 
+			dom.find(".toLiveGame").click(function () {
+
+				App.instance.setState("LiveGame");
+
+			});
+
 			dom.on("click", ".loadGame", function () {
 				
 			});
@@ -24,6 +30,13 @@ module Engine.WarNew {
 				App.instance.setState("Editor");
 			});
 
+		}
+
+		begin(callback: () => void): void {
+
+			Cursor.clear();
+
+			callback();
 		}
 
 	}

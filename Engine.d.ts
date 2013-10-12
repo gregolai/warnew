@@ -229,6 +229,7 @@ declare module Engine {
         rotation: number;
     }
     interface ShaderAsset {
+        url: string;
         vertexShader: string;
         fragmentShader: string;
     }
@@ -382,7 +383,14 @@ declare module Engine {
     class Cursor {
         private static _currentCursorId;
         private _id;
+        private _url;
+        private _hotspotX;
+        private _hotspotY;
         private _style;
+        public url : string;
+        public hotspotX : number;
+        public hotspotY : number;
+        static clear(): void;
         constructor(id: string, url: string, offX: number, offY: number);
         public dispose(): void;
         public apply(): void;
@@ -398,9 +406,11 @@ declare module Engine {
         private static _map;
         private static _dummyCanvas;
         private _id;
+        private _url;
         private _styles;
+        public url : string;
         public styles : Engine.BitFlags<Engine.FontStyle>;
-        constructor(id: string, styles: Engine.BitFlags<Engine.FontStyle>);
+        constructor(id: string, url: string, styles: Engine.BitFlags<Engine.FontStyle>);
         public getString(style: Engine.FontStyle, size: number): string;
         private _styleFound(style);
         private static _fontLoadHack(family);

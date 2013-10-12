@@ -102,6 +102,7 @@ module Engine {
 	}
 
 	export interface ShaderAsset {
+		url: string;
 		vertexShader: string;
 		fragmentShader: string;
 	}

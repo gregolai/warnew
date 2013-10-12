@@ -7,11 +7,13 @@ module Engine {
 		private static _dummyCanvas: HTMLCanvasElement;
 
 		private _id: string;
+		private _url: string;
 		private _styles: BitFlags<FontStyle>;
 
+		get url() { return this._url; }
 		get styles() { return this._styles; }
 
-		constructor(id: string, styles: BitFlags<FontStyle>) {
+		constructor(id: string, url: string, styles: BitFlags<FontStyle>) {
 
 			this._id = id;
 			this._styles = styles;

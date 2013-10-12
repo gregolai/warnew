@@ -156,11 +156,11 @@ module Engine {
 			__broadcast("onMouseUp", [evt.pageX, evt.pageY, evt.button]);
 		}
 		function _mouseMove(evt: MouseEvent): void {
-
-			_mousePosition.x = evt.pageX;
-			_mousePosition.y = evt.pageY;
-
-			__broadcast("onMouseMove", [evt.pageX, evt.pageY]);
+			
+			var x = _mousePosition.x = evt.pageX;
+			var y = _mousePosition.y = evt.pageY;
+			
+			__broadcast("onMouseMove", [x, y]);
 		}
 		function _mouseWheel(evt: WheelEvent): void {
 

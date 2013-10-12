@@ -309,7 +309,9 @@ var Engine;
         };
 
         App._endLoading = function () {
-            $(App._loadingContainer).fadeOut(700);
+            setTimeout(function () {
+                $(App._loadingContainer).fadeOut(700);
+            }, 500);
         };
 
         Object.defineProperty(App.prototype, "cacheAssets", {
@@ -714,33 +716,59 @@ var Engine;
 
         function _loadCursor(asset, callback) {
             var id = asset.id;
+            var hotX = asset.x;
+            var hotY = asset.y;
             var url = _makeUrl("cursor", asset.filename);
 
-            if (_cursors[id]) {
-                _cursors[id].dispose();
+            var oldCursor = _cursors[id];
+            if (oldCursor) {
+                if (oldCursor.url === url && oldCursor.hotspotX === hotX && oldCursor.hotspotY === hotY) {
+                    callback();
+                    return;
+                }
+                oldCursor.dispose();
             }
-            _cursors[id] = new Engine.Cursor(id, url, asset.x, asset.y);
+
+            console.log("LOADING NEW CURSOR");
+
+            _cursors[id] = new Engine.Cursor(id, url, hotX, hotY);
 
             callback();
         }
 
         function _loadFont(asset, callback) {
             var id = asset.id;
-
             var url = _makeUrl("font", id + "/stylesheet.css");
 
+            var oldFont = _fonts[id];
+            if (oldFont && oldFont.url === url) {
+                callback();
+                return;
+            }
+
+            console.log("LOADING NEW FONT");
+
             Engine.FileUtil.loadStylesheet(url, function () {
-                _fonts[id] = new Engine.Font(id, asset.styles);
+                _fonts[id] = new Engine.Font(id, url, asset.styles);
                 callback();
             });
         }
 
         function _loadImage(asset, callback) {
+            var id = asset.id;
             var url = _makeUrl("image", asset.filename);
+
+            var oldImage = _images[id];
+            if (oldImage && oldImage.src.indexOf(url) !== -1) {
+                callback();
+                return;
+            }
+
+            console.log("LOADING NEW IMAGE");
 
             var img = new Image();
             img.onload = function () {
-                _images[asset.id] = img;
+                _images[id] = img;
                 callback();
             };
             img.onerror = function () {
@@ -750,7 +778,16 @@ var Engine;
         }
 
         function _loadShader(asset, callback) {
+            var id = asset.id;
             var url = _makeUrl("shader", asset.filename);
+
+            var oldShader = _shaders[id];
+            if (oldShader && oldShader.url === url) {
+                callback();
+                return;
+            }
+
+            console.log("LOADING NEW SHADER");
 
             $.ajax({
                 url: url,
@@ -774,7 +811,8 @@ var Engine;
                         }
                     }
 
-                    _shaders[asset.id] = {
+                    _shaders[id] = {
+                        url: url,
                         vertexShader: struct.DEFAULT.concat(struct.VERTEX).join("\n"),
                         fragmentShader: struct.DEFAULT.concat(struct.FRAGMENT).join("\n")
                     };
@@ -933,18 +971,47 @@ var Engine;
     var Cursor = (function () {
         function Cursor(id, url, offX, offY) {
             this._id = id;
+            this._url = url;
+            this._hotspotX = offX;
+            this._hotspotY = offY;
 
             var style = this._style = document.createElement("style");
             style.type = "text/css";
             style.innerHTML = ".custom_cursor_" + id + " { cursor: url(\"" + url + "\") " + offX + " " + offY + ", none; }";
             document.getElementsByTagName("head")[0].appendChild(style);
         }
+        Object.defineProperty(Cursor.prototype, "url", {
+            get: function () {
+                return this._url;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Cursor.prototype, "hotspotX", {
+            get: function () {
+                return this._hotspotX;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Cursor.prototype, "hotspotY", {
+            get: function () {
+                return this._hotspotY;
+            },
+            enumerable: true,
+            configurable: true
+        });
+
+        Cursor.clear = function () {
+            Engine.App.container.classList.remove("custom_cursor_" + Cursor._currentCursorId);
+            Cursor._currentCursorId = "";
+        };
+
         Cursor.prototype.dispose = function () {
             document.getElementsByTagName("head")[0].removeChild(this._style);
             this._style = null;
             if (Cursor._currentCursorId === this._id) {
-                Engine.App.container.classList.remove("custom_cursor_" + Cursor._currentCursorId);
-                Cursor._currentCursorId = "";
+                Cursor.clear();
             }
         };
 
@@ -1012,7 +1079,7 @@ var Engine;
 var Engine;
 (function (Engine) {
     var Font = (function () {
-        function Font(id, styles) {
+        function Font(id, url, styles) {
             this._id = id;
             this._styles = styles;
 
@@ -1028,6 +1095,13 @@ var Engine;
                 }
             }
         }
+        Object.defineProperty(Font.prototype, "url", {
+            get: function () {
+                return this._url;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Font.prototype, "styles", {
             get: function () {
                 return this._styles;
@@ -1223,10 +1297,10 @@ var Engine;
             __broadcast("onMouseUp", [evt.pageX, evt.pageY, evt.button]);
         }
         function _mouseMove(evt) {
-            _mousePosition.x = evt.pageX;
-            _mousePosition.y = evt.pageY;
+            var x = _mousePosition.x = evt.pageX;
+            var y = _mousePosition.y = evt.pageY;
 
-            __broadcast("onMouseMove", [evt.pageX, evt.pageY]);
+            __broadcast("onMouseMove", [x, y]);
         }
         function _mouseWheel(evt) {
             var delta = (evt).wheelDelta || evt.detail;

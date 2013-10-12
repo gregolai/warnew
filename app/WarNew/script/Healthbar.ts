@@ -2,15 +2,12 @@
 
 module Engine.WarNew {
 
-	ko.bindingHandlers["healthbar"] = {
+	ko.bindingHandlers["Healthbar"] = {
 
 		init: function (element: HTMLDivElement, valueAccessor: () => any, allBindingsAccessor: () => any, entity: Entity, bindingContext: KnockoutBindingContext): void {
 
 		},
 		update: function(element: HTMLDivElement, valueAccessor: () => any, allBindingsAccessor: () => any, entity: Entity, bindingContext: KnockoutBindingContext): void {
-			// This will be called once when the binding is first applied to an element,
-			// and again whenever the associated observable changes value.
-			// Update the DOM element based on the supplied values here.
 
 			var percent = Math.floor((entity.health / entity.healthMax) * 100);
 

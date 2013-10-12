@@ -201,6 +201,12 @@ var Engine;
                 configurable: true
             });
 
+            Camera2D.prototype.dispose = function () {
+                this._center = null;
+                this._dimensions = null;
+                this._rect = null;
+            };
+
             Camera2D.prototype.setCenter = function (center) {
                 this._center = center.clone();
                 this._clampCenter();
@@ -303,6 +309,8 @@ var Engine;
                 this._owner = ko.observable(p.owner);
                 this._data = WarNew.Data.AllEntityData[p.type];
 
+                this._sortOrder = (((this._data.pointValue >> 4) & 0x7) << 20) | (this._type << 19) | (this._id << 0);
+
                 this._position = new Engine.Vec2(p.posX, p.posY);
 
                 var boxWidth = data.isUnit ? data.boxWidth : data.tilesWide * WarNew.TILE_SIZE;
@@ -345,6 +353,13 @@ var Engine;
             Object.defineProperty(Entity.prototype, "owner", {
                 get: function () {
                     return this._owner();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Entity.prototype, "sortOrder", {
+                get: function () {
+                    return this._sortOrder;
                 },
                 enumerable: true,
                 configurable: true
@@ -400,6 +415,13 @@ var Engine;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Entity.prototype, "name", {
+                get: function () {
+                    return this._data.name;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Entity.prototype, "priority", {
                 get: function () {
                     return this._data.priority;
@@ -410,6 +432,20 @@ var Engine;
             Object.defineProperty(Entity.prototype, "sight", {
                 get: function () {
                     return this._data.sight;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Entity.prototype, "tooltip", {
+                get: function () {
+                    return this._data.tooltip;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Entity.prototype, "tooltipExtended", {
+                get: function () {
+                    return this._data.tooltipExtended;
                 },
                 enumerable: true,
                 configurable: true
@@ -519,7 +555,7 @@ var Engine;
 var Engine;
 (function (Engine) {
     (function (WarNew) {
-        ko.bindingHandlers["healthbar"] = {
+        ko.bindingHandlers["Healthbar"] = {
             init: function (element, valueAccessor, allBindingsAccessor, entity, bindingContext) {
             },
             update: function (element, valueAccessor, allBindingsAccessor, entity, bindingContext) {
@@ -692,6 +728,13 @@ var Engine;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Player.prototype, "race", {
+                get: function () {
+                    return this._race;
+                },
+                enumerable: true,
+                configurable: true
+            });
 
             Object.defineProperty(Player.prototype, "gold", {
                 get: function () {
@@ -735,6 +778,8 @@ var Engine;
 
             Player.prototype.decode = function (raw) {
                 this._type = raw ? raw.playerType : WarNew.PlayerType.None;
+
+                this._race = "human";
             };
             return Player;
         })();
@@ -745,25 +790,34 @@ var Engine;
 var Engine;
 (function (Engine) {
     (function (WarNew) {
-        ko.bindingHandlers["portrait"] = {
+        ko.bindingHandlers["Portrait"] = {
             init: function (element, valueAccessor, allBindingsAccessor, entity, bindingContext) {
                 element.width = 46;
                 element.height = 38;
             },
             update: function (element, valueAccessor, allBindingsAccessor, entity, bindingContext) {
+                var liveGame = bindingContext.$root;
+
                 var ctx = element.getContext("2d");
                 if (!entity) {
-                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    ctx.clearRect(0, 0, element.width, element.height);
                     return;
                 }
 
                 var sprite = WarNew.AllSpriteData.getSprite(entity.iconID, entity.owner.id);
                 if (!sprite) {
-                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    ctx.clearRect(0, 0, element.width, element.height);
                     return;
                 }
 
-                ctx.drawImage(sprite.image, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, ctx.canvas.width, ctx.canvas.height);
+                var downButton = liveGame.downButton;
+                if (downButton && entity === ko.dataFor(downButton)) {
+                    element.style.margin = "1px 0 0 1px";
+                } else {
+                    element.style.margin = "0";
+                }
+
+                ctx.drawImage(sprite.image, sprite.x, sprite.y, sprite.width, sprite.height, 0, 0, element.width, element.height);
             }
         };
     })(Engine.WarNew || (Engine.WarNew = {}));
@@ -1010,6 +1064,20 @@ var Engine;
 
             Terrain.prototype.getTileById = function (id) {
                 return this._tiles[id] || null;
+            };
+
+            Terrain.prototype.getTileAtPoint = function (worldPoint, clamp) {
+                return this.getTileAtIndex(Math.floor(worldPoint.x * WarNew.TILE_INV_SIZE), Math.floor(worldPoint.y * WarNew.TILE_INV_SIZE), clamp);
+            };
+
+            Terrain.prototype.getTileAtIndex = function (ix, iy, clamp) {
+                if (clamp) {
+                    ix = Engine.MathUtil.clamp(ix, 0, this._tilesWide - 1);
+                    iy = Engine.MathUtil.clamp(iy, 0, this._tilesDeep - 1);
+                } else if (ix < 0 || iy < 0 || ix >= this._tilesWide || iy >= this._tilesDeep) {
+                    return null;
+                }
+                return this._tiles[ix + this._tilesWide * iy];
             };
 
             Terrain.prototype.getTilesWithinIndex = function (tileX, tileY, tilesWide, tilesHigh) {
@@ -1452,6 +1520,11 @@ var Engine;
             World.prototype.dispose = function () {
                 this._terrain.dispose();
                 this._quadtree.dispose();
+
+                var players = this._players;
+                for (var i = 0, ii = players.length; i < ii; ++i) {
+                    players[i].dispose();
+                }
             };
 
             World.prototype.decode = function (raw) {
@@ -1512,6 +1585,10 @@ var Engine;
 
             World.prototype.getEntityById = function (id) {
                 return this._entitiesById[id] || null;
+            };
+
+            World.prototype.getEntitiesAtPoint = function (p) {
+                return this._quadtree.getItemsAtPoint(p);
             };
 
             World.prototype.getEntitiesInRect = function (rect) {
@@ -1860,6 +1937,12 @@ else
                 delete this._map[id];
             };
 
+            WorldQuadtree.prototype.getItemsAtPoint = function (p) {
+                var items = [];
+                this._root.getItemsAtPoint(p, items);
+                return items;
+            };
+
             WorldQuadtree.prototype.getItemsInRect = function (rect) {
                 var items = [];
                 this._root.getItemsInRect(rect, items);
@@ -1904,6 +1987,7 @@ var Engine;
                 name: "Default Entity",
                 oilCost: 0,
                 occupyFlags: WarNew.Occupy.None | 0,
+                pointValue: 0,
                 priority: 0,
                 selectable: true,
                 sequences: {
@@ -1997,6 +2081,7 @@ var Engine;
                 hotkey: Engine.Key.KEY_F,
                 iconId: "icon-footman",
                 name: "Footman",
+                pointValue: 50,
                 sequences: {
                     type: WarNew.SequenceType.Directional,
                     imageID: "footman",
@@ -2040,6 +2125,7 @@ var Engine;
                 hotkey: Engine.Key.KEY_P,
                 iconId: "icon-peasant",
                 name: "Peasant",
+                pointValue: 30,
                 sequences: {
                     type: WarNew.SequenceType.Directional,
                     imageID: "peasant",
@@ -2102,6 +2188,7 @@ var Engine;
                 iconId: "icon-knight",
                 lumberCost: 100,
                 name: "Knight",
+                pointValue: 100,
                 sequences: {
                     type: WarNew.SequenceType.Directional,
                     imageID: "knight",
@@ -2140,6 +2227,7 @@ var Engine;
                 iconId: "icon-town-hall",
                 lumberCost: 800,
                 name: "Town Hall",
+                pointValue: 200,
                 sequences: {
                     type: WarNew.SequenceType.Vertical,
                     imageID: "town_hall",
@@ -2178,6 +2266,7 @@ var Engine;
                 iconId: "icon-farm",
                 lumberCost: 250,
                 name: "Farm",
+                pointValue: 100,
                 sequences: {
                     type: WarNew.SequenceType.Vertical,
                     imageID: "farm",
@@ -2882,12 +2971,22 @@ var Engine;
             MainMenu.prototype.onUICreated = function (dom) {
                 var self = this;
 
+                dom.find(".toLiveGame").click(function () {
+                    Engine.App.instance.setState("LiveGame");
+                });
+
                 dom.on("click", ".loadGame", function () {
                 });
 
                 dom.on("click", ".editor", function () {
                     Engine.App.instance.setState("Editor");
                 });
+            };
+
+            MainMenu.prototype.begin = function (callback) {
+                Engine.Cursor.clear();
+
+                callback();
             };
             return MainMenu;
         })(Engine.AppState);
@@ -2954,16 +3053,50 @@ var Engine;
 
                 this._player = ko.observable();
 
-                this._mainSurface = this.create2dSurface();
-
                 this._selectedEntities = ko.observableArray();
 
-                this._entityGroupIndex = ko.observable(0);
+                this._hoverTarget = ko.observable();
+                this._hoverTile = ko.observable();
+
+                this._groupIndicesIndex = ko.observable(0);
 
                 var self = this;
-                this._entityGroups = ko.computed(function () {
-                    var groups = [];
-                    return groups;
+                this._groupIndices = ko.computed(function () {
+                    var indices = [];
+                    var prevType = -1;
+                    var selected = self._selectedEntities();
+                    for (var i = 0, ii = selected.length; i < ii; ++i) {
+                        var type = selected[i].type;
+                        if (type !== prevType) {
+                            indices.push(i);
+                            prevType = type;
+                        }
+                    }
+
+                    if (self._groupIndicesIndex() >= indices.length) {
+                        self._groupIndicesIndex(0);
+                    }
+
+                    return indices;
+                });
+
+                this._hoverButton = ko.observable();
+                this._downButton = ko.observable();
+                this._tooltip = ko.observable();
+                this._tooltipExtended = ko.observable();
+                this._statusBarText = ko.computed(function () {
+                    var btn = self._hoverButton();
+                    if (btn) {
+                        var ent = ko.dataFor(btn);
+                        if (ent) {
+                            return ent.name;
+                        }
+                    }
+
+                    var target = self._hoverTarget();
+                    if (target instanceof WarNew.Entity) {
+                        return (target).name;
+                    }
                 });
             }
             Object.defineProperty(LiveGame.prototype, "player", {
@@ -3003,10 +3136,48 @@ var Engine;
                 configurable: true
             });
 
-            LiveGame.prototype.onUICreated = function (dom) {
-                this._dom = dom.find("#LiveGame");
+            Object.defineProperty(LiveGame.prototype, "hoverButton", {
+                get: function () {
+                    return this._hoverButton();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(LiveGame.prototype, "downButton", {
+                get: function () {
+                    return this._downButton();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(LiveGame.prototype, "tooltip", {
+                get: function () {
+                    return this._tooltip();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(LiveGame.prototype, "tooltipExtended", {
+                get: function () {
+                    return this._tooltipExtended();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(LiveGame.prototype, "statusBarText", {
+                get: function () {
+                    return this._statusBarText();
+                },
+                enumerable: true,
+                configurable: true
+            });
 
+            LiveGame.prototype.onUICreated = function (dom) {
                 var self = this;
+                dom.find(".toMainMenu").click(function () {
+                    Engine.App.instance.setState("MainMenu");
+                });
+
                 dom.on("click", ".entityButton", function () {
                     var ent = ko.dataFor(this);
                     var selected = self._selectedEntities();
@@ -3016,6 +3187,20 @@ var Engine;
                         self._selectedEntities([ent]);
                     }
                 });
+
+                dom.on("mouseover", ".entityButton", function () {
+                    self._hoverButton(this);
+                });
+                dom.on("mouseout", ".entityButton", function () {
+                    self._hoverButton(null);
+                });
+
+                dom.on("mousedown", ".entityButton", function () {
+                    self._downButton(this);
+                });
+                dom.on("mouseup", ".entityButton", function () {
+                    self._downButton(null);
+                });
             };
 
             LiveGame.prototype.initialize = function (callback) {
@@ -3023,25 +3208,10 @@ var Engine;
             };
 
             LiveGame.prototype.begin = function (callback) {
-                var self = this;
-                this._loadAssets(function () {
-                    self._beginWorld(callback);
-                });
-            };
-
-            LiveGame.prototype.selectEntities = function (ents, add) {
-                this._filterEntities(ents);
-
-                if (add) {
-                } else {
-                    this._selectedEntities(ents);
-                }
-            };
-
-            LiveGame.prototype._loadAssets = function (callback) {
                 var raceName = "human";
                 var terrainType = "forest";
 
+                var self = this;
                 Engine.AssetManager.load({
                     cursors: [
                         { id: "magnify", x: 0, y: 0, filename: "magnify.gif" },
@@ -3066,10 +3236,12 @@ var Engine;
                     shaders: [
                         { id: "terrain", filename: "terrain.shader" }
                     ]
-                }, callback);
+                }, function () {
+                    self._begin();
+                    callback();
+                });
             };
-
-            LiveGame.prototype._beginWorld = function (callback) {
+            LiveGame.prototype._begin = function () {
                 var world = this._world = new WarNew.World();
                 world.decode(WarNew.TEST_WORLD_DATA);
 
@@ -3077,30 +3249,86 @@ var Engine;
 
                 this._player(world.getPlayerById(2));
 
+                this._mainSurface = this.create2dSurface();
+
                 this._userState = WarNew.UserState.Default;
                 this._selectionStart = new Engine.Vec2();
-                this._selectionEnd = new Engine.Vec2();
+                this._worldMouseCoords = new Engine.Vec2();
+                this._mouseInView = false;
+
                 this._selectionRect = new Engine.Rect();
                 this._selectedEntities([]);
+                this._hoverTile(null);
+                this._hoverTarget(null);
 
-                this._dom.attr("race", "human");
+                this._groupIndicesIndex(0);
 
-                callback();
+                this._hoverButton(null);
+                this._downButton(null);
+                this._tooltip(null);
+                this._tooltipExtended(null);
+            };
+            LiveGame.prototype.end = function () {
+                this._world.dispose();
+                this._world = null;
+
+                this._camera.dispose();
+                this._camera = null;
+
+                this._player(null);
+
+                this._mainSurface.dispose();
+                this._mainSurface = null;
+
+                this._selectionStart = null;
+                this._worldMouseCoords = null;
+
+                this._selectionRect = null;
+                this._selectedEntities([]);
+                this._hoverTarget(null);
+                this._hoverTile(null);
+
+                this._groupIndicesIndex(0);
+
+                this._hoverButton(null);
+                this._downButton(null);
+                this._tooltip(null);
+                this._tooltipExtended(null);
+            };
+
+            LiveGame.prototype.selectEntities = function (ents, add) {
+                var list = ents;
+
+                if (add) {
+                    var selected = this._selectedEntities();
+
+                    if (ents.length === 1) {
+                        var index = selected.indexOf(ents[0]);
+                        if (index === -1) {
+                            selected.push(ents[0]);
+                        } else {
+                            selected.splice(index, 1);
+                        }
+                    } else {
+                        for (var i = ents.length - 1; i !== -1; --i) {
+                            var ent = ents[i];
+                            if (selected.indexOf(ent) === -1)
+                                selected.push(ent);
+                        }
+                    }
+
+                    list = selected;
+                }
+
+                this._filterEntities(list);
+
+                this._selectedEntities(list);
             };
 
             LiveGame.prototype._startSelection = function (pageX, pageY) {
                 var rect = this._mainSurface.rect;
                 this._userState = WarNew.UserState.Selecting;
                 this._camera.getPointAt(pageX - rect.x, pageY - rect.y, this._selectionStart);
-                this._selectionEnd.fromVec2(this._selectionStart);
-
-                this._selectionRect.fromPoints(this._selectionStart, this._selectionEnd);
-            };
-            LiveGame.prototype._updateSelection = function (pageX, pageY) {
-                var rect = this._mainSurface.rect;
-                this._camera.getPointAt(pageX - rect.x, pageY - rect.y, this._selectionEnd);
-
-                this._selectionRect.fromPoints(this._selectionStart, this._selectionEnd);
             };
             LiveGame.prototype._endSelection = function () {
                 this._userState = WarNew.UserState.Default;
@@ -3114,7 +3342,7 @@ var Engine;
                 }
 
                 if (ents.length !== 0) {
-                    this.selectEntities(ents, false);
+                    this.selectEntities(ents, Engine.Input.isKeyDown(Engine.Key.KEY_SHIFT));
                 }
             };
 
@@ -3139,7 +3367,7 @@ var Engine;
                     ents.push(savedEnt);
                 } else {
                     ents.sort(function (a, b) {
-                        return (b.priority - a.priority) + (b.type - a.type) * 0.00001;
+                        return b.sortOrder - a.sortOrder;
                     });
 
                     if (ents.length > WarNew.ENTITY_MAX_SELECTION) {
@@ -3154,6 +3382,8 @@ var Engine;
                 var camera = this._camera;
                 var rect = this._mainSurface.rect;
                 var mousePos = Engine.Input.getMousePosition();
+
+                this._mouseInView = rect.containsPoint(mousePos);
 
                 if (Engine.Input.isKeyDown(Engine.Key.KEY_LEFT)) {
                     camera.scrollLeft(dt);
@@ -3181,9 +3411,27 @@ var Engine;
                     camera.scrollDown(dt);
                 }
 
+                camera.getPointAt(mousePos.x - rect.x, mousePos.y - rect.y, this._worldMouseCoords);
+
+                if (this._mouseInView) {
+                    this._hoverTile(this._world.terrain.getTileAtPoint(this._worldMouseCoords, false));
+
+                    var ents = this._world.getEntitiesAtPoint(this._worldMouseCoords);
+                    for (var i = ents.length - 1; i !== -1; --i) {
+                        var ent = ents[i];
+                        if (!ent.selectionRect.containsPoint(this._worldMouseCoords)) {
+                            ents.splice(i, 1);
+                        }
+                    }
+                    this._hoverTarget(ents[0] || this._hoverTile);
+                } else {
+                    this._hoverTile(null);
+                    this._hoverTarget(null);
+                }
+
                 var userState = this._userState;
                 if (userState === WarNew.UserState.Selecting) {
-                    this._updateSelection(mousePos.x, mousePos.y);
+                    this._selectionRect.fromPoints(this._selectionStart, this._worldMouseCoords);
                 }
             };
 
@@ -3247,6 +3495,10 @@ var Engine;
                     if (button === Engine.Key.KEY_MOUSE_LEFT) {
                         this._endSelection();
                     }
+                }
+
+                if (button === Engine.Key.KEY_MOUSE_LEFT) {
+                    this._downButton(null);
                 }
             };
 

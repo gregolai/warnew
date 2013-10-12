@@ -75,12 +75,23 @@ module Engine {
 		function _loadCursor(asset: AssetDataCursor, callback: () => void): void {
 
 			var id = asset.id;
+			var hotX = asset.x;
+			var hotY = asset.y;
 			var url = _makeUrl("cursor", asset.filename);
 
-			if (_cursors[id]) {
-				_cursors[id].dispose();
+			var oldCursor = _cursors[id];
+			if (oldCursor) {
+				if (oldCursor.url === url && oldCursor.hotspotX === hotX && oldCursor.hotspotY === hotY) {
+					// URL ALREADY LOADED INTO ID SLOT
+					callback();
+					return;
+				}
+				oldCursor.dispose();
 			}
-			_cursors[id] = new Cursor(id, url, asset.x, asset.y);
+
+			console.log("LOADING NEW CURSOR");
+
+			_cursors[id] = new Cursor(id, url, hotX, hotY);
 
 			callback();
 		}
@@ -88,11 +99,19 @@ module Engine {
 		function _loadFont(asset: AssetDataFont, callback: () => void): void {
 
 			var id = asset.id;
-
 			var url = _makeUrl("font", id + "/stylesheet.css");
 
+			var oldFont = _fonts[id];
+			if (oldFont && oldFont.url === url) {
+				// URL ALREADY LOADED INTO ID SLOT
+				callback();
+				return;
+			}
+
+			console.log("LOADING NEW FONT");
+
 			FileUtil.loadStylesheet(url, function () {
-				_fonts[id] = new Font(id, asset.styles);
+				_fonts[id] = new Font(id, url, asset.styles);
 				callback();
 			});
 
@@ -100,11 +119,21 @@ module Engine {
 
 		function _loadImage(asset: AssetDataImage, callback: () => void): void {
 
+			var id = asset.id;
 			var url = _makeUrl("image", asset.filename);
+
+			var oldImage = _images[id];
+			if (oldImage && oldImage.src.indexOf(url) !== -1) {
+				// URL ALREADY LOADED INTO ID SLOT
+				callback();
+				return;
+			}
+
+			console.log("LOADING NEW IMAGE");
 
 			var img = new Image();
 			img.onload = function () {
-				_images[asset.id] = img;
+				_images[id] = img;
 				callback();
 			};
 			img.onerror = function () {
@@ -115,7 +144,17 @@ module Engine {
 
 		function _loadShader(asset: AssetDataShader, callback: () => void): void {
 
+			var id = asset.id;
 			var url = _makeUrl("shader", asset.filename);
+
+			var oldShader = _shaders[id];
+			if (oldShader && oldShader.url === url) {
+				// URL ALREADY LOADED INTO ID SLOT
+				callback();
+				return;
+			}
+
+			console.log("LOADING NEW SHADER");
 
 			$.ajax({
 				url: url,
@@ -140,7 +179,8 @@ module Engine {
 						}
 					}
 
-					_shaders[asset.id] = {
+					_shaders[id] = {
+						url: url,
 						vertexShader: struct.DEFAULT.concat(struct.VERTEX).join("\n"),
 						fragmentShader: struct.DEFAULT.concat(struct.FRAGMENT).join("\n")
 					};
@@ -151,7 +191,6 @@ module Engine {
 					throw "Error loading shader (" + errorThrow + "): " + url;
 				}
 			});
-
 		}
 
 		function _loadSound(asset: AssetDataSound, callback: () => void): void {

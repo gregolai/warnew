@@ -75,6 +75,20 @@ module Engine.WarNew {
 			return this._tiles[id] || null;
 		}
 
+		getTileAtPoint(worldPoint: Vec2, clamp: boolean): Tile {
+			return this.getTileAtIndex(Math.floor(worldPoint.x * TILE_INV_SIZE), Math.floor(worldPoint.y * TILE_INV_SIZE), clamp);
+		}
+
+		getTileAtIndex(ix: number, iy: number, clamp: boolean): Tile {
+			if (clamp) {
+				ix = MathUtil.clamp(ix, 0, this._tilesWide - 1);
+				iy = MathUtil.clamp(iy, 0, this._tilesDeep - 1);
+			} else if (ix < 0 || iy < 0 || ix >= this._tilesWide || iy >= this._tilesDeep) {
+				return null;
+			}
+			return this._tiles[ix + this._tilesWide * iy];
+		}
+
 		getTilesWithinIndex(tileX: number, tileY: number, tilesWide: number, tilesHigh: number): Tile[] {
 			var sx = MathUtil.clamp(tileX, 0, this._tilesWide - 1);
 			var sy = MathUtil.clamp(tileY, 0, this._tilesDeep - 1);

@@ -145,7 +145,11 @@ module Engine {
 		}
 
 		private static _endLoading(): void {
-			$(App._loadingContainer).fadeOut(700);
+
+			// TODO: SPECIFY MINIMUM LOADING TIME
+			setTimeout(function () {
+				$(App._loadingContainer).fadeOut(700);
+			}, 500);
 		}
 
 

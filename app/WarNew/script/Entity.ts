@@ -9,7 +9,7 @@ module Engine.WarNew {
 		posY: number;
 	}
 
-	export class Entity implements IQuadtreeItem {
+	export class Entity implements IQuadtreeItem, WorldTarget {
 
 		getID(): number {
 			return this._id;
@@ -23,6 +23,7 @@ module Engine.WarNew {
 		private _type: EntityType;
 		private _owner: KnockoutObservable<Player>;
 		private _data: EntityData;
+		private _sortOrder: number;
 
 		private _position: Vec2;
 		private _selectionRect: Rect;			// update when position changes
@@ -37,6 +38,7 @@ module Engine.WarNew {
 		get id() { return this._id; }
 		get type() { return this._type; }
 		get owner() { return this._owner(); }
+		get sortOrder() { return this._sortOrder; }
 
 		get position() { return this._position; }
 		get selectionRect() { return this._selectionRect; }
@@ -47,8 +49,11 @@ module Engine.WarNew {
 		get isSelectable() { return this._data.selectable; }
 		get isStructure() { return this._data.isStructure; }
 		get isUnit() { return this._data.isUnit; }
+		get name() { return this._data.name; }
 		get priority() { return this._data.priority; }
 		get sight() { return this._data.sight; }
+		get tooltip() { return this._data.tooltip; }
+		get tooltipExtended() { return this._data.tooltipExtended; }
 
 		// GET COMPUTED DATA STATS
 		get armor() { return this._data.armorBase; }
@@ -64,6 +69,10 @@ module Engine.WarNew {
 			this._type = p.type;
 			this._owner = ko.observable(p.owner);
 			this._data = Data.AllEntityData[p.type];
+
+			this._sortOrder =	(((this._data.pointValue >> 4) & 0x7) << 20)	// 4 bits (pointValue divided by 16)
+								| (this._type << 19)							// 8 bits
+								| (this._id << 0);								// 19 bits
 
 			this._position = new Vec2(p.posX, p.posY);
 
