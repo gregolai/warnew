@@ -1,53 +1,98 @@
-<div id="LiveGame" data-bind="attr: { race: player ? player.race : '' }">
-
-	<script type="text/html" id="entity_button_template"><div class="entityButton">
-		<canvas class="portrait" data-bind="Portrait: $data"></canvas>
-		<div class="hoverFrame"></div>
-		<div class="healthbar"><div class="bar" data-bind="Healthbar: $data"></div></div>
-	</div></script>
+<div id="LiveGame" data-bind="attr: { race: getPlayer() ? getPlayer().getRace() : '' }">
 
 	<button class="toMainMenu">Go to main menu</button>
 
 	<div class="leftPanel">
 		<div class="minimap"></div>
 		<div class="entityButtonPanel">
-			<div class="selectedSingleUnit" data-bind="visible: oneEntitySelected, with: selectedEntities[0]">
-				<div data-bind="template: { name: 'entity_button_template', data: $data }"></div>
-				<div class="hp"></div>
-				<div class="name"></div>
-				<div class="level"></div>
-				<div class="armor">Armor:&nbsp;<span data-bind="text: armor"></span></div>
-				<div class="damage">Damage:&nbsp;<span data-bind="text: damageMin"></span>-<span data-bind="text: damageMax"></span></div>
-				<div class="range">Range:&nbsp;<span></span></div>
-				<div class="sight">Sight:&nbsp;<span data-bind="text: sight"></span></div>
+			<div class="buttons" data-bind="foreach: { data: getSelectedEntities(), as: 'entity' }">
+
+				<div class="iconButton entity" data-bind="css: { group: $root.isEntityInGroup(entity) }">
+					<canvas class="portrait" data-bind="Portrait: { data: entity, iconID: entity.getIconID(), player: entity.getOwner() }"></canvas>
+					<div class="hoverFrame"></div>
+					<div class="groupFrame"></div>
+					<div class="healthbar">
+						<div class="bar" data-bind="Healthbar: entity"></div>
+					</div>
+				</div>
+
 			</div>
-			<div class="selectedMultiUnits" data-bind="visible: multipleEntitiesSelected, template: { name: 'entity_button_template', foreach: selectedEntities }"></div>
+			<div class="info" data-bind="visible: getSelectedEntities().length === 1, with: getSelectedEntities()[0]">
+				<div class="hp"></div>
+				<div class="name" data-bind="text: getName()"></div>
+				<div class="level"></div>
+				<div class="armor">Armor:&nbsp;<span data-bind="text: getArmor()"></span></div>
+				<div class="damage">Damage:&nbsp;<span data-bind="text: getDamageMin()"></span>-<span data-bind="text: getDamageMax()"></span></div>
+				<div class="range">Range:&nbsp;<span></span></div>
+				<div class="sight">Sight:&nbsp;<span data-bind="text: getSight()"></span></div>
+			</div>
 		</div>
-		<div class="commandButtonPanel"></div>
-		<div class="tooltip" data-bind="text: tooltip"></div>
-		<div class="tooltipExtended" data-bind="text: tooltipExtended"></div>
+		<div class="commandButtonPanel" data-bind="foreach: { data: getCurrentCommands(), as: 'command' }">
+			<div class="iconButton command" data-bind="css: { filler: !command }, if: command">
+				<canvas class="portrait" data-bind="Portrait: { data: command, iconID: command.getIconID(), player: $root.getPlayer() }"></canvas>
+				<div class="hoverFrame"></div>
+			</div>
+		</div>
+		<div class="tooltip" data-bind="text: getTooltip()"></div>
+		<div class="tooltipExtended" data-bind="text: getTooltipExtended()"></div>
 	</div>
 	<div class="rightFillerPanel"></div>
 	<div class="statusPanel">
-		<div class="text" data-bind="text: statusBarText"></div>
+		<div class="left">
+			<div class="text" data-bind="text: getStatusBarText()"></div>
+		</div>
+		<div class="right">
+
+			<div class="resources" data-bind="with: getHoverCommand()">
+				<div class="resource gold" data-bind="visible: getGoldCost() > 0">
+					<div class="icon"></div>
+					<div class="value" data-bind="text: getGoldCost()"></div>
+				</div>
+				<div class="resource lumber" data-bind="visible: getLumberCost() > 0">
+					<div class="icon"></div>
+					<div class="value" data-bind="text: getLumberCost()"></div>
+				</div>
+				<div class="resource oil" data-bind="visible: getOilCost() > 0">
+					<div class="icon"></div>
+					<div class="value" data-bind="text: getOilCost()"></div>
+				</div>
+				<div class="resource food" data-bind="visible: getFoodCost() > 0">
+					<div class="icon"></div>
+					<div class="value" data-bind="text: getFoodCost()"></div>
+				</div>
+				<div class="resource mana" data-bind="visible: getManaCost() > 0">
+					<div class="icon"></div>
+					<div class="value" data-bind="text: getManaCost()"></div>
+				</div>
+			</div>
+
+		</div>
 	</div>
-	<div class="resourcePanel" data-bind="with: player">
-		<div class="resource gold">
-			<div class="icon"></div>
-			<div class="value" data-bind="text: gold"></div>
+	<div class="resourcePanel resources" >
+		<div class="left">
+
+			<div class="resources" data-bind="with: getPlayer()">
+				<div class="resource gold">
+					<div class="icon"></div>
+					<div class="value" data-bind="text: getGold()"></div>
+				</div>
+				<div class="resource lumber">
+					<div class="icon"></div>
+					<div class="value" data-bind="text: getLumber()"></div>
+				</div>
+				<div class="resource oil">
+					<div class="icon"></div>
+					<div class="value" data-bind="text: getOil()"></div>
+				</div>
+				<div class="resource food">
+					<div class="icon"></div>
+					<div class="value" data-bind="text: getFoodUsed()+'&nbsp;/&nbsp;'+getFoodCreated()"></div>
+				</div>
+			</div>
+
 		</div>
-		<div class="resource lumber">
-			<div class="icon"></div>
-			<div class="value" data-bind="text: lumber"></div>
-		</div>
-		<div class="resource oil">
-			<div class="icon"></div>
-			<div class="value" data-bind="text: oil"></div>
-		</div>
-		<div class="resource food">
-			<div class="icon"></div>
-			<div class="value" data-bind="text: foodUsed+'&nbsp;/&nbsp;'+foodCreated"></div>
-		</div>
+		<div class="right"></div>
 	</div>
 
+	<canvas class="mainView"></canvas>
 </div>

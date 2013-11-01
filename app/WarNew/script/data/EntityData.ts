@@ -5,6 +5,7 @@ module Engine.WarNew.Data {
 	export var AllEntityData: EntityData[] = [];
 
 	var defaultEntity: EntityData = {
+		abilities: [],
 		armorBase: 0,
 		buildTime: 60,
 		buttonX: 0,
@@ -19,6 +20,7 @@ module Engine.WarNew.Data {
 		name: "Default Entity",
 		oilCost: 0,
 		occupyFlags: Occupy.None | 0,
+		page: CommandPage.Default,
 		pointValue: 0,
 		priority: 0,
 		selectable: true,
@@ -48,6 +50,7 @@ module Engine.WarNew.Data {
 		isStructure: false,
 		tilesHigh: 1,
 		tilesWide: 1,
+		unitsTrained: [],
 
 		// UNIT
 		acquisitionRange: 0,
@@ -66,6 +69,7 @@ module Engine.WarNew.Data {
 		iconId: "icon-default-structure",
 		name: "Default Structure",
 		occupyFlags: Occupy.LandStructure,
+		page: CommandPage.BasicBuild,
 		sequences: {
 			type: SequenceType.Vertical,
 			imageID: "gold_mine",

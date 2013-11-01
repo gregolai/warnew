@@ -11,6 +11,7 @@ module Engine {
 		var _gamepad: Gamepad;
 		var _gamepadControls: { [name: string]: number; };
 		var _listeners: InputListener[];
+		var _curEvent: Event;
 
 		export function isKeyDown(key: Key): boolean {
 			return _keysDown[key] || false;
@@ -18,6 +19,13 @@ module Engine {
 
 		export function getMousePosition(): Vec2 {
 			return _mousePosition;
+		}
+
+		export function preventDefault(): void {
+			if (_curEvent) {
+				_curEvent.preventDefault();
+				_curEvent.stopPropagation();
+			}
 		}
 
 		export function register(listener: InputListener): void {
@@ -47,7 +55,7 @@ module Engine {
 		}
 
 		export function triggerResize(): void {
-			_resize();
+			_resize(null);
 		}
 
 		function _init(): void {
@@ -86,15 +94,17 @@ module Engine {
 		}
 
 		function _resetAllKeys(): void {
-			console.log("RESETTING ALL KEYS");
 			for (var i = 0, ii = _keysDown.length; i < ii; ++i) {
 				if (_keysDown[i]) {
-					__keyUp(i);
+					_keysDown[i] = false;
+					__broadcast("onKeyUp", null, [i]);
 				}
 			}
 		}
 
-		function __broadcast(onEventName: string, args?: any[]): void {
+		function __broadcast(onEventName: string, evt: Event, args?: any[]): void {
+
+			_curEvent = evt;
 
 			var listeners = _listeners;
 			for (var i = 0, ii = listeners.length; i < ii; ++i) {
@@ -112,13 +122,18 @@ module Engine {
 
 				if (isKeyDown(Key.KEY_CTRL) && isKeyDown(Key.KEY_SHIFT)) {
 					// SHOW CONTEXT MENU
+					_resetAllKeys();
 				} else {
 					// HIDE CONTEXT MENU
 					evt.preventDefault();
+					evt.stopPropagation();
 				}
+
+			} else {
+				// SHOW CONTEXT MENU
+				_resetAllKeys();
 			}
 
-			_resetAllKeys();
 		}
 
 		function _blur(evt: Event): void {
@@ -128,53 +143,57 @@ module Engine {
 
 		function _keyDown(evt: KeyboardEvent): void {
 
-			_keysDown[evt.keyCode] = true;
+			if (!_keysDown[evt.keyCode]) {
 
-			__broadcast("onKeyDown", [evt.keyCode]);
-		}
+				_keysDown[evt.keyCode] = true;
 
-		function __keyUp(key: Key): void {
+				__broadcast("onKeyDown", evt, [evt.keyCode]);
+			}
 
-			_keysDown[key] = false;
-
-			__broadcast("onKeyUp", [key]);
+			__broadcast("onBufferedKeyDown", evt, [evt.keyCode]);
 		}
 		function _keyUp(evt: KeyboardEvent): void {
 
-			__keyUp(evt.keyCode);
+			if (_keysDown[evt.keyCode]) {
+
+				_keysDown[evt.keyCode] = false;
+
+				__broadcast("onKeyUp", evt, [evt.keyCode]);
+			}
+
 		}
 		function _mouseDown(evt: MouseEvent): void {
 
 			_keysDown[evt.button] = true;
 			
-			__broadcast("onMouseDown", [evt.pageX, evt.pageY, evt.button]);
+			__broadcast("onMouseDown", evt, [evt.pageX, evt.pageY, evt.button]);
 		}
 		function _mouseUp(evt: MouseEvent): void {
 
 			_keysDown[evt.button] =  false;
 
-			__broadcast("onMouseUp", [evt.pageX, evt.pageY, evt.button]);
+			__broadcast("onMouseUp", evt, [evt.pageX, evt.pageY, evt.button]);
 		}
 		function _mouseMove(evt: MouseEvent): void {
 			
 			var x = _mousePosition.x = evt.pageX;
 			var y = _mousePosition.y = evt.pageY;
 			
-			__broadcast("onMouseMove", [x, y]);
+			__broadcast("onMouseMove", evt, [x, y]);
 		}
 		function _mouseWheel(evt: WheelEvent): void {
 
-			var delta = (<any>evt).wheelDelta || evt.detail;
+			var delta = (<any>evt).wheelDelta || -evt.detail;
 
-			__broadcast("onMouseWheel", [delta]);
+			__broadcast("onMouseWheel", evt, [delta]);
 		}
 
-		function _resize(): void {
+		function _resize(evt: Event): void {
 
 			var width = Math.max(App.container.offsetWidth, 1);
 			var height = Math.max(App.container.offsetHeight, 1);
 
-			__broadcast("onResize", [width, height]);
+			__broadcast("onResize", evt, [width, height]);
 		}
 
 
@@ -186,29 +205,29 @@ module Engine {
 			console.log("GAMEPAD CONNECT");
 			console.log(evt);
 
-			__broadcast("onGamepadConnect");
+			__broadcast("onGamepadConnect", null);
 		}
 		function _gamepadDisconnect(evt: GamepadConnectEvent): void {
 			console.log("GAMEPAD DISCONNECT");
 			console.log(evt);
 
-			__broadcast("onGamepadDisconnect");
+			__broadcast("onGamepadDisconnect", null);
 		}
 		function _gamepadTick(evt: GamepadTickEvent): void {
 
-			__broadcast("onGamepadTick", [evt.length]);
+			__broadcast("onGamepadTick", null, [evt.length]);
 		}
 		function _gamepadButtonDown(evt: GamepadButtonEventData): void {
 
 			_gamepadControls[evt.control] = 1;
 
-			__broadcast("onGamepadButtonDown", [evt.control]);
+			__broadcast("onGamepadButtonDown", null, [evt.control]);
 		}
 		function _gamepadButtonUp(evt: GamepadButtonEventData): void {
 
 			_gamepadControls[evt.control] = 0;
 
-			__broadcast("onGamepadButtonUp", [evt.control]);
+			__broadcast("onGamepadButtonUp", null, [evt.control]);
 		}
 		function _gamepadAxisChanged(evt: GamepadAxisEventData): void {
 
@@ -219,7 +238,7 @@ module Engine {
 
 			_gamepadControls[evt.axis] = value;
 
-			__broadcast("onGamepadAxisChanged", [evt.axis, value]);
+			__broadcast("onGamepadAxisChanged", null, [evt.axis, value]);
 		}
 	}
 

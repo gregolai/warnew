@@ -9,6 +9,7 @@ module Engine.WarNew {
 		private _id: number;
 		private _world: World;
 		private _race: string;
+		private _team: Team;
 
 		private _type: PlayerType;
 		private _gold: number;
@@ -17,14 +18,15 @@ module Engine.WarNew {
 		private _foodUsed: number;
 		private _foodCreated: number;
 
-		get id() { return this._id; }
-		get race() { return this._race; }
+		getID() { return this._id; }
+		getRace() { return this._race; }
+		getTeam() { return this._team; }
 
-		get gold() { return this._gold; }
-		get lumber() { return this._lumber; }
-		get oil() { return this._oil; }
-		get foodUsed() { return this._foodUsed; }
-		get foodCreated() { return this._foodCreated; }
+		getGold() { return this._gold; }
+		getLumber() { return this._lumber; }
+		getOil() { return this._oil; }
+		getFoodUsed() { return this._foodUsed; }
+		getFoodCreated() { return this._foodCreated; }
 
 		constructor(id: number, world: World) {
 			this._id = id;
@@ -41,7 +43,7 @@ module Engine.WarNew {
 			this._world = null;
 		}
 
-		decode(raw?: RawPlayerData): void {
+		init(raw?: RawPlayerData): void {
 
 			this._type = raw ? raw.playerType : PlayerType.None;
 

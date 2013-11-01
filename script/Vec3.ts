@@ -21,6 +21,21 @@ module Engine {
 			return new Vec3(this.x, this.y, this.z);
 		}
 
+		set(v: Vec3): Vec3;
+		set(x: number, y: number, z: number): Vec3;
+		set(a: any, y?: number, z?: number): Vec3 {
+			if (y === undefined) {
+				this.x = a.x;
+				this.y = a.y;
+				this.z = a.z;
+			} else {
+				this.x = a;
+				this.y = y;
+				this.z = z;
+			}
+			return this;
+		}
+
 		toString(): string {
 			return this.x + ", " + this.y + ", " + this.z;
 		}
@@ -28,57 +43,80 @@ module Engine {
 		toArray(): number[] {
 			return [this.x, this.y, this.z];
 		}
-		fromArray(v: number[]): void {
+		fromArray(v: number[]): Vec3 {
 			this.x = v[0] || 0;
 			this.y = v[1] || 0;
 			this.z = v[2] || 0;
+			return this;
 		}
 
-		fromVec3(v: Vec3): void {
-			this.x = v.x;
-			this.y = v.y;
-			this.z = v.z;
-		}
-
-		add(rhs: Vec3): void {
-			this.x += rhs.x;
-			this.y += rhs.y;
-			this.z += rhs.z;
-		}
-
-		subtract(rhs: Vec3): void {
-			this.x -= rhs.x;
-			this.y -= rhs.y;
-			this.z -= rhs.z;
-		}
-
-		multiply(rhs: number): void;
-		multiply(rhs: Vec3): void;
-		multiply(rhs: any): void {
-			if (rhs instanceof Vec3) {
-				this.x *= rhs.x;
-				this.y *= rhs.y;
-				this.z *= rhs.z;
+		add(v: Vec3): Vec3;
+		add(x: number, y: number, z: number): Vec3;
+		add(a: any, y?: number, z?: number): Vec3 {
+			if (y === undefined) {
+				this.x += a.x;
+				this.y += a.y;
+				this.z += a.z;
+			} else {
+				this.x += a;
+				this.y += y;
+				this.z += z;
 			}
-			else {
-				this.x *= rhs;
-				this.y *= rhs;
-				this.z *= rhs;
-			}
+			return this;
 		}
 
-		invert(): void {
+
+		subtract(v: Vec3): Vec3;
+		subtract(x: number, y: number, z: number): Vec3;
+		subtract(a: any, y?: number, z?: number): Vec3 {
+			if (y === undefined) {
+				this.x -= a.x;
+				this.y -= a.y;
+				this.z -= a.z;
+			} else {
+				this.x -= a;
+				this.y -= y;
+				this.z -= z;
+			}
+			return this;
+		}
+
+		multiply(v: Vec3): Vec3;
+		multiply(c: number): Vec3;
+		multiply(x: number, y: number, z: number): Vec3;
+		multiply(a: any, y?: number, z?: number): Vec3 {
+			if (y === undefined) {
+				if (a instanceof Vec3) {
+					this.x *= a.x;
+					this.y *= a.y;
+					this.z *= a.z;
+				} else {
+					this.x *= a;
+					this.y *= a;
+					this.z *= a;
+				}
+			} else {
+				this.x *= a;
+				this.y *= y;
+				this.z *= z;
+			}
+			return this;
+		}
+
+		invert(): Vec3 {
 			this.x = -this.x;
 			this.y = -this.y;
 			this.z = -this.z;
+			return this;
 		}
 
-		setLength(length: number) {
+		setLength(length: number): Vec3 {
 			this.normalize();
 			this.multiply(length);
+			return this;
 		}
 
-		normalize(): void {
+		normalize(): Vec3 {
 			if (this.lengthSqr === 0) {
 				this.x = 0;
 				this.y = 1;
@@ -89,54 +127,50 @@ module Engine {
 				this.y *= invLen;
 				this.z *= invLen;
 			}
+			return this;
 		}
 
-		static inverse(vec: Vec3): Vec3 {
-			return new Vec3(-vec.x, -vec.y, -vec.z);
+		lerp(v: Vec3, t: number): Vec3 {
+			this.x += t * (v.x - this.x);
+			this.y += t * (v.y - this.y);
+			this.z += t * (v.z - this.z);
+			return this;
 		}
 
-		static add(left: Vec3, right: Vec3): Vec3 {
-			return new Vec3(left.x + right.x, left.y + right.y, left.z + right.z);
+		dot(v: Vec3): number {
+			return this.x * v.x + this.y * v.y + this.z + v.z;
 		}
 
-		static subtract(left: Vec3, right: Vec3): Vec3 {
-			return new Vec3(left.x - right.x, left.y - right.y, left.z - right.z);
-		}
-
-		static multiply(left: Vec3, right: number): Vec3;
-		static multiply(left: Vec3, right: Vec3): Vec3;
-		static multiply(left: Vec3, right: any): Vec3 {
-			if (right instanceof Vec3)
-				return new Vec3(left.x * right.x, left.y * right.y, left.z * right.z);
-			else
-				return new Vec3(left.x * right, left.y * right, left.z * right);
-		}
-
-		static lerp(left: Vec3, right: Vec3, t: number): Vec3 {
-			return new Vec3(left.x + t * (right.x - left.x), left.y + t * (right.y - left.y), left.z + t * (right.z - left.z));
-		}
-
-		static dot(left: Vec3, right: Vec3): number {
-			return left.x * right.x + left.y * right.y + left.z + right.z;
-		}
-
-		static distance(left: Vec3, right: Vec3): number {
-			var dx = right.x - left.x;
-			var dy = right.y - left.y;
-			var dz = right.z - left.z;
+		distance(v: Vec3): number;
+		distance(x: number, y: number, z: number): number;
+		distance(a: any, y?: number, z?: number): number {
+			if (y === undefined) {
+				var dx = this.x - a.x;
+				var dy = this.y - a.y;
+				var dz = this.z - a.z;
+			} else {
+				var dx = this.x - a;
+				var dy = this.y - y;
+				var dz = this.z - z;
+			}
 			return Math.sqrt(dx * dx + dy * dy + dz * dz);
 		}
 
-		static distanceSqr(left: Vec3, right: Vec3): number {
-			var dx = right.x - left.x;
-			var dy = right.y - left.y;
-			var dz = right.z - left.z;
+		distanceSqr(v: Vec3): number;
+		distanceSqr(x: number, y: number, z: number): number;
+		distanceSqr(a: any, y?: number, z?: number): number {
+			if (y === undefined) {
+				var dx = this.x - a.x;
+				var dy = this.y - a.y;
+				var dz = this.z - a.z;
+			} else {
+				var dx = this.x - a;
+				var dy = this.y - y;
+				var dz = this.z - z;
+			}
 			return dx * dx + dy * dy + dz * dz;
 		}
 
-		static equals(a: Vec3, b: Vec3): boolean {
-			return (a.x === b.x && a.y === b.y && a.z === b.z);
-		}
 	}
 
 }

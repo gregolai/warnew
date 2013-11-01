@@ -137,7 +137,7 @@ module Engine {
 
 				// LOAD KNOCKOUT
 				async.lock();
-				FileUtil.loadScript(ROOT_VENDOR_DIRECTORY + "knockout.min.js", unlock);
+				FileUtil.loadScript(ROOT_VENDOR_DIRECTORY + "knockout-3.0.0.js", unlock);
 
 				unlock();
 			});
@@ -156,7 +156,6 @@ module Engine {
 		private _params: AppParams;
 
 		// STAGE STUFF
-		private _container: HTMLDivElement;
 		private _appContainer: JQuery;
 		private _gamepad: Gamepad;
 		private _stats: Stats;
@@ -299,7 +298,10 @@ module Engine {
 			}
 
 			if (p.customVendors) {
-				vendors = vendors.concat(p.customVendors);
+				var customVendors = p.customVendors;
+				for (var v = 0, vv = customVendors.length; v < vv; ++v) {
+					vendors.push(CUSTOM_VENDOR_DIRECTORY + customVendors[v]);
+				}
 			}
 
 			// LOAD VENDORS
@@ -372,7 +374,8 @@ module Engine {
 
 		private _createStateDom(state: AppState, callback: () => void): void {
 
-			var container = $(document.createElement("div"))
+			var div = document.createElement("div");
+			var container = $(div)
 				.addClass("state")
 				.addClass(state.id)
 				.attr("data-bind", "visible: active")

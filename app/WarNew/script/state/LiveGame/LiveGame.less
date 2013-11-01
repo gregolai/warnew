@@ -1,6 +1,18 @@
 @import "../ui_common.less";
 
+
+
 #LiveGame {
+
+	canvas {
+		image-rendering: optimizeSpeed;             // Older versions of FF
+		image-rendering: -moz-crisp-edges;          // FF 6.0+
+		image-rendering: -webkit-optimize-contrast; // Webkit
+		image-rendering: -o-crisp-edges;            // OS X & Windows Opera (12.02+)
+		image-rendering: optimize-contrast;         // Possible future browsers.
+		-ms-interpolation-mode: nearest-neighbor;   // IE
+	}
+
 	height: 100%;
 
 	color: #fff;
@@ -19,49 +31,20 @@
 			position: relative;
 			height: 141px;
 			width: 163px;
-			margin: 100px auto;
+			margin: 100px auto auto auto;
 			background-color: #666;
 
-			.entityButton {
-				position: relative;
-				width: 54px;
-				height: 53px;
-				display: inline-block;
-				.sprite("@{UI_ROOT}human_ui.png", 494px, 0px, 54px, 53px);
+		} //entityButtonPanel
 
-				> .portrait {
-					position: absolute;
-					left: 4px;
-					top: 4px;
-				}
+		> .commandButtonPanel {
 
-				> .hoverFrame {
-					position: absolute;
-					width: 52px;
-					height: 44px;
-				}
-
-				> .healthbar {
-					position: absolute;
-					left: 2px;
-					top: 46px;
-					width: 50px;
-					height: 5px;
-					background-color: #343434;
-
-					> .bar {
-						height: 100%;
-					}
-				}
-
-				&:hover {
-					> .hoverFrame {
-						border: 1px solid #a0a0a4;
-					}
-				}
-			}
-
+			position: relative;
+			height: 141px;
+			width: 163px;
+			margin: 20px auto auto auto;
+			background-color: #aaa;
 		}
+
 	}
 
 	> .resourcePanel {
@@ -73,22 +56,52 @@
 
 		font-family: "SourceSansPro_regular";
 		font-size: 16px;
+		
+		> .left {
+			float: left;
 
+			> .resources {
+
+			}
+		}
+		> .right {
+			float: right;
+		}
+	}
+
+	> .statusPanel {
+		position: absolute;
+		left: 176px;
+		bottom: 0;
+		right: 16px;
+		height: 16px;
+
+		> .left {
+			float: left;
+		}
+		> .right {
+			float: right;
+
+			> .resources {
+				margin-right: 100px;
+			}
+		}
+	}
+
+	.resources {
 		> .resource {
+
 			position: relative;
-			display: inline-block;
+			float: left;
 			margin-left: 40px;
 			
 			> .value {
 				margin-left: 4px;
+				font-size: 12px;
 			}
 
 			> .icon, .value {
-				display: inline-block;
-			}
-
-			&:first-child {
-				margin-left: 80px;
+				float: left;
 			}
 
 			&.gold {
@@ -111,18 +124,16 @@
 
 			&.food {
 				> .icon {
-					.sprite("@{UI_ROOT}human_ui.png", 564px, 28px, 14px, 14px);
+					.sprite("@{UI_ROOT}human_ui.png", 564px, 42px, 14px, 14px);
+				}
+			}
+
+			&.mana {
+				> .icon {
+					.sprite("@{UI_ROOT}human_ui.png", 564px, 56px, 14px, 14px);
 				}
 			}
 		}
-	}
-
-	> .statusPanel {
-		position: absolute;
-		left: 176px;
-		bottom: 0;
-		right: 16px;
-		height: 16px;
 	}
 
 	> .rightFillerPanel {
@@ -131,6 +142,64 @@
 		top: 0;
 		bottom: 0;
 		width: 16px;
+	}
+
+	.iconButton {
+		position: relative;
+		width: 54px;
+		float: left;
+		.sprite("@{UI_ROOT}human_ui.png", 494px, 0px, 54px, 53px);
+
+		&.entity {
+			height: 53px;
+
+			&.group {
+				> .groupFrame {
+					position: absolute;
+					left: 1px;
+					top: 1px;
+					width: 50px;
+					height: 42px;
+					border: 1px solid #ff0;
+				}
+			}
+
+			> .healthbar {
+				position: absolute;
+				left: 2px;
+				top: 46px;
+				width: 50px;
+				height: 5px;
+				background-color: #343434;
+
+				> .bar {
+					height: 100%;
+				}
+			}
+		}
+
+		&.command {
+			height: 46px;
+
+			&.filler {
+				visibility: hidden;
+			}
+		}
+
+		> .portrait {
+			position: absolute;
+			left: 4px;
+			top: 4px;
+		}
+
+		&:hover {
+			> .hoverFrame {
+				position: absolute;
+				width: 52px;
+				height: 44px;
+				border: 1px solid #a0a0a4;
+			}
+		}
 	}
 
 	&[race=human] {

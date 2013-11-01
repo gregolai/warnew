@@ -2,6 +2,17 @@
 
 module Engine.WarNew {
 
+	export enum AbilityType {
+		// TODO
+	}
+
+	export enum ActionType {
+		Waiting,
+		Moving,
+		Attacking,
+		BeingConstructed
+	}
+
 	export enum AnimationSequenceType {
 		Directional,		// 5-column, vertical
 		Vertical,			// Single-column, vertical
@@ -9,11 +20,11 @@ module Engine.WarNew {
 	}
 
 	export enum CommandPage {
-		Default,
+		Default			= 0,
 
-		AdvancedBuild,
-		BasicBuild,
-		Targeting
+		AdvancedBuild	= 1,
+		BasicBuild		= 2,
+		Targeting		= 3
 	}
 
 	export enum Direction {
@@ -29,7 +40,15 @@ module Engine.WarNew {
 		DownRight	= BIT_2 | BIT_3
 	}
 
+	export enum EntityContainType {
+		Cargo,
+		Builder,
+		Miner
+	}
+
 	export enum EntityType {
+		None = 0xff,
+
 		// UNITS
 		Footman = 0x00,
 		Knight = 0x06,
@@ -59,6 +78,39 @@ module Engine.WarNew {
 		Air				= BIT_3
 	}
 
+	export enum OrderType {
+		None,
+
+		AttackEntity,
+		AttackToTile,
+		BuildAtTile,
+		CastOnEntity,
+		CastOnTile,
+		ClearArea,
+		FollowEntity,
+		HarvestGold,
+		HoldPosition,
+		MoveToTile,
+		PatrolToEntity,
+		PatrolToTile,
+		UpgradeSelf       // Watch Tower -> Cannon Tower
+	}
+
+	export enum PathType {
+		ToTarget,
+		ToArea,
+		AvoidTarget,
+		AvoidArea,
+		ClearArea
+	}
+
+	export enum PlacementTestFlag {
+		Message				= BIT_0,
+		BlockingEntities	= BIT_1,
+		ValidTiles			= BIT_2,
+		InvalidTiles		= BIT_3
+	}
+
 	export enum PlayerType {
 		None			= 0,
 		User			= 1,
@@ -84,6 +136,16 @@ module Engine.WarNew {
 		Default,
 		FrameIncremented,
 		SequenceElapsed
+	}
+
+	// THE RESULT OF WHEN AN ENTITY THINKS
+	export enum ThinkResult {
+		NotDone,
+		Done,
+		DoneIfQueue
+	}
+
+	export enum TileSpecialFlag {
 	}
 
 	export enum TileType {

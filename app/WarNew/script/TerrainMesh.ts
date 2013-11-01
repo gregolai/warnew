@@ -9,7 +9,7 @@ module Engine.WarNew {
 		private _geometry: THREE.BufferGeometry;
 		private _mesh: THREE.Mesh;
 
-		get mesh() { return this._mesh; }
+		getMesh() { return this._mesh; }
 
 		constructor(tilesWide: number, tilesDeep: number) {
 
@@ -135,6 +135,7 @@ module Engine.WarNew {
 
 		updateTile(tile: Tile): void {
 
+			var tileID = tile.getID();
 
 			var geom = this._geometry;
 
@@ -143,7 +144,7 @@ module Engine.WarNew {
 				var atw = TILE_ATLAS_TILES_WIDE;
 				var ath = TILE_ATLAS_TILES_HIGH;
 
-				var aIndex = tile.atlasIndex;
+				var aIndex = tile._atlasIndex;
 				var ax = (aIndex % atw);
 				var ay = Math.floor(aIndex / atw);
 
@@ -157,7 +158,7 @@ module Engine.WarNew {
 				var v1 = v0 - uvY;
 
 				var uvs = geom.attributes["uv"].array;
-				var u = 12 * tile.id - 1;
+				var u = 12 * tileID - 1;
 
 				uvs[++u] = u1;
 				uvs[++u] = v1;
@@ -180,13 +181,13 @@ module Engine.WarNew {
 
 			// UPDATE HEIGHTS
 			{
-				var h1 = tile.data.layer * TERRAIN_HEIGHT_SCALE;
+				var h1 = tile.getData().layer * TERRAIN_HEIGHT_SCALE;
 				var h0 = h1 - TERRAIN_HEIGHT_SCALE;
 
 				var positions = geom.attributes["position"].array;
-				var p = 18 * tile.id + 1;
+				var p = 18 * tileID + 1;
 
-				var cf = tile.cornerFlags;
+				var cf = tile.getCornerFlags();
 
 				positions[p] = ((cf & 0x8) !== 0) ? h1 : h0;
 				p += 3;

@@ -197,6 +197,7 @@ var Engine;
 
     Engine.ROOT_DIRECTORY_FROM_APP = "../../";
     Engine.ROOT_VENDOR_DIRECTORY = Engine.ROOT_DIRECTORY_FROM_APP + "vendor/";
+    Engine.CUSTOM_VENDOR_DIRECTORY = "vendor/";
 })(Engine || (Engine = {}));
 var Engine;
 (function (Engine) {
@@ -302,7 +303,7 @@ var Engine;
                 Engine.FileUtil.loadScript(Engine.ROOT_VENDOR_DIRECTORY + "jquery.min.js", unlock);
 
                 async.lock();
-                Engine.FileUtil.loadScript(Engine.ROOT_VENDOR_DIRECTORY + "knockout.min.js", unlock);
+                Engine.FileUtil.loadScript(Engine.ROOT_VENDOR_DIRECTORY + "knockout-3.0.0.js", unlock);
 
                 unlock();
             });
@@ -409,7 +410,10 @@ var Engine;
             }
 
             if (p.customVendors) {
-                vendors = vendors.concat(p.customVendors);
+                var customVendors = p.customVendors;
+                for (var v = 0, vv = customVendors.length; v < vv; ++v) {
+                    vendors.push(Engine.CUSTOM_VENDOR_DIRECTORY + customVendors[v]);
+                }
             }
 
             var async = new Engine.AsyncLock(callback);
@@ -477,7 +481,8 @@ var Engine;
         };
 
         App.prototype._createStateDom = function (state, callback) {
-            var container = $(document.createElement("div")).addClass("state").addClass(state.id).attr("data-bind", "visible: active").appendTo(this._appContainer);
+            var div = document.createElement("div");
+            var container = $(div).addClass("state").addClass(state.id).attr("data-bind", "visible: active").appendTo(this._appContainer);
 
             container.append(state.sceneDom);
             container.append(state.uiDom);
@@ -891,6 +896,109 @@ var Engine;
 })(Engine || (Engine = {}));
 var Engine;
 (function (Engine) {
+    var BinaryHeap = (function () {
+        function BinaryHeap(scoreFunction) {
+            this._content = [];
+            this._scoreFunction = scoreFunction;
+        }
+        BinaryHeap.prototype.push = function (node) {
+            this._content.push(node);
+
+            this._sinkDown(this._content.length - 1);
+        };
+
+        BinaryHeap.prototype.pop = function () {
+            var result = this._content[0];
+
+            var end = this._content.pop();
+
+            if (this._content.length > 0) {
+                this._content[0] = end;
+                this._bubbleUp(0);
+            }
+            return result;
+        };
+
+        BinaryHeap.prototype.remove = function (node) {
+            var len = this._content.length;
+
+            for (var i = 0; i < len; i++) {
+                if (this._content[i] == node) {
+                    var end = this._content.pop();
+                    if (i != len - 1) {
+                        this._content[i] = end;
+                        if (this._scoreFunction(end) < this._scoreFunction(node))
+                            this._sinkDown(i);
+else
+                            this._bubbleUp(i);
+                    }
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        BinaryHeap.prototype.size = function () {
+            return this._content.length;
+        };
+
+        BinaryHeap.prototype.rescoreElement = function (node) {
+            this._sinkDown(this._content.indexOf(node));
+        };
+
+        BinaryHeap.prototype._sinkDown = function (n) {
+            var element = this._content[n];
+
+            while (n > 0) {
+                var parentN = Math.floor((n + 1) >> 1) - 1, parent = this._content[parentN];
+
+                if (this._scoreFunction(element) < this._scoreFunction(parent)) {
+                    this._content[parentN] = element;
+                    this._content[n] = parent;
+
+                    n = parentN;
+                } else {
+                    break;
+                }
+            }
+        };
+
+        BinaryHeap.prototype._bubbleUp = function (n) {
+            var length = this._content.length, element = this._content[n], elemScore = this._scoreFunction(element);
+
+            while (true) {
+                var child2N = (n + 1) * 2, child1N = child2N - 1;
+
+                var swap = null;
+
+                if (child1N < length) {
+                    var child1 = this._content[child1N], child1Score = this._scoreFunction(child1);
+
+                    if (child1Score < elemScore)
+                        swap = child1N;
+                }
+
+                if (child2N < length) {
+                    var child2 = this._content[child2N], child2Score = this._scoreFunction(child2);
+                    if (child2Score < (swap == null ? elemScore : child1Score))
+                        swap = child2N;
+                }
+
+                if (swap != null) {
+                    this._content[n] = this._content[swap];
+                    this._content[swap] = element;
+                    n = swap;
+                } else {
+                    break;
+                }
+            }
+        };
+        return BinaryHeap;
+    })();
+    Engine.BinaryHeap = BinaryHeap;
+})(Engine || (Engine = {}));
+var Engine;
+(function (Engine) {
     (function (CtxUtil) {
         function path(ctx, points, offset, joinLast) {
             if (typeof joinLast === "undefined") { joinLast = true; }
@@ -1160,6 +1268,7 @@ var Engine;
         var _gamepad;
         var _gamepadControls;
         var _listeners;
+        var _curEvent;
 
         function isKeyDown(key) {
             return _keysDown[key] || false;
@@ -1170,6 +1279,14 @@ var Engine;
             return _mousePosition;
         }
         Input.getMousePosition = getMousePosition;
+
+        function preventDefault() {
+            if (_curEvent) {
+                _curEvent.preventDefault();
+                _curEvent.stopPropagation();
+            }
+        }
+        Input.preventDefault = preventDefault;
 
         function register(listener) {
             if (!_initialized) {
@@ -1198,7 +1315,7 @@ var Engine;
         Input.unregister = unregister;
 
         function triggerResize() {
-            _resize();
+            _resize(null);
         }
         Input.triggerResize = triggerResize;
 
@@ -1238,15 +1355,17 @@ var Engine;
         }
 
         function _resetAllKeys() {
-            console.log("RESETTING ALL KEYS");
             for (var i = 0, ii = _keysDown.length; i < ii; ++i) {
                 if (_keysDown[i]) {
-                    __keyUp(i);
+                    _keysDown[i] = false;
+                    __broadcast("onKeyUp", null, [i]);
                 }
             }
         }
 
-        function __broadcast(onEventName, args) {
+        function __broadcast(onEventName, evt, args) {
+            _curEvent = evt;
+
             var listeners = _listeners;
             for (var i = 0, ii = listeners.length; i < ii; ++i) {
                 var listener = listeners[i];
@@ -1260,12 +1379,14 @@ var Engine;
         function _contextMenu(evt) {
             if (Engine.App.instance.disableContextMenu) {
                 if (isKeyDown(Engine.Key.KEY_CTRL) && isKeyDown(Engine.Key.KEY_SHIFT)) {
+                    _resetAllKeys();
                 } else {
                     evt.preventDefault();
+                    evt.stopPropagation();
                 }
+            } else {
+                _resetAllKeys();
             }
-
-            _resetAllKeys();
         }
 
         function _blur(evt) {
@@ -1273,72 +1394,74 @@ var Engine;
         }
 
         function _keyDown(evt) {
-            _keysDown[evt.keyCode] = true;
+            if (!_keysDown[evt.keyCode]) {
+                _keysDown[evt.keyCode] = true;
 
-            __broadcast("onKeyDown", [evt.keyCode]);
-        }
+                __broadcast("onKeyDown", evt, [evt.keyCode]);
+            }
 
-        function __keyUp(key) {
-            _keysDown[key] = false;
-
-            __broadcast("onKeyUp", [key]);
+            __broadcast("onBufferedKeyDown", evt, [evt.keyCode]);
         }
         function _keyUp(evt) {
-            __keyUp(evt.keyCode);
+            if (_keysDown[evt.keyCode]) {
+                _keysDown[evt.keyCode] = false;
+
+                __broadcast("onKeyUp", evt, [evt.keyCode]);
+            }
         }
         function _mouseDown(evt) {
             _keysDown[evt.button] = true;
 
-            __broadcast("onMouseDown", [evt.pageX, evt.pageY, evt.button]);
+            __broadcast("onMouseDown", evt, [evt.pageX, evt.pageY, evt.button]);
         }
         function _mouseUp(evt) {
             _keysDown[evt.button] = false;
 
-            __broadcast("onMouseUp", [evt.pageX, evt.pageY, evt.button]);
+            __broadcast("onMouseUp", evt, [evt.pageX, evt.pageY, evt.button]);
         }
         function _mouseMove(evt) {
             var x = _mousePosition.x = evt.pageX;
             var y = _mousePosition.y = evt.pageY;
 
-            __broadcast("onMouseMove", [x, y]);
+            __broadcast("onMouseMove", evt, [x, y]);
         }
         function _mouseWheel(evt) {
-            var delta = (evt).wheelDelta || evt.detail;
+            var delta = (evt).wheelDelta || -evt.detail;
 
-            __broadcast("onMouseWheel", [delta]);
+            __broadcast("onMouseWheel", evt, [delta]);
         }
 
-        function _resize() {
+        function _resize(evt) {
             var width = Math.max(Engine.App.container.offsetWidth, 1);
             var height = Math.max(Engine.App.container.offsetHeight, 1);
 
-            __broadcast("onResize", [width, height]);
+            __broadcast("onResize", evt, [width, height]);
         }
 
         function _gamepadConnect(evt) {
             console.log("GAMEPAD CONNECT");
             console.log(evt);
 
-            __broadcast("onGamepadConnect");
+            __broadcast("onGamepadConnect", null);
         }
         function _gamepadDisconnect(evt) {
             console.log("GAMEPAD DISCONNECT");
             console.log(evt);
 
-            __broadcast("onGamepadDisconnect");
+            __broadcast("onGamepadDisconnect", null);
         }
         function _gamepadTick(evt) {
-            __broadcast("onGamepadTick", [evt.length]);
+            __broadcast("onGamepadTick", null, [evt.length]);
         }
         function _gamepadButtonDown(evt) {
             _gamepadControls[evt.control] = 1;
 
-            __broadcast("onGamepadButtonDown", [evt.control]);
+            __broadcast("onGamepadButtonDown", null, [evt.control]);
         }
         function _gamepadButtonUp(evt) {
             _gamepadControls[evt.control] = 0;
 
-            __broadcast("onGamepadButtonUp", [evt.control]);
+            __broadcast("onGamepadButtonUp", null, [evt.control]);
         }
         function _gamepadAxisChanged(evt) {
             var value = evt.value;
@@ -1348,7 +1471,7 @@ var Engine;
 
             _gamepadControls[evt.axis] = value;
 
-            __broadcast("onGamepadAxisChanged", [evt.axis, value]);
+            __broadcast("onGamepadAxisChanged", null, [evt.axis, value]);
         }
     })(Engine.Input || (Engine.Input = {}));
     var Input = Engine.Input;
@@ -1703,11 +1826,19 @@ var Engine;
                 c.appendChild(this._canvas);
             }
 
+            this._$canvas = $(this._canvas);
             this._context = this._canvas.getContext("2d");
 
             this.zIndex = 0;
             this._rect = new Engine.Rect(0, 0, 1, 1);
         }
+        Object.defineProperty(Surface2D.prototype, "canvas", {
+            get: function () {
+                return this._$canvas;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Surface2D.prototype, "context", {
             get: function () {
                 return this._context;
@@ -1792,7 +1923,8 @@ var Engine;
 
         Surface2D.prototype.dispose = function () {
             var container = this._canvas.parentNode;
-            container.removeChild(this._canvas);
+            if (container)
+                container.removeChild(this._canvas);
 
             this._canvas = null;
             this._context = null;
@@ -1829,6 +1961,17 @@ var Engine;
             return new Vec2(this.x, this.y);
         };
 
+        Vec2.prototype.set = function (a, y) {
+            if (y === undefined) {
+                this.x = a.x;
+                this.y = a.y;
+            } else {
+                this.x = a;
+                this.y = y;
+            }
+            return this;
+        };
+
         Vec2.prototype.toString = function () {
             return this.x + ", " + this.y;
         };
@@ -1839,41 +1982,57 @@ var Engine;
         Vec2.prototype.fromArray = function (v) {
             this.x = v[0] || 0;
             this.y = v[1] || 0;
+            return this;
         };
 
-        Vec2.prototype.fromVec2 = function (v) {
-            this.x = v.x;
-            this.y = v.y;
-        };
-
-        Vec2.prototype.add = function (rhs) {
-            this.x += rhs.x;
-            this.y += rhs.y;
-        };
-
-        Vec2.prototype.subtract = function (rhs) {
-            this.x -= rhs.x;
-            this.y -= rhs.y;
-        };
-
-        Vec2.prototype.multiply = function (rhs) {
-            if (rhs instanceof Vec2) {
-                this.x *= rhs.x;
-                this.y *= rhs.y;
+        Vec2.prototype.add = function (a, y) {
+            if (y === undefined) {
+                this.x += a.x;
+                this.y += a.y;
             } else {
-                this.x *= rhs;
-                this.y *= rhs;
+                this.x += a;
+                this.y += y;
             }
+            return this;
+        };
+
+        Vec2.prototype.subtract = function (a, y) {
+            if (y === undefined) {
+                this.x -= a.x;
+                this.y -= a.y;
+            } else {
+                this.x -= a;
+                this.y -= y;
+            }
+            return this;
+        };
+
+        Vec2.prototype.multiply = function (a, y) {
+            if (y === undefined) {
+                if (a instanceof Vec2) {
+                    this.x *= a.x;
+                    this.y *= a.y;
+                } else {
+                    this.x *= a;
+                    this.y *= a;
+                }
+            } else {
+                this.x *= a;
+                this.y *= y;
+            }
+            return this;
         };
 
         Vec2.prototype.invert = function () {
             this.x = -this.x;
             this.y = -this.y;
+            return this;
         };
 
         Vec2.prototype.setLength = function (length) {
             this.normalize();
             this.multiply(length);
+            return this;
         };
 
         Vec2.prototype.normalize = function () {
@@ -1885,49 +2044,39 @@ var Engine;
                 this.x *= invLen;
                 this.y *= invLen;
             }
+            return this;
         };
 
-        Vec2.inverse = function (vec) {
-            return new Vec2(-vec.x, -vec.y);
+        Vec2.prototype.lerp = function (v, t) {
+            this.x += t * (v.x - this.x);
+            this.y += t * (v.y - this.y);
+            return this;
         };
 
-        Vec2.add = function (left, right) {
-            return new Vec2(left.x + right.x, left.y + right.y);
+        Vec2.prototype.dot = function (v) {
+            return this.x * v.x + this.y * v.y;
         };
 
-        Vec2.subtract = function (left, right) {
-            return new Vec2(left.x - right.x, left.y - right.y);
-        };
-
-        Vec2.multiply = function (left, right) {
-            if (right instanceof Vec2)
-                return new Vec2(left.x * right.x, left.y * right.y);
-else
-                return new Vec2(left.x * right, left.y * right);
-        };
-
-        Vec2.lerp = function (left, right, t) {
-            return new Vec2(left.x + t * (right.x - left.x), left.y + t * (right.y - left.y));
-        };
-
-        Vec2.dot = function (left, right) {
-            return left.x * right.x + left.y * right.y;
-        };
-
-        Vec2.distance = function (left, right) {
-            var dx = right.x - left.x;
-            var dy = right.y - left.y;
+        Vec2.prototype.distance = function (a, y) {
+            if (y === undefined) {
+                var dx = this.x - a.x;
+                var dy = this.y - a.y;
+            } else {
+                var dx = this.x - a;
+                var dy = this.y - y;
+            }
             return Math.sqrt(dx * dx + dy * dy);
         };
 
-        Vec2.distanceSqr = function (left, right) {
-            var dx = right.x - left.x;
-            var dy = right.y - left.y;
+        Vec2.prototype.distanceSqr = function (a, y) {
+            if (y === undefined) {
+                var dx = this.x - a.x;
+                var dy = this.y - a.y;
+            } else {
+                var dx = this.x - a;
+                var dy = this.y - y;
+            }
             return dx * dx + dy * dy;
-        };
-
-        Vec2.equals = function (a, b) {
-            return (a.x === b.x && a.y === b.y);
         };
         return Vec2;
     })();
@@ -1963,6 +2112,19 @@ var Engine;
             return new Vec3(this.x, this.y, this.z);
         };
 
+        Vec3.prototype.set = function (a, y, z) {
+            if (y === undefined) {
+                this.x = a.x;
+                this.y = a.y;
+                this.z = a.z;
+            } else {
+                this.x = a;
+                this.y = y;
+                this.z = z;
+            }
+            return this;
+        };
+
         Vec3.prototype.toString = function () {
             return this.x + ", " + this.y + ", " + this.z;
         };
@@ -1974,47 +2136,65 @@ var Engine;
             this.x = v[0] || 0;
             this.y = v[1] || 0;
             this.z = v[2] || 0;
+            return this;
         };
 
-        Vec3.prototype.fromVec3 = function (v) {
-            this.x = v.x;
-            this.y = v.y;
-            this.z = v.z;
-        };
-
-        Vec3.prototype.add = function (rhs) {
-            this.x += rhs.x;
-            this.y += rhs.y;
-            this.z += rhs.z;
-        };
-
-        Vec3.prototype.subtract = function (rhs) {
-            this.x -= rhs.x;
-            this.y -= rhs.y;
-            this.z -= rhs.z;
-        };
-
-        Vec3.prototype.multiply = function (rhs) {
-            if (rhs instanceof Vec3) {
-                this.x *= rhs.x;
-                this.y *= rhs.y;
-                this.z *= rhs.z;
+        Vec3.prototype.add = function (a, y, z) {
+            if (y === undefined) {
+                this.x += a.x;
+                this.y += a.y;
+                this.z += a.z;
             } else {
-                this.x *= rhs;
-                this.y *= rhs;
-                this.z *= rhs;
+                this.x += a;
+                this.y += y;
+                this.z += z;
             }
+            return this;
+        };
+
+        Vec3.prototype.subtract = function (a, y, z) {
+            if (y === undefined) {
+                this.x -= a.x;
+                this.y -= a.y;
+                this.z -= a.z;
+            } else {
+                this.x -= a;
+                this.y -= y;
+                this.z -= z;
+            }
+            return this;
+        };
+
+        Vec3.prototype.multiply = function (a, y, z) {
+            if (y === undefined) {
+                if (a instanceof Vec3) {
+                    this.x *= a.x;
+                    this.y *= a.y;
+                    this.z *= a.z;
+                } else {
+                    this.x *= a;
+                    this.y *= a;
+                    this.z *= a;
+                }
+            } else {
+                this.x *= a;
+                this.y *= y;
+                this.z *= z;
+            }
+            return this;
         };
 
         Vec3.prototype.invert = function () {
             this.x = -this.x;
             this.y = -this.y;
             this.z = -this.z;
+            return this;
         };
 
         Vec3.prototype.setLength = function (length) {
             this.normalize();
             this.multiply(length);
+            return this;
         };
 
         Vec3.prototype.normalize = function () {
@@ -2028,51 +2208,44 @@ var Engine;
                 this.y *= invLen;
                 this.z *= invLen;
             }
+            return this;
         };
 
-        Vec3.inverse = function (vec) {
-            return new Vec3(-vec.x, -vec.y, -vec.z);
+        Vec3.prototype.lerp = function (v, t) {
+            this.x += t * (v.x - this.x);
+            this.y += t * (v.y - this.y);
+            this.z += t * (v.z - this.z);
+            return this;
         };
 
-        Vec3.add = function (left, right) {
-            return new Vec3(left.x + right.x, left.y + right.y, left.z + right.z);
+        Vec3.prototype.dot = function (v) {
+            return this.x * v.x + this.y * v.y + this.z + v.z;
         };
 
-        Vec3.subtract = function (left, right) {
-            return new Vec3(left.x - right.x, left.y - right.y, left.z - right.z);
-        };
-
-        Vec3.multiply = function (left, right) {
-            if (right instanceof Vec3)
-                return new Vec3(left.x * right.x, left.y * right.y, left.z * right.z);
-else
-                return new Vec3(left.x * right, left.y * right, left.z * right);
-        };
-
-        Vec3.lerp = function (left, right, t) {
-            return new Vec3(left.x + t * (right.x - left.x), left.y + t * (right.y - left.y), left.z + t * (right.z - left.z));
-        };
-
-        Vec3.dot = function (left, right) {
-            return left.x * right.x + left.y * right.y + left.z + right.z;
-        };
-
-        Vec3.distance = function (left, right) {
-            var dx = right.x - left.x;
-            var dy = right.y - left.y;
-            var dz = right.z - left.z;
+        Vec3.prototype.distance = function (a, y, z) {
+            if (y === undefined) {
+                var dx = this.x - a.x;
+                var dy = this.y - a.y;
+                var dz = this.z - a.z;
+            } else {
+                var dx = this.x - a;
+                var dy = this.y - y;
+                var dz = this.z - z;
+            }
             return Math.sqrt(dx * dx + dy * dy + dz * dz);
         };
 
-        Vec3.distanceSqr = function (left, right) {
-            var dx = right.x - left.x;
-            var dy = right.y - left.y;
-            var dz = right.z - left.z;
+        Vec3.prototype.distanceSqr = function (a, y, z) {
+            if (y === undefined) {
+                var dx = this.x - a.x;
+                var dy = this.y - a.y;
+                var dz = this.z - a.z;
+            } else {
+                var dx = this.x - a;
+                var dy = this.y - y;
+                var dz = this.z - z;
+            }
             return dx * dx + dy * dy + dz * dz;
-        };
-
-        Vec3.equals = function (a, b) {
-            return (a.x === b.x && a.y === b.y && a.z === b.z);
         };
         return Vec3;
     })();

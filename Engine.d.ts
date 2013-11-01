@@ -191,6 +191,7 @@ declare module Engine {
     }
     interface InputListener {
         onKeyDown? (key: Engine.Key): void;
+        onBufferedKeyDown? (key: Engine.Key): void;
         onKeyUp? (key: Engine.Key): void;
         onMouseDown? (x: number, y: number, button: Engine.Key): void;
         onMouseUp? (x: number, y: number, button: Engine.Key): void;
@@ -269,6 +270,7 @@ declare module Engine {
     var BIT_30: number;
     var ROOT_DIRECTORY_FROM_APP: string;
     var ROOT_VENDOR_DIRECTORY: string;
+    var CUSTOM_VENDOR_DIRECTORY: string;
 }
 declare module Engine {
     interface AppParams {
@@ -296,7 +298,6 @@ declare module Engine {
         private static _load(appName, callback);
         private static _endLoading();
         private _params;
-        private _container;
         private _appContainer;
         private _gamepad;
         private _stats;
@@ -370,6 +371,20 @@ declare module Engine {
         private _unlock(howMany);
     }
 }
+declare module Engine {
+    class BinaryHeap<T> {
+        private _content;
+        private _scoreFunction;
+        constructor(scoreFunction: (element: T) => number);
+        public push(node: T): void;
+        public pop(): T;
+        public remove(node: T): boolean;
+        public size(): number;
+        public rescoreElement(node: T): void;
+        private _sinkDown(n);
+        private _bubbleUp(n);
+    }
+}
 declare module Engine.CtxUtil {
     function path(ctx: CanvasRenderingContext2D, points: Engine.Vec2[], offset?: Engine.Vec2, joinLast?: boolean): void;
     enum TextAlign {
@@ -420,6 +435,7 @@ declare module Engine {
 declare module Engine.Input {
     function isKeyDown(key: Engine.Key): boolean;
     function getMousePosition(): Engine.Vec2;
+    function preventDefault(): void;
     function register(listener: Engine.InputListener): void;
     function unregister(listener: Engine.InputListener): void;
     function triggerResize(): void;
@@ -502,9 +518,11 @@ declare module Engine.StringUtil {
 declare module Engine {
     class Surface2D {
         private _canvas;
+        private _$canvas;
         private _context;
         private _zIndex;
         private _rect;
+        public canvas : JQuery;
         public context : CanvasRenderingContext2D;
         public zIndex : number;
         public x : number;
@@ -525,27 +543,27 @@ declare module Engine {
         public lengthSqr : number;
         constructor(x?: number, y?: number);
         public clone(): Vec2;
+        public set(v: Vec2): Vec2;
+        public set(x: number, y: number): Vec2;
         public toString(): string;
         public toArray(): number[];
-        public fromArray(v: number[]): void;
-        public fromVec2(v: Vec2): void;
-        public add(rhs: Vec2): void;
-        public subtract(rhs: Vec2): void;
-        public multiply(rhs: number): void;
-        public multiply(rhs: Vec2): void;
-        public invert(): void;
-        public setLength(length: number): void;
-        public normalize(): void;
-        static inverse(vec: Vec2): Vec2;
-        static add(left: Vec2, right: Vec2): Vec2;
-        static subtract(left: Vec2, right: Vec2): Vec2;
-        static multiply(left: Vec2, right: number): Vec2;
-        static multiply(left: Vec2, right: Vec2): Vec2;
-        static lerp(left: Vec2, right: Vec2, t: number): Vec2;
-        static dot(left: Vec2, right: Vec2): number;
-        static distance(left: Vec2, right: Vec2): number;
-        static distanceSqr(left: Vec2, right: Vec2): number;
-        static equals(a: Vec2, b: Vec2): boolean;
+        public fromArray(v: number[]): Vec2;
+        public add(v: Vec2): Vec2;
+        public add(x: number, y: number): Vec2;
+        public subtract(v: Vec2): Vec2;
+        public subtract(x: number, y: number): Vec2;
+        public multiply(v: Vec2): Vec2;
+        public multiply(c: number): Vec2;
+        public multiply(x: number, y: number): Vec2;
+        public invert(): Vec2;
+        public setLength(length: number): Vec2;
+        public normalize(): Vec2;
+        public lerp(v: Vec2, t: number): Vec2;
+        public dot(v: Vec2): number;
+        public distance(v: Vec2): number;
+        public distance(x: number, y: number): number;
+        public distanceSqr(v: Vec2): number;
+        public distanceSqr(x: number, y: number): number;
     }
 }
 declare module Engine {
@@ -557,26 +575,26 @@ declare module Engine {
         public lengthSqr : number;
         constructor(x?: number, y?: number, z?: number);
         public clone(): Vec3;
+        public set(v: Vec3): Vec3;
+        public set(x: number, y: number, z: number): Vec3;
         public toString(): string;
         public toArray(): number[];
-        public fromArray(v: number[]): void;
-        public fromVec3(v: Vec3): void;
-        public add(rhs: Vec3): void;
-        public subtract(rhs: Vec3): void;
-        public multiply(rhs: number): void;
-        public multiply(rhs: Vec3): void;
-        public invert(): void;
-        public setLength(length: number): void;
-        public normalize(): void;
-        static inverse(vec: Vec3): Vec3;
-        static add(left: Vec3, right: Vec3): Vec3;
-        static subtract(left: Vec3, right: Vec3): Vec3;
-        static multiply(left: Vec3, right: number): Vec3;
-        static multiply(left: Vec3, right: Vec3): Vec3;
-        static lerp(left: Vec3, right: Vec3, t: number): Vec3;
-        static dot(left: Vec3, right: Vec3): number;
-        static distance(left: Vec3, right: Vec3): number;
-        static distanceSqr(left: Vec3, right: Vec3): number;
-        static equals(a: Vec3, b: Vec3): boolean;
+        public fromArray(v: number[]): Vec3;
+        public add(v: Vec3): Vec3;
+        public add(x: number, y: number, z: number): Vec3;
+        public subtract(v: Vec3): Vec3;
+        public subtract(x: number, y: number, z: number): Vec3;
+        public multiply(v: Vec3): Vec3;
+        public multiply(c: number): Vec3;
+        public multiply(x: number, y: number, z: number): Vec3;
+        public invert(): Vec3;
+        public setLength(length: number): Vec3;
+        public normalize(): Vec3;
+        public lerp(v: Vec3, t: number): Vec3;
+        public dot(v: Vec3): number;
+        public distance(v: Vec3): number;
+        public distance(x: number, y: number, z: number): number;
+        public distanceSqr(v: Vec3): number;
+        public distanceSqr(x: number, y: number, z: number): number;
     }
 }

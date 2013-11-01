@@ -1,6 +1,18 @@
 ﻿var Engine;
 (function (Engine) {
     (function (WarNew) {
+        (function (AbilityType) {
+        })(WarNew.AbilityType || (WarNew.AbilityType = {}));
+        var AbilityType = WarNew.AbilityType;
+
+        (function (ActionType) {
+            ActionType[ActionType["Waiting"] = 0] = "Waiting";
+            ActionType[ActionType["Moving"] = 1] = "Moving";
+            ActionType[ActionType["Attacking"] = 2] = "Attacking";
+            ActionType[ActionType["BeingConstructed"] = 3] = "BeingConstructed";
+        })(WarNew.ActionType || (WarNew.ActionType = {}));
+        var ActionType = WarNew.ActionType;
+
         (function (AnimationSequenceType) {
             AnimationSequenceType[AnimationSequenceType["Directional"] = 0] = "Directional";
             AnimationSequenceType[AnimationSequenceType["Vertical"] = 1] = "Vertical";
@@ -31,7 +43,16 @@
         })(WarNew.Direction || (WarNew.Direction = {}));
         var Direction = WarNew.Direction;
 
+        (function (EntityContainType) {
+            EntityContainType[EntityContainType["Cargo"] = 0] = "Cargo";
+            EntityContainType[EntityContainType["Builder"] = 1] = "Builder";
+            EntityContainType[EntityContainType["Miner"] = 2] = "Miner";
+        })(WarNew.EntityContainType || (WarNew.EntityContainType = {}));
+        var EntityContainType = WarNew.EntityContainType;
+
         (function (EntityType) {
+            EntityType[EntityType["None"] = 0xff] = "None";
+
             EntityType[EntityType["Footman"] = 0x00] = "Footman";
             EntityType[EntityType["Knight"] = 0x06] = "Knight";
             EntityType[EntityType["Peasant"] = 0x02] = "Peasant";
@@ -58,6 +79,42 @@
             Occupy[Occupy["Air"] = Engine.BIT_3] = "Air";
         })(WarNew.Occupy || (WarNew.Occupy = {}));
         var Occupy = WarNew.Occupy;
+
+        (function (OrderType) {
+            OrderType[OrderType["None"] = 0] = "None";
+
+            OrderType[OrderType["AttackEntity"] = 1] = "AttackEntity";
+            OrderType[OrderType["AttackToTile"] = 2] = "AttackToTile";
+            OrderType[OrderType["BuildAtTile"] = 3] = "BuildAtTile";
+            OrderType[OrderType["CastOnEntity"] = 4] = "CastOnEntity";
+            OrderType[OrderType["CastOnTile"] = 5] = "CastOnTile";
+            OrderType[OrderType["ClearArea"] = 6] = "ClearArea";
+            OrderType[OrderType["FollowEntity"] = 7] = "FollowEntity";
+            OrderType[OrderType["HarvestGold"] = 8] = "HarvestGold";
+            OrderType[OrderType["HoldPosition"] = 9] = "HoldPosition";
+            OrderType[OrderType["MoveToTile"] = 10] = "MoveToTile";
+            OrderType[OrderType["PatrolToEntity"] = 11] = "PatrolToEntity";
+            OrderType[OrderType["PatrolToTile"] = 12] = "PatrolToTile";
+            OrderType[OrderType["UpgradeSelf"] = 13] = "UpgradeSelf";
+        })(WarNew.OrderType || (WarNew.OrderType = {}));
+        var OrderType = WarNew.OrderType;
+
+        (function (PathType) {
+            PathType[PathType["ToTarget"] = 0] = "ToTarget";
+            PathType[PathType["ToArea"] = 1] = "ToArea";
+            PathType[PathType["AvoidTarget"] = 2] = "AvoidTarget";
+            PathType[PathType["AvoidArea"] = 3] = "AvoidArea";
+            PathType[PathType["ClearArea"] = 4] = "ClearArea";
+        })(WarNew.PathType || (WarNew.PathType = {}));
+        var PathType = WarNew.PathType;
+
+        (function (PlacementTestFlag) {
+            PlacementTestFlag[PlacementTestFlag["Message"] = Engine.BIT_0] = "Message";
+            PlacementTestFlag[PlacementTestFlag["BlockingEntities"] = Engine.BIT_1] = "BlockingEntities";
+            PlacementTestFlag[PlacementTestFlag["ValidTiles"] = Engine.BIT_2] = "ValidTiles";
+            PlacementTestFlag[PlacementTestFlag["InvalidTiles"] = Engine.BIT_3] = "InvalidTiles";
+        })(WarNew.PlacementTestFlag || (WarNew.PlacementTestFlag = {}));
+        var PlacementTestFlag = WarNew.PlacementTestFlag;
 
         (function (PlayerType) {
             PlayerType[PlayerType["None"] = 0] = "None";
@@ -89,6 +146,17 @@
             SequenceUpdateResult[SequenceUpdateResult["SequenceElapsed"] = 2] = "SequenceElapsed";
         })(WarNew.SequenceUpdateResult || (WarNew.SequenceUpdateResult = {}));
         var SequenceUpdateResult = WarNew.SequenceUpdateResult;
+
+        (function (ThinkResult) {
+            ThinkResult[ThinkResult["NotDone"] = 0] = "NotDone";
+            ThinkResult[ThinkResult["Done"] = 1] = "Done";
+            ThinkResult[ThinkResult["DoneIfQueue"] = 2] = "DoneIfQueue";
+        })(WarNew.ThinkResult || (WarNew.ThinkResult = {}));
+        var ThinkResult = WarNew.ThinkResult;
+
+        (function (TileSpecialFlag) {
+        })(WarNew.TileSpecialFlag || (WarNew.TileSpecialFlag = {}));
+        var TileSpecialFlag = WarNew.TileSpecialFlag;
 
         (function (TileType) {
             TileType[TileType["None"] = 0] = "None";
@@ -127,10 +195,30 @@
     })(Engine.WarNew || (Engine.WarNew = {}));
     var WarNew = Engine.WarNew;
 })(Engine || (Engine = {}));
+ko.observable.fn.subscribeChanged = function (callback, ignoreNoChange) {
+    var _oldVal;
+    (this).subscribe(function (oldVal) {
+        _oldVal = oldVal;
+    }, this, "beforeChange");
+    (this).subscribe(function (newVal) {
+        if (ignoreNoChange && _oldVal === newVal)
+            return;
+        callback(_oldVal, newVal);
+    });
+    return (this);
+};
 var Engine;
 (function (Engine) {
     (function (WarNew) {
         ;
+
+        (function (SpawnState) {
+            SpawnState[SpawnState["None"] = 0] = "None";
+            SpawnState[SpawnState["Constructing"] = 1] = "Constructing";
+            SpawnState[SpawnState["Alive"] = 2] = "Alive";
+            SpawnState[SpawnState["Dead"] = 3] = "Dead";
+        })(WarNew.SpawnState || (WarNew.SpawnState = {}));
+        var SpawnState = WarNew.SpawnState;
     })(Engine.WarNew || (Engine.WarNew = {}));
     var WarNew = Engine.WarNew;
 })(Engine || (Engine = {}));
@@ -146,10 +234,16 @@ var Engine;
 
         WarNew.TERRAIN_HEIGHT_SCALE = 50;
 
-        WarNew.QUADTREE_NODE_MAX_ITEMS = 4;
-        WarNew.QUADTREE_NODE_MAX_DEPTH = 4;
+        WarNew.ENTITY_BUTTON_X_MAX = 3;
+        WarNew.ENTITY_BUTTON_Y_MAX = 3;
+        WarNew.ENTITY_MAX_SELECTION = WarNew.ENTITY_BUTTON_X_MAX * WarNew.ENTITY_BUTTON_Y_MAX;
+        WarNew.ENTITY_MOVE_SPEED_MULTIPLIER = 0.17;
 
-        WarNew.ENTITY_MAX_SELECTION = 9;
+        WarNew.COMMAND_BUTTON_X_MAX = 3;
+        WarNew.COMMAND_BUTTON_Y_MAX = 3;
+        WarNew.COMMANDS_MAX = WarNew.COMMAND_BUTTON_X_MAX * WarNew.COMMAND_BUTTON_Y_MAX;
+
+        WarNew.PATHFINDER_MAX_ITERATIONS = 100;
 
         WarNew.PLAYERS_MAX = 8;
 
@@ -160,6 +254,8 @@ var Engine;
         WarNew.CAMERA_ZOOM_INCREMENT = 0.1;
 
         WarNew.TEST_WORLD_DATA = (JSON.parse("{\"world\":{\"terrain\":{\"type\":\"forest\",\"width\":32,\"height\":32,\"tiles\":[502,502,246,246,246,246,246,502,246,502,246,246,502,502,246,502,502,502,502,246,246,246,246,502,246,246,502,246,246,246,246,246,502,502,502,246,246,502,502,502,502,246,246,502,502,246,502,502,246,502,246,502,246,246,502,246,502,246,246,246,502,502,246,246,502,246,502,502,502,502,246,246,246,246,502,502,502,246,246,502,502,246,246,246,502,502,502,502,246,246,502,502,246,502,502,502,502,502,246,502,502,246,246,246,502,502,246,246,246,502,246,502,246,246,246,246,246,246,246,502,246,502,502,246,502,246,502,246,246,502,246,246,246,246,502,502,246,502,502,246,502,246,246,502,502,502,502,246,502,502,502,502,246,246,246,246,502,246,246,502,246,246,246,502,246,246,502,502,246,502,502,246,374,54,310,566,182,246,502,246,502,502,246,246,502,246,246,246,246,502,502,246,502,502,246,246,246,502,246,392,456,456,328,502,598,137,457,329,678,502,502,502,502,502,502,246,502,502,246,246,246,502,502,246,502,502,246,392,200,456,456,232,760,504,88,246,86,169,1017,345,166,502,246,502,502,246,246,246,246,246,502,246,502,246,246,246,502,502,502,424,248,248,248,504,120,312,280,246,86,297,313,25,166,118,310,310,310,182,246,502,502,246,502,246,246,502,502,246,502,246,246,168,248,120,312,56,280,246,246,502,214,710,198,198,358,22,393,201,329,678,246,502,246,502,246,502,246,246,246,502,502,246,246,40,312,280,502,246,502,502,246,246,502,246,246,502,342,393,233,249,345,166,502,246,502,502,502,502,246,246,502,502,502,246,246,246,246,246,246,502,246,246,246,246,502,502,502,246,86,425,505,249,345,166,502,502,502,502,502,246,246,246,246,502,502,246,392,456,200,456,328,502,246,246,246,246,246,502,246,246,342,169,761,761,89,166,246,246,246,246,502,502,246,502,246,502,502,246,168,760,760,504,88,246,246,246,246,502,502,246,502,246,86,41,57,57,25,422,502,502,502,246,246,246,246,246,502,502,246,246,424,248,504,760,88,502,246,246,502,502,502,502,246,502,470,454,454,710,710,230,246,246,246,246,246,502,502,502,246,502,246,502,40,56,312,312,280,246,502,502,246,374,566,566,54,54,182,246,246,502,246,246,246,502,502,246,502,502,502,246,246,502,246,502,502,118,54,566,310,182,246,502,502,342,393,457,457,329,678,502,502,502,502,246,246,502,246,502,502,246,246,246,246,246,502,246,246,598,372,308,436,38,310,54,54,22,297,313,313,25,678,246,246,502,246,502,502,246,502,502,246,246,502,502,246,246,246,502,246,86,340,242,292,52,564,564,308,436,116,52,436,500,678,502,502,502,502,246,502,502,502,246,246,246,246,246,246,246,246,502,246,342,340,242,498,498,754,754,498,420,340,242,36,180,678,502,246,246,246,502,502,246,246,246,502,502,246,246,502,502,502,502,246,598,212,708,196,708,196,452,708,484,340,498,754,676,422,502,502,502,246,502,246,502,502,502,246,246,502,246,502,502,502,246,502,214,710,710,454,710,198,454,454,70,468,708,708,228,678,502,502,502,502,246,502,502,246,246,502,502,502,246,502,502,246,246,502,246,246,246,246,502,246,246,246,214,710,454,454,454,230,502,502,246,246,502,246,246,246,246,246,502,246,246,502,502,246,246,246,502,502,502,502,246,246,246,502,502,502,246,502,246,502,246,502,246,502,246,246,246,502,502,246,502,502,246,246,502,502,246,246,246,246,246,502,502,246,246,502,246,502,502,246,502,246,502,502,502,246,502,502,502,502,246,246,502,502,246,502,502,502,246,246,502,246,502,502,502,246,502,502,246,246,246,246,246,246,246,246,502,246,246,246,502,502,502,246,502,246,502,502,246,246,502,246,246,246,502,502,502,246,502,246,502,246,502,502,246,246,246,502,246,502,502,246,502,246,502,246,502,246,502,502,502,246,502,502,502,246,246,246,502,502,502,502,246,246,502,502,246,246,246,502,502,502,246,502,502,246,246,246,246,502,502,246,502,246,246,502,502,246,502,502,502,502,246,502,502,502,246,502,246,246,246,502,502,502,502,246,502,246,246,502,246,246,246,246,246,502,246,246,502,502,502,246,246,246,246,502,246,502,246,502,502,502,502,502,502,502,246,246,502,246,246,502,502,246,502,246,246,246,246,246,246,502,502,502,502,502,502,502,502,502,246,502,246,502,502,502,502,502,246,246,246,502,246,246,246,246,246,502,502,246,246,246,246,246,502,502,246,502,246,502,502,246,246,502,246,502,246,246,246,246,502,502,246,246,246,502,246,502,246,502,246]},\"teams\":[{\"name\":\"Neutral Team\",\"shareVision\":true},{\"name\":\"Team 1\",\"shareVision\":true},{\"name\":\"Team 2\",\"shareVision\":true},{\"name\":\"Team 3\",\"shareVision\":true},{\"name\":\"Team 4\",\"shareVision\":true},{\"name\":\"Team 5\",\"shareVision\":true},{\"name\":\"Team 6\",\"shareVision\":true},{\"name\":\"Team 7\",\"shareVision\":true},{\"name\":\"Team 8\",\"shareVision\":true}],\"players\":[{\"gold\":1000,\"lumber\":500,\"name\":\"Neutral Player\",\"oil\":250,\"race\":1,\"raceIsFixed\":true,\"playerType\":1,\"playerTypeIsFixed\":false,\"teamID\":0},{\"gold\":1000,\"lumber\":500,\"name\":\"Player 1\",\"oil\":250,\"race\":2,\"raceIsFixed\":true,\"playerType\":1,\"playerTypeIsFixed\":false,\"teamID\":1},{\"gold\":2400,\"lumber\":1400,\"name\":\"Player 2\",\"oil\":550,\"race\":1,\"raceIsFixed\":true,\"playerType\":1,\"playerTypeIsFixed\":false,\"teamID\":2},{\"gold\":1000,\"lumber\":500,\"name\":\"Player 3\",\"oil\":250,\"race\":2,\"raceIsFixed\":true,\"playerType\":1,\"playerTypeIsFixed\":false,\"teamID\":3},{\"gold\":1000,\"lumber\":500,\"name\":\"Player 4\",\"oil\":250,\"race\":3,\"raceIsFixed\":true,\"playerType\":1,\"playerTypeIsFixed\":false,\"teamID\":4},{\"gold\":1000,\"lumber\":500,\"name\":\"Player 5\",\"oil\":250,\"race\":2,\"raceIsFixed\":true,\"playerType\":1,\"playerTypeIsFixed\":false,\"teamID\":5},{\"gold\":1000,\"lumber\":500,\"name\":\"Player 6\",\"oil\":250,\"race\":3,\"raceIsFixed\":true,\"playerType\":1,\"playerTypeIsFixed\":false,\"teamID\":6},{\"gold\":1000,\"lumber\":500,\"name\":\"Player 7\",\"oil\":250,\"race\":2,\"raceIsFixed\":true,\"playerType\":1,\"playerTypeIsFixed\":false,\"teamID\":7},{\"gold\":1000,\"lumber\":500,\"name\":\"Player 8\",\"oil\":250,\"race\":3,\"raceIsFixed\":true,\"playerType\":1,\"playerTypeIsFixed\":false,\"teamID\":8}],\"entities\":[[4194306,359,262204,12058864],[4198402,488,262204,16253200],[4203682,360,263344,13631808],[4207780,364,263344,13631936],[4210692,330,262204,11010384],[4214788,489,262204,16253232],[4218916,334,262174,11010512],[4223012,529,262174,17302064],[4227106,299,262174,9961840],[4231202,297,262174,9961776],[4235298,298,262174,9961808],[4239362,555,262204,18350448],[4243554,326,262234,11010256],[4247652,235,262234,7864688],[4251746,552,262234,18350352],[4255844,494,262234,16253392],[4259940,516,262234,17301648],[4265122,84,263344,4195008],[4268034,82,262204,2622032],[4273600,312,262144,11010864]]},\"user\":{\"cameraX\":480.34108872841,\"cameraY\":351.76123789011,\"cameraZoom\":1.0943023107607,\"playerID\":2,\"placementEntityType\":-1,\"placementRadius\":1,\"placementTileType\":0,\"selectedEntities\":[1026],\"userState\":0}}").world);
+
+        WarNew.TEST_WORLD_DATA2 = "forest6120220261f11161f11161f10161f10161f10161f10161f10161f11161f10161f11161f10161f10161f11161f11161f10161f11161f11161f11161f11161f10161f10161f10161f10161f11161f10161f10161f11161f10161f10161f10161f10161f10161f11161f11161f11161f10161f10161f11161f11161f11161f11161f10161f10161f11161f11161f10161f11161f11161f10161f11161f10161f11161f10161f10161f11161f10161f11161f10161f10161f10161f11161f11161f10161f10161f11161f10161f11161f11161f11161f11161f10161f10161f10161f10161f11161f11161f11161f10161f10161f11161f11161f10161f10161f10161f11161f11161f11161f11161f10161f10161f11161f11161f10161f11161f11161f11161f11161f11161f10161f11161f11161f10161f10161f10161f11161f11161f10161f10161f10161f11161f10161f11161f10161f10161f10161f10161f10161f10161f10161f11161f10161f11161f11161f10161f11161f10161f11161f10161f10161f11161f10161f10161f10161f10161f11161f11161f10161f11161f11161f10161f11161f10161f10161f11161f11161f11161f11161f10161f11161f11161f11161f11161f10161f10161f10161f10161f11161f10161f10161f11161f10161f10161f10161f11161f10161f10161f11161f11161f10161f11161f11161f10161711161310161311161312161b10161f10161f11161f10161f11161f11161f10161f10161f11161f10161f10161f10161f10161f11161f11161f10161f11161f11161f10161f10161f10161f11161f10181811181c11181c11181411161f11161512191810191c11191411161a12161f11161f11161f11161f11161f11161f11161f10161f11161f11161f10161f10161f10161f11161f11161f10161f11161f11161f10181811181c10181c11181c11181e10181f12181f11181510161f10161510191a10191f13191511161a10161f11161f10161f11161f11161f10161f10161f10161f10161f10161f11161f10161f11161f10161f10161f10161f11161f11161f11181a11181f10181f10181f10181f11181710181311181111161f10161510191211191311191110161a10161710161311161311161311161b10161f10161f11161f11161f10161f11161f10161f10161f11161f11161f10161f11161f10161f10181a10181f10181710181311181310181111161f10161f10161f11161d10161c12161c10161c10161611161110191811191c10191411161a12161f10161f11161f10161f11161f10161f11161f10161f10161f10161f11161f11161f10161f10181210181311181111161f11161f10161f11161f11161f10161f10161f11161f10161f10161f11161511191811191e10191f10191511161a10161f11161f10161f11161f11161f11161f11161f10161f10161f11161f11161f11161f10161f10161f10161f10161f10161f10161f11161f10161f10161f10161f10161f11161f11161f11161f10161510191a11191f11191f10191511161a10161f11161f11161f11161f11161f11161f10161f10161f10161f10161f11161f11161f10181811181c11181c10181c11181411161f11161f10161f10161f10161f10161f10161f11161f10161f10161511191a10191f12191f12191510161a10161f10161f10161f10161f10161f11161f11161f10161f11161f10161f11161f11161f10181a10181f12181f12181f11181510161f10161f10161f10161f10161f11161f11161f10161f11161f10161510191210191310191310191110161a11161f11161f11161f11161f10161f10161f10161f10161f10161f11161f11161f10161f10181a11181f10181f11181f12181510161f11161f10161f10161f11161f11161f11161f11161f10161f11161d11161c11161c11161c12161c12161e10161f10161f10161f10161f10161f10161f11161f11161f11161f10161f11161f10161f11181210181310181311181311181111161f10161f11161f11161f10161711161312161312161310161310161b10161f10161f10161f11161f10161f10161f10161f11161f11161f10161f11161f11161f11161f10161f10161f11161f10161f11161f11161710161310161312161311161b10161f10161f11161f11161511191811191c11191c11191411161a12161f11161f11161f11161f11161f10161f10161f11161f10161f11161f11161f10161f10161f10161f10161f10161f11161f10161f10161512141711141311141b11161210161311161310161310161110191211191311191311191110161a12161f10161f10161f11161f10161f11161f11161f10161f11161f11161f10161f10161f11161f11161f10161f10161f10161f11161f10161510141511121f10141211141310141312141312141311141b11141710141310141b11141f11161a12161f11161f11161f11161f11161f10161f11161f11161f11161f10161f10161f10161f10161f10161f10161f10161f10161f11161f10161511141511121f10121f11121f11121f12121f12121f11141a11141511121f10141210141b10161a12161f11161f10161f10161f10161f11161f11161f10161f10161f10161f11161f11161f10161f10161f11161f11161f11161f11161f10161512141d10141c12141c10141c12141c10141c11141c12141e11141511121f11121f12141a12161a11161f11161f11161f11161f10161f11161f10161f11161f11161f11161f10161f10161f11161f10161f11161f11161f11161f10161f11161d10161c12161c12161c11161c12161c10161c11161c11161410141d11141c12141c12141e10161a12161f11161f11161f11161f11161f10161f11161f11161f10161f10161f11161f11161f11161f10161f11161f11161f10161f10161f11161f10161f10161f10161f10161f11161f10161f10161f10161d10161c12161c11161c11161c11161e10161f11161f11161f10161f10161f11161f10161f10161f10161f10161f10161f11161f10161f10161f11161f11161f10161f10161f10161f11161f11161f11161f11161f10161f10161f10161f11161f11161f11161f10161f11161f10161f11161f10161f11161f10161f11161f10161f10161f10161f11161f11161f10161f11161f11161f10161f10161f11161f11161f10161f10161f10161f10161f10161f11161f11161f10161f10161f11161f10161f11161f11161f10161f11161f10161f11161f11161f11161f10161f11161f11161f11161f11161f10161f10161f11161f11161f10161f11161f11161f11161f10161f10161f11161f10161f11161f11161f11161f10161f11161f11161f10161f10161f10161f10161f10161f10161f10161f10161f11161f10161f10161f10161f11161f11161f11161f10161f11161f10161f11161f11161f10161f10161f11161f10161f10161f10161f11161f11161f11161f10161f11161f10161f11161f10161f11161f11161f10161f10161f10161f11161f10161f11161f11161f10161f11161f10161f11161f10161f11161f10161f11161f11161f11161f10161f11161f11161f11161f10161f10161f10161f11161f11161f11161f11161f10161f10161f11161f11161f10161f10161f10161f11161f11161f11161f10161f11161f11161f10161f10161f10161f10161f11161f11161f10161f11161f10161f10161f11161f11161f10161f11161f11161f11161f11161f10161f11161f11161f11161f10161f11161f10161f10161f10161f11161f11161f11161f11161f10161f11161f10161f10161f11161f10161f10161f10161f10161f10161f11161f10161f10161f11161f11161f11161f10161f10161f10161f10161f11161f10161f11161f10161f11161f11161f11161f11161f11161f11161f11161f10161f10161f11161f10161f10161f11161f11161f10161f11161f10161f10161f10161f10161f10161f10161f11161f11161f11161f11161f11161f11161f11161f11161f11161f10161f11161f10161f11161f11161f11161f11161f11161f10161f10161f10161f11161f10161f10161f10161f10161f10161f11161f11161f10161f10161f10161f10161f10161f11161f11161f10161f11161f10161f11161f11161f10161f10161f11161f10161f11161f10161f10161f10161f10161f11161f11161f10161f10161f10161f11161f10161f11161f10161f11161f10191Neutral Teamc11Team 1611Team 2611Team 3611Team 4611Team 5611Team 6611Team 7611Team 861191Neutral Playere13e831f43fa211011101Player 1813e831f43fa211021111Player 28196035783226311011121Player 3813e831f43fa211021131Player 4813e831f43fa211031141Player 5813e831f43fa211021151Player 6813e831f43fa211031161Player 7813e831f43fa211021171Player 8813e831f43fa2110311811422101400316733c2012101f021703210140131e833c201210111031f03214a2402316834b0301210114031a03414a2403316c34b030121011c031a034101404314a33c201210115031503410140531e933c201210113031f034121406314e31e20121011d0315034121407321131e2012101230321032121408312b31e2012101170313032121409312931e201210113031303212140a312a31e201210115031303210140b322b33c201210117032303216140c314635a2012101d021503416140d3eb25a20121011703f02216140e322835a201210111032303416140f31ee35a20121011d031f034161410320435a20121019022103214a241135424b030121012c03802210141235223c20121012503502015c2413313830101210133031503";
     })(Engine.WarNew || (Engine.WarNew = {}));
     var WarNew = Engine.WarNew;
 })(Engine || (Engine = {}));
@@ -179,27 +275,15 @@ var Engine;
 
                 this._clampCenter();
             }
-            Object.defineProperty(Camera2D.prototype, "center", {
-                get: function () {
-                    return this._center;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Camera2D.prototype, "rect", {
-                get: function () {
-                    return this._rect;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Camera2D.prototype, "zoom", {
-                get: function () {
-                    return this._zoom;
-                },
-                enumerable: true,
-                configurable: true
-            });
+            Camera2D.prototype.getCenter = function () {
+                return this._center;
+            };
+            Camera2D.prototype.getRect = function () {
+                return this._rect;
+            };
+            Camera2D.prototype.getZoom = function () {
+                return this._zoom;
+            };
 
             Camera2D.prototype.dispose = function () {
                 this._center = null;
@@ -286,15 +370,599 @@ var Engine;
     })(Engine.WarNew || (Engine.WarNew = {}));
     var WarNew = Engine.WarNew;
 })(Engine || (Engine = {}));
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
 var Engine;
 (function (Engine) {
     (function (WarNew) {
         var Command = (function () {
             function Command() {
             }
+            Command.prototype.getFoodCost = function () {
+                return 0;
+            };
+            Command.prototype.getGoldCost = function () {
+                return 0;
+            };
+            Command.prototype.getLumberCost = function () {
+                return 0;
+            };
+            Command.prototype.getOilCost = function () {
+                return 0;
+            };
+            Command.prototype.getManaCost = function () {
+                return 0;
+            };
+
+            Command.prototype.getButtonX = function () {
+                throw "Command.buttonX is abstract.";
+                return 0;
+            };
+            Command.prototype.getButtonY = function () {
+                throw "Command.buttonY is abstract.";
+                return 0;
+            };
+            Command.prototype.getHotkey = function () {
+                return Engine.Key.None;
+            };
+            Command.prototype.getIconID = function () {
+                return "";
+            };
+            Command.prototype.getName = function () {
+                return "";
+            };
+            Command.prototype.getTooltip = function () {
+                return "";
+            };
+            Command.prototype.getTooltipExtended = function () {
+                return "";
+            };
             return Command;
         })();
         WarNew.Command = Command;
+
+        var UserCommand = (function (_super) {
+            __extends(UserCommand, _super);
+            function UserCommand() {
+                _super.apply(this, arguments);
+            }
+            UserCommand.prototype.tryExecute = function (user) {
+                return { success: true };
+            };
+            return UserCommand;
+        })(Command);
+        WarNew.UserCommand = UserCommand;
+        var AdvancedBuildCommand = (function (_super) {
+            __extends(AdvancedBuildCommand, _super);
+            function AdvancedBuildCommand() {
+                _super.apply(this, arguments);
+            }
+            AdvancedBuildCommand.prototype.tryExecute = function (user) {
+                user.setPage(WarNew.CommandPage.AdvancedBuild);
+                return { success: true };
+            };
+            AdvancedBuildCommand.prototype.getButtonX = function () {
+                return 1;
+            };
+            AdvancedBuildCommand.prototype.getButtonY = function () {
+                return 2;
+            };
+            AdvancedBuildCommand.prototype.getHotkey = function () {
+                return Engine.Key.KEY_V;
+            };
+            AdvancedBuildCommand.prototype.getIconID = function () {
+                return "icon-advanced-build";
+            };
+            AdvancedBuildCommand.prototype.getName = function () {
+                return "Advanced Build";
+            };
+            AdvancedBuildCommand.prototype.getTooltip = function () {
+                return "Build Ad|v|anced Structures";
+            };
+            AdvancedBuildCommand.instance = new AdvancedBuildCommand();
+            return AdvancedBuildCommand;
+        })(UserCommand);
+        WarNew.AdvancedBuildCommand = AdvancedBuildCommand;
+        var BasicBuildCommand = (function (_super) {
+            __extends(BasicBuildCommand, _super);
+            function BasicBuildCommand() {
+                _super.apply(this, arguments);
+            }
+            BasicBuildCommand.prototype.tryExecute = function (user) {
+                user.setPage(WarNew.CommandPage.BasicBuild);
+                return { success: true };
+            };
+            BasicBuildCommand.prototype.getButtonX = function () {
+                return 0;
+            };
+            BasicBuildCommand.prototype.getButtonY = function () {
+                return 2;
+            };
+            BasicBuildCommand.prototype.getHotkey = function () {
+                return Engine.Key.KEY_B;
+            };
+            BasicBuildCommand.prototype.getIconID = function () {
+                return "icon-basic-build";
+            };
+            BasicBuildCommand.prototype.getName = function () {
+                return "Basic Build";
+            };
+            BasicBuildCommand.prototype.getTooltip = function () {
+                return "Build |B|asic Structures";
+            };
+            BasicBuildCommand.instance = new BasicBuildCommand();
+            return BasicBuildCommand;
+        })(UserCommand);
+        WarNew.BasicBuildCommand = BasicBuildCommand;
+        var CancelCommand = (function (_super) {
+            __extends(CancelCommand, _super);
+            function CancelCommand() {
+                _super.apply(this, arguments);
+            }
+            CancelCommand.prototype.tryExecute = function (user) {
+                user.setPage(WarNew.CommandPage.Default);
+                return { success: true };
+            };
+            CancelCommand.prototype.getButtonX = function () {
+                return 2;
+            };
+            CancelCommand.prototype.getButtonY = function () {
+                return 2;
+            };
+            CancelCommand.prototype.getHotkey = function () {
+                return Engine.Key.KEY_X;
+            };
+            CancelCommand.prototype.getIconID = function () {
+                return "icon-cancel";
+            };
+            CancelCommand.prototype.getName = function () {
+                return "Cancel";
+            };
+            CancelCommand.prototype.getTooltip = function () {
+                return "Cancel";
+            };
+            CancelCommand.instance = new CancelCommand();
+            return CancelCommand;
+        })(UserCommand);
+        WarNew.CancelCommand = CancelCommand;
+
+        var WorldCommand = (function (_super) {
+            __extends(WorldCommand, _super);
+            function WorldCommand() {
+                _super.apply(this, arguments);
+            }
+            WorldCommand.prototype.requiresTarget = function () {
+                return true;
+            };
+
+            WorldCommand.prototype.plotEntityType = function () {
+                return WarNew.EntityType.None;
+            };
+
+            WorldCommand.prototype.canExecute = function (player, entities, target) {
+                var valid = entities.slice(0);
+
+                for (var i = valid.length - 1; i !== -1; --i) {
+                    if (valid[i].getOwner() !== player)
+                        valid.splice(i, 1);
+                }
+                if (valid.length === 0)
+                    return { success: false };
+
+                var foodCost = this.getFoodCost();
+                if (foodCost > 0 && player.getFoodCreated() - player.getFoodUsed() < foodCost)
+                    return { success: false, message: "Not enough food." };
+
+                var goldCost = this.getGoldCost();
+                if (goldCost > 0 && player.getGold() < goldCost)
+                    return { success: false, message: "Not enough gold." };
+
+                var lumberCost = this.getLumberCost();
+                if (lumberCost > 0 && player.getLumber() < lumberCost)
+                    return { success: false, message: "Not enough lumber." };
+
+                var oilCost = this.getOilCost();
+                if (oilCost > 0 && player.getOil() < oilCost)
+                    return { success: false, message: "Not enough oil." };
+
+                var manaCost = this.getManaCost();
+                if (manaCost > 0) {
+                    for (var i = valid.length - 1; i !== -1; --i) {
+                        if (valid[i].getMana() < manaCost)
+                            valid.splice(i, 1);
+                    }
+                    if (valid.length === 0)
+                        return { success: false, message: "Not enough mana." };
+                }
+
+                return { success: true, validEntities: valid };
+            };
+
+            WorldCommand.prototype.isTargetAllowed = function (target) {
+                return true;
+            };
+
+            WorldCommand.prototype.tryExecute = function (player, entities, target, queue) {
+                var result = this.canExecute(player, entities, target);
+                if (result.success) {
+                    var valid = result.validEntities;
+                    for (var i = 0, ii = valid.length; i < ii; ++i) {
+                        var ent = valid[i];
+                        if (!queue)
+                            WarNew.EntityOrder.stop(ent);
+                        this.executeEach(ent, target);
+                    }
+                }
+                return result;
+            };
+
+            WorldCommand.prototype.executeEach = function (entity, target) {
+                WarNew.EntityOrder.defaultOrder(entity, target);
+            };
+            WorldCommand.instance = new WorldCommand();
+            return WorldCommand;
+        })(Command);
+        WarNew.WorldCommand = WorldCommand;
+
+        var AbilityCommand = (function (_super) {
+            __extends(AbilityCommand, _super);
+            function AbilityCommand(abType) {
+                _super.call(this);
+                this._type = abType;
+            }
+            return AbilityCommand;
+        })(WorldCommand);
+        WarNew.AbilityCommand = AbilityCommand;
+
+        var AttackCommand = (function (_super) {
+            __extends(AttackCommand, _super);
+            function AttackCommand() {
+                _super.apply(this, arguments);
+            }
+            AttackCommand.prototype.getButtonX = function () {
+                return 2;
+            };
+            AttackCommand.prototype.getButtonY = function () {
+                return 0;
+            };
+            AttackCommand.prototype.getHotkey = function () {
+                return Engine.Key.KEY_A;
+            };
+            AttackCommand.prototype.getIconID = function () {
+                return "icon-melee0-{race}";
+            };
+            AttackCommand.prototype.getName = function () {
+                return "Attack";
+            };
+            AttackCommand.prototype.getTooltip = function () {
+                return "|A|ttack";
+            };
+            AttackCommand.prototype.getTooltipExtended = function () {
+                return "Orders your units to move to the target area and attack any enemy units" + " they see on the way. If you order them to attack a specific unit, your units will" + " ignore other enemy units and attack the targeted unit until it is destroyed.";
+            };
+
+            AttackCommand.prototype.executeEach = function (entity, target) {
+                WarNew.EntityOrder.attack(entity, target);
+            };
+            AttackCommand.instance = new AttackCommand();
+            return AttackCommand;
+        })(WorldCommand);
+        WarNew.AttackCommand = AttackCommand;
+
+        var BuildCommand = (function (_super) {
+            __extends(BuildCommand, _super);
+            function BuildCommand(entType) {
+                _super.call(this);
+                this._type = entType;
+                this._data = WarNew.Data.AllEntityData[entType];
+            }
+            BuildCommand.prototype.getFoodCost = function () {
+                return this._data.foodCost;
+            };
+            BuildCommand.prototype.getGoldCost = function () {
+                return this._data.goldCost;
+            };
+            BuildCommand.prototype.getLumberCost = function () {
+                return this._data.lumberCost;
+            };
+            BuildCommand.prototype.getOilCost = function () {
+                return this._data.oilCost;
+            };
+
+            BuildCommand.prototype.getButtonX = function () {
+                return this._data.buttonX;
+            };
+            BuildCommand.prototype.getButtonY = function () {
+                return this._data.buttonY;
+            };
+            BuildCommand.prototype.getHotkey = function () {
+                return this._data.hotkey;
+            };
+            BuildCommand.prototype.getIconID = function () {
+                return this._data.iconId;
+            };
+            BuildCommand.prototype.getName = function () {
+                return this._data.name;
+            };
+            BuildCommand.prototype.getTooltip = function () {
+                return this._data.tooltip;
+            };
+            BuildCommand.prototype.getTooltipExtended = function () {
+                return this._data.tooltipExtended;
+            };
+            BuildCommand.prototype.plotEntityType = function () {
+                return this._type;
+            };
+
+            BuildCommand.prototype.canExecute = function (player, entities, target) {
+                var cmdResult = _super.prototype.canExecute.call(this, player, entities, target);
+
+                if (cmdResult.success) {
+                    if (target) {
+                        if (!(target instanceof WarNew.Tile))
+                            return { success: false, message: "Target must be a tile." };
+
+                        var placeResult = this.placementEntity.placementTest((target).x, (target).y, WarNew.PlacementTestFlag.Message, player, null);
+                        if (!placeResult.valid)
+                            return { success: false, message: placeResult.message };
+                    }
+                }
+                return cmdResult;
+            };
+
+            BuildCommand.prototype.tryExecute = function (player, entities, target, queue) {
+                var result = this.canExecute(player, entities, target);
+                if (result.success) {
+                }
+                return result;
+            };
+
+            BuildCommand.prototype.executeEach = function (entity, target) {
+                if (target instanceof WarNew.Tile)
+                    WarNew.EntityOrder.build(entity, this.placementEntity, target);
+            };
+            return BuildCommand;
+        })(WorldCommand);
+        WarNew.BuildCommand = BuildCommand;
+
+        var HoldPositionCommand = (function (_super) {
+            __extends(HoldPositionCommand, _super);
+            function HoldPositionCommand() {
+                _super.apply(this, arguments);
+            }
+            HoldPositionCommand.prototype.requiresTarget = function () {
+                return false;
+            };
+
+            HoldPositionCommand.prototype.getButtonX = function () {
+                return 1;
+            };
+            HoldPositionCommand.prototype.getButtonY = function () {
+                return 1;
+            };
+            HoldPositionCommand.prototype.getHotkey = function () {
+                return Engine.Key.KEY_H;
+            };
+            HoldPositionCommand.prototype.getIconID = function () {
+                return "icon-hold-position-{race}";
+            };
+            HoldPositionCommand.prototype.getName = function () {
+                return "Hold Position";
+            };
+            HoldPositionCommand.prototype.getTooltip = function () {
+                return "|H|old Position";
+            };
+            HoldPositionCommand.prototype.getTooltipExtended = function () {
+                return "Orders your units to stand where they are and attack units that are" + " within range. When on Hold Position your units will not chase down enemy units" + " that run away, nor move to engage ranged attackers.";
+            };
+
+            HoldPositionCommand.prototype.executeEach = function (entity, target) {
+                WarNew.EntityOrder.holdPosition(entity);
+            };
+            HoldPositionCommand.instance = new HoldPositionCommand();
+            return HoldPositionCommand;
+        })(WorldCommand);
+        WarNew.HoldPositionCommand = HoldPositionCommand;
+
+        var MoveCommand = (function (_super) {
+            __extends(MoveCommand, _super);
+            function MoveCommand() {
+                _super.apply(this, arguments);
+            }
+            MoveCommand.prototype.getButtonX = function () {
+                return 0;
+            };
+            MoveCommand.prototype.getButtonY = function () {
+                return 0;
+            };
+            MoveCommand.prototype.getHotkey = function () {
+                return Engine.Key.KEY_M;
+            };
+            MoveCommand.prototype.getIconID = function () {
+                return "icon-move-{race}";
+            };
+            MoveCommand.prototype.getName = function () {
+                return "Move";
+            };
+            MoveCommand.prototype.getTooltip = function () {
+                return "|M|ove";
+            };
+            MoveCommand.prototype.getTooltipExtended = function () {
+                return "Orders your units to move to the target area while ignoring enemy" + " units and attacks. Issuing a move order onto a target unit will cause your unit" + " to follow thetarget using move orders.";
+            };
+
+            MoveCommand.prototype.executeEach = function (entity, target) {
+                WarNew.EntityOrder.move(entity, target);
+            };
+            MoveCommand.instance = new MoveCommand();
+            return MoveCommand;
+        })(WorldCommand);
+        WarNew.MoveCommand = MoveCommand;
+
+        var PatrolCommand = (function (_super) {
+            __extends(PatrolCommand, _super);
+            function PatrolCommand() {
+                _super.apply(this, arguments);
+            }
+            PatrolCommand.prototype.getButtonX = function () {
+                return 0;
+            };
+            PatrolCommand.prototype.getButtonY = function () {
+                return 1;
+            };
+            PatrolCommand.prototype.getHotkey = function () {
+                return Engine.Key.KEY_P;
+            };
+            PatrolCommand.prototype.getIconID = function () {
+                return "icon-patrol-{race}";
+            };
+            PatrolCommand.prototype.getName = function () {
+                return "Patrol";
+            };
+            PatrolCommand.prototype.getTooltip = function () {
+                return "|P|atrol";
+            };
+            PatrolCommand.prototype.getTooltipExtended = function () {
+                return "Orders your units to continually move from their current position to the" + " targeted area until given another command. Units on patrol will move to engage" + " enemy units that come within range. Issuing a patrol order onto a target unit will" + " cause your unit to imitate the targeted unit's behavior.";
+            };
+
+            PatrolCommand.prototype.executeEach = function (entity, target) {
+                WarNew.EntityOrder.patrol(entity, target);
+            };
+            PatrolCommand.instance = new PatrolCommand();
+            return PatrolCommand;
+        })(WorldCommand);
+        WarNew.PatrolCommand = PatrolCommand;
+
+        var SetRallyPointCommand = (function (_super) {
+            __extends(SetRallyPointCommand, _super);
+            function SetRallyPointCommand() {
+                _super.apply(this, arguments);
+            }
+            SetRallyPointCommand.prototype.getButtonX = function () {
+                return 2;
+            };
+            SetRallyPointCommand.prototype.getButtonY = function () {
+                return 2;
+            };
+            SetRallyPointCommand.prototype.getHotkey = function () {
+                return Engine.Key.KEY_Y;
+            };
+            SetRallyPointCommand.prototype.getIconID = function () {
+                return "icon-rally-{race}";
+            };
+            SetRallyPointCommand.prototype.getName = function () {
+                return "Set Rally Point";
+            };
+            SetRallyPointCommand.prototype.getTooltip = function () {
+                return "Set Rall|y| Point";
+            };
+            SetRallyPointCommand.prototype.getTooltipExtended = function () {
+                return "Orders units that pop out of the building to immediately attack-move to" + " the targeted area. You can rally point gold mines or trees to auto-harvest. You" + " can rally point a unit to have new units follow it when they finish building.";
+            };
+
+            SetRallyPointCommand.prototype.executeEach = function (entity, target) {
+                WarNew.EntityOrder.setRallyPoint(entity, target);
+            };
+            SetRallyPointCommand.instance = new SetRallyPointCommand();
+            return SetRallyPointCommand;
+        })(WorldCommand);
+        WarNew.SetRallyPointCommand = SetRallyPointCommand;
+
+        var StopCommand = (function (_super) {
+            __extends(StopCommand, _super);
+            function StopCommand() {
+                _super.apply(this, arguments);
+            }
+            StopCommand.prototype.requiresTarget = function () {
+                return false;
+            };
+
+            StopCommand.prototype.getButtonX = function () {
+                return 1;
+            };
+            StopCommand.prototype.getButtonY = function () {
+                return 0;
+            };
+            StopCommand.prototype.getHotkey = function () {
+                return Engine.Key.KEY_S;
+            };
+            StopCommand.prototype.getIconID = function () {
+                return "icon-armor0-{race}";
+            };
+            StopCommand.prototype.getName = function () {
+                return "Stop";
+            };
+            StopCommand.prototype.getTooltip = function () {
+                return "|S|top";
+            };
+            StopCommand.prototype.getTooltipExtended = function () {
+                return "Orders your units to stop whatever order they were previously given." + " Units that have been told to stop will attack enemy units and move to engage" + " nearby enemies.";
+            };
+
+            StopCommand.prototype.executeEach = function (entity, target) {
+                WarNew.EntityOrder.stop(entity);
+            };
+            StopCommand.instance = new StopCommand();
+            return StopCommand;
+        })(WorldCommand);
+        WarNew.StopCommand = StopCommand;
+
+        var TrainCommand = (function (_super) {
+            __extends(TrainCommand, _super);
+            function TrainCommand(entType) {
+                _super.call(this);
+                this._type = entType;
+                this._data = WarNew.Data.AllEntityData[entType];
+            }
+            TrainCommand.prototype.getFoodCost = function () {
+                return this._data.foodCost;
+            };
+            TrainCommand.prototype.getGoldCost = function () {
+                return this._data.goldCost;
+            };
+            TrainCommand.prototype.getLumberCost = function () {
+                return this._data.lumberCost;
+            };
+            TrainCommand.prototype.getOilCost = function () {
+                return this._data.oilCost;
+            };
+            TrainCommand.prototype.requiresTarget = function () {
+                return false;
+            };
+
+            TrainCommand.prototype.getButtonX = function () {
+                return this._data.buttonX;
+            };
+            TrainCommand.prototype.getButtonY = function () {
+                return this._data.buttonY;
+            };
+            TrainCommand.prototype.getHotkey = function () {
+                return this._data.hotkey;
+            };
+            TrainCommand.prototype.getIconID = function () {
+                return this._data.iconId;
+            };
+            TrainCommand.prototype.getName = function () {
+                return this._data.name;
+            };
+            TrainCommand.prototype.getTooltip = function () {
+                return this._data.tooltip;
+            };
+            TrainCommand.prototype.getTooltipExtended = function () {
+                return this._data.tooltipExtended;
+            };
+
+            TrainCommand.prototype.executeEach = function (entity, target) {
+                WarNew.EntityOrder.trainUnit(entity, this._type);
+            };
+            return TrainCommand;
+        })(WorldCommand);
+        WarNew.TrainCommand = TrainCommand;
     })(Engine.WarNew || (Engine.WarNew = {}));
     var WarNew = Engine.WarNew;
 })(Engine || (Engine = {}));
@@ -302,208 +970,681 @@ var Engine;
 (function (Engine) {
     (function (WarNew) {
         var Entity = (function () {
-            function Entity(id, world, data, p) {
+            function Entity(id, world, type, data, owner) {
+                var self = this;
+
                 this._id = id;
                 this._world = world;
-                this._type = p.type;
-                this._owner = ko.observable(p.owner);
-                this._data = WarNew.Data.AllEntityData[p.type];
+                this._terrain = world.getTerrain();
+                this._type = type;
+                this._owner = ko.observable(owner);
+                this._data = data;
 
-                this._sortOrder = (((this._data.pointValue >> 4) & 0x7) << 20) | (this._type << 19) | (this._id << 0);
+                this._spawnState = ko.observable(WarNew.SpawnState.None);
+                this._sortOrder = (((data.pointValue >> 4) & 0x7) << 20) | (type << 19) | (id << 0);
 
-                this._position = new Engine.Vec2(p.posX, p.posY);
+                this._orderQueue = [];
+                this._rallyPoint = null;
 
-                var boxWidth = data.isUnit ? data.boxWidth : data.tilesWide * WarNew.TILE_SIZE;
-                var boxHeight = data.isUnit ? data.boxHeight : data.tilesHigh * WarNew.TILE_SIZE;
+                this._builders = ko.observableArray();
+                this._cargo = ko.observableArray();
+                this._miners = ko.observableArray();
 
-                this._selectionRect = new Engine.Rect(0, 0, boxWidth, boxHeight);
-                this._drawRect = new Engine.Rect(0, 0, boxWidth, boxHeight);
+                this._actionTicks = 0;
+                this._actionParams = null;
+                this._action = null;
+                this._actionStates = [];
+                this._initActionStates();
 
                 this._direction = WarNew.Direction.Down;
-                this._currentSequence = null;
+                this._sequence = null;
                 this._sequences = {};
                 this._initSequences();
 
-                this._health = ko.observable(this.healthMax);
+                this._container = ko.observable();
+                this._drawRect = null;
+                this._path = null;
+                this._position = null;
+                this._selectionRect = null;
+                this._tile = ko.observable();
 
-                this._setSequence("idle");
-                this._updateRects();
+                this._health = ko.observable();
+                this._mana = ko.observable();
+                this._progress = ko.observable();
             }
             Entity.prototype.getID = function () {
                 return this._id;
+            };
+            Entity.prototype.getType = function () {
+                return this._type;
+            };
+            Entity.prototype.getOwner = function () {
+                return this._owner();
+            };
+            Entity.prototype.getSortOrder = function () {
+                return this._sortOrder;
+            };
+
+            Entity.prototype.getPosition = function () {
+                return this._position;
+            };
+            Entity.prototype.getSelectionRect = function () {
+                return this._selectionRect;
+            };
+            Entity.prototype.getDrawRect = function () {
+                return this._drawRect;
             };
             Entity.prototype.getQTRect = function () {
                 return this._drawRect;
             };
 
-            Object.defineProperty(Entity.prototype, "id", {
-                get: function () {
-                    return this._id;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "type", {
-                get: function () {
-                    return this._type;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "owner", {
-                get: function () {
-                    return this._owner();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "sortOrder", {
-                get: function () {
-                    return this._sortOrder;
-                },
-                enumerable: true,
-                configurable: true
-            });
+            Entity.prototype.canMove = function () {
+                return this._data.isUnit && this.isAlive();
+            };
+            Entity.prototype.canBuild = function (type) {
+                return this._data.builds.indexOf(type) !== -1 && this.isAlive();
+            };
+            Entity.prototype.hasWeapon = function () {
+                return this._data.hasWeapon && this.isAlive();
+            };
+            Entity.prototype.getIconID = function () {
+                return this._data.iconId;
+            };
+            Entity.prototype.isAlive = function () {
+                return this._spawnState() === WarNew.SpawnState.Alive;
+            };
+            Entity.prototype.isBeingConstructed = function () {
+                return this._spawnState() === WarNew.SpawnState.Constructing;
+            };
+            Entity.prototype.isDead = function () {
+                return this._spawnState() === WarNew.SpawnState.Dead;
+            };
+            Entity.prototype.isSelectable = function () {
+                return this._data.selectable && (this.isAlive() || this.isBeingConstructed());
+            };
+            Entity.prototype.isStructure = function () {
+                return this._data.isStructure;
+            };
+            Entity.prototype.isUnit = function () {
+                return this._data.isUnit;
+            };
+            Entity.prototype.getAbilities = function () {
+                return this._data.abilities;
+            };
+            Entity.prototype.getBuilderCapacity = function () {
+                return 1;
+            };
+            Entity.prototype.getCargoCapacity = function () {
+                return this._data.cargoCapacity;
+            };
+            Entity.prototype.getContainer = function () {
+                return this._container();
+            };
+            Entity.prototype.getMana = function () {
+                return this._mana();
+            };
+            Entity.prototype.getMinerCapacity = function () {
+                return 9999;
+            };
+            Entity.prototype.getMoveSpeed = function () {
+                return this._data.moveSpeed;
+            };
+            Entity.prototype.getName = function () {
+                return this._data.name;
+            };
+            Entity.prototype.getOccupyFlags = function () {
+                return this._data.occupyFlags;
+            };
+            Entity.prototype.getPriority = function () {
+                return this._data.priority;
+            };
+            Entity.prototype.getRootEntity = function () {
+                var e = this, p = this;
+                while (e = e._container()) {
+                    p = e;
+                }
+                return p;
+            };
+            Entity.prototype.getSight = function () {
+                return this._data.sight;
+            };
+            Entity.prototype.getStructuresBuilt = function () {
+                return this._data.builds;
+            };
+            Entity.prototype.getTile = function () {
+                return this._tile() || null;
+            };
+            Entity.prototype.getTilesWide = function () {
+                return this._data.tilesWide || 1;
+            };
+            Entity.prototype.getTilesHigh = function () {
+                return this._data.tilesHigh || 1;
+            };
+            Entity.prototype.getTooltip = function () {
+                return this._data.tooltip;
+            };
+            Entity.prototype.getTooltipExtended = function () {
+                return this._data.tooltipExtended;
+            };
+            Entity.prototype.getUnitsTrained = function () {
+                return this._data.unitsTrained;
+            };
+            Entity.prototype.trainsUnits = function () {
+                return this._data.unitsTrained.length > 0;
+            };
 
-            Object.defineProperty(Entity.prototype, "position", {
-                get: function () {
-                    return this._position;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "selectionRect", {
-                get: function () {
-                    return this._selectionRect;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "drawRect", {
-                get: function () {
-                    return this._drawRect;
-                },
-                enumerable: true,
-                configurable: true
-            });
+            Entity.prototype.getArmor = function () {
+                return this._data.armorBase;
+            };
+            Entity.prototype.getDamageMin = function () {
+                return this._data.weaponDamageBase;
+            };
+            Entity.prototype.getDamageMax = function () {
+                return this._data.weaponDamageBase + this._data.weaponDamageRandom;
+            };
+            Entity.prototype.getHealth = function () {
+                return this._health();
+            };
+            Entity.prototype.getHealthMax = function () {
+                return this._data.healthMax;
+            };
 
-            Object.defineProperty(Entity.prototype, "iconID", {
-                get: function () {
-                    return this._data.iconId;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "isSelectable", {
-                get: function () {
-                    return this._data.selectable;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "isStructure", {
-                get: function () {
-                    return this._data.isStructure;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "isUnit", {
-                get: function () {
-                    return this._data.isUnit;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "name", {
-                get: function () {
-                    return this._data.name;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "priority", {
-                get: function () {
-                    return this._data.priority;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "sight", {
-                get: function () {
-                    return this._data.sight;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "tooltip", {
-                get: function () {
-                    return this._data.tooltip;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "tooltipExtended", {
-                get: function () {
-                    return this._data.tooltipExtended;
-                },
-                enumerable: true,
-                configurable: true
-            });
+            Entity.prototype.dispose = function () {
+                this._world = null;
 
-            Object.defineProperty(Entity.prototype, "armor", {
-                get: function () {
-                    return this._data.armorBase;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "damageMin", {
-                get: function () {
-                    return this._data.weaponDamageBase;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "damageMax", {
-                get: function () {
-                    return this._data.weaponDamageBase + this._data.weaponDamageRandom;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "health", {
-                get: function () {
-                    return this._health();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Entity.prototype, "healthMax", {
-                get: function () {
-                    return this._data.healthMax;
-                },
-                enumerable: true,
-                configurable: true
-            });
+                this._owner = null;
+                this._data = null;
+                this._spawnState.dispose();
+                this._spawnState = null;
+
+                this._position = null;
+                this._selectionRect = null;
+                this._drawRect = null;
+
+                this._orderQueue = null;
+
+                this._actionParams = null;
+                this._action = null;
+                this._actionStates = null;
+
+                this._sequence = null;
+                this._sequences = null;
+
+                this._tile(null);
+                this._container(null);
+
+                this._path = null;
+
+                this._builders.dispose();
+                this._builders = null;
+
+                this._cargo.dispose();
+                this._cargo = null;
+
+                this._miners.dispose();
+                this._miners = null;
+
+                this._mana.dispose();
+                this._mana = null;
+
+                this._health.dispose();
+                this._health = null;
+
+                this._progress.dispose();
+                this._progress = null;
+            };
+
+            Entity.prototype.init = function (raw) {
+                 {
+                    var self = this;
+                    var data = this._data;
+                    var boxWidth = data.isUnit ? data.boxWidth : data.tilesWide * WarNew.TILE_SIZE;
+                    var boxHeight = data.isUnit ? data.boxHeight : data.tilesHigh * WarNew.TILE_SIZE;
+
+                    this._spawnState.subscribeChanged(function (p, n) {
+                        WarNew.WorldEvent.Entity.spawnState.trigger(self, p, n);
+                    }, true);
+
+                    this._direction = WarNew.Direction.Down;
+
+                    this._container.subscribeChanged(function (p, n) {
+                        WarNew.WorldEvent.Entity.container.trigger(self, p, n);
+                    }, true);
+                    this._drawRect = new Engine.Rect();
+                    this._position = new Engine.Vec2();
+                    this._selectionRect = new Engine.Rect(0, 0, boxWidth, boxHeight);
+                    this._tile.subscribeChanged(function (p, n) {
+                        WarNew.WorldEvent.Entity.tile.trigger(self, p, n);
+                    }, true);
+
+                    this._health.subscribeChanged(function (p, n) {
+                        WarNew.WorldEvent.Entity.health.trigger(self, p, n);
+                    }, true);
+                    this._mana.subscribeChanged(function (p, n) {
+                        WarNew.WorldEvent.Entity.mana.trigger(self, p, n);
+                    }, true);
+                }
+
+                 {
+                    var raw_1 = raw[1] || 0;
+                    var tileID = 0x7ffff & (raw_1 >> 0);
+
+                    var raw_2 = raw[2] || 0;
+                    var health = 0xfff & (raw_2 >> 0);
+                    var mana = 0x1f & (raw_2 >> 12);
+                    var spawnState = 0x7 & (raw_2 >> 17);
+                    var goldContained = 0x7ff & (raw_2 >> 20);
+
+                    var raw_3 = raw[3] || 0;
+                    var posX = 0x7fff & (raw_3 >> 0);
+                    var posY = 0x7fff & (raw_3 >> 15);
+
+                    this.trySetTile(this._terrain.getTileById(tileID), false);
+                    this._health(health);
+                    this._mana(mana);
+                    this._spawnState(spawnState);
+
+                    this._setPosition(posX, posY);
+                    this._setSequence("idle");
+                }
+            };
 
             Entity.prototype.draw = function (ctx) {
-                var pos = this._position;
-                this._currentSequence.drawAtCenter(ctx, pos.x, pos.y);
+                this._sequence.drawAtCenter(ctx, this._position.x, this._position.y);
+            };
+
+            Entity.prototype.drawPlacement = function (ctx, tileX, tileY) {
+                ctx.globalAlpha = 0.7;
+                 {
+                    this._sequences["idle"].drawAtCorner(ctx, tileX * WarNew.TILE_SIZE, tileY * WarNew.TILE_SIZE);
+
+                    ctx.globalAlpha = 0.3;
+
+                    var result = this.placementTest(tileX, tileY, WarNew.PlacementTestFlag.ValidTiles | WarNew.PlacementTestFlag.InvalidTiles, this._owner(), null);
+
+                    ctx.fillStyle = "#0f0";
+                    var tiles = result.validTiles;
+                    for (var t = tiles.length - 1; t !== -1; --t) {
+                        var p = tiles[t].topLeft;
+                        ctx.fillRect(p.x, p.y, WarNew.TILE_SIZE, WarNew.TILE_SIZE);
+                    }
+
+                    ctx.fillStyle = "#f00";
+                    tiles = result.invalidTiles;
+                    for (var t = tiles.length - 1; t !== -1; --t) {
+                        var p = tiles[t].topLeft;
+                        ctx.fillRect(p.x, p.y, WarNew.TILE_SIZE, WarNew.TILE_SIZE);
+                    }
+                }
+                ctx.globalAlpha = 1;
+            };
+
+            Entity.prototype.getPathHeuristic = function (type, weight) {
+                var ent = this.getRootEntity();
+                var onTile = ent.getTile();
+                if (!onTile)
+                    return null;
+
+                var x = onTile.x - 1;
+                var y = onTile.y - 1;
+                var width = ent.getTilesWide() + 1;
+                var height = ent.getTilesHigh() + 1;
+
+                if (type === WarNew.PathType.ToTarget) {
+                    return function (fromTile) {
+                        return weight * WarNew.Pathfinder.distance(fromTile.x, fromTile.y, 1, 1, x, y, width, height);
+                    };
+                } else if (type === WarNew.PathType.AvoidTarget) {
+                    var LARGE_NUMBER = (Engine.MAX_INT >> 1);
+                    return function (fromTile) {
+                        return LARGE_NUMBER - weight * WarNew.Pathfinder.distance(fromTile.x, fromTile.y, 1, 1, x, y, width, height);
+                    };
+                }
+
+                return null;
+            };
+
+            Entity.prototype.placementTest = function (tileX, tileY, retFlags, ignorePlayerUnits, ignoreEntity) {
+                var valid = true;
+                var ret = { valid: true };
+
+                if ((WarNew.PlacementTestFlag.Message & retFlags) !== 0)
+                    ret.message = "Success";
+
+                if ((WarNew.PlacementTestFlag.ValidTiles & retFlags) !== 0)
+                    ret.validTiles = [];
+
+                if ((WarNew.PlacementTestFlag.InvalidTiles & retFlags) !== 0)
+                    ret.invalidTiles = [];
+
+                if ((WarNew.PlacementTestFlag.BlockingEntities & retFlags) !== 0)
+                    ret.blockingEntities = [];
+
+                ret.ignorePlayerUnits = ignorePlayerUnits;
+
+                ret.ignoreEnt = ignoreEntity;
+
+                var tw = this.getTilesWide();
+                var th = this.getTilesHigh();
+                if (tw > 1 || th > 1) {
+                    var tiles = this._terrain.getTilesWithinIndex(tileX, tileY, tw, th);
+                    if (tiles.length !== tw * th) {
+                        ret.valid = false;
+                        if (ret.message)
+                            ret.message = "Cannot place outside of world bounds.";
+                    }
+
+                    for (var i = tiles.length - 1; i !== -1; --i)
+                        this._placementTestSingle(tiles[i], ret);
+                } else {
+                    var tile = this._terrain.getTileAtIndex(tileX, tileY, false);
+                    if (!tile) {
+                        ret.valid = false;
+                        if (ret.message)
+                            ret.message = "Cannot place outside of world bounds.";
+                    } else {
+                        this._placementTestSingle(tile, ret);
+                    }
+                }
+
+                return ret;
+            };
+            Entity.prototype._placementTestSingle = function (tile, ret) {
+                if (tile.canOccupy(this, ret)) {
+                    if (ret.validTiles)
+                        ret.validTiles.push(tile);
+                } else {
+                    ret.valid = false;
+                    if (ret.invalidTiles)
+                        ret.invalidTiles.push(tile);
+                }
+            };
+
+            Entity.prototype.removeEntity = function (entity) {
+                var lists = [this._builders, this._cargo, this._miners];
+                for (var i = lists.length - 1; i !== -1; --i) {
+                    var list = lists[i]();
+                    var index = list.indexOf(entity);
+                    if (index !== -1) {
+                        list.splice(index, 1);
+                        lists[i](list);
+                    }
+                }
+            };
+
+            Entity.prototype.think = function () {
+                var queue = this._orderQueue;
+                if (queue.length !== 0) {
+                    var result = WarNew.EntityThink.think(this, queue[0]);
+                    if (result === WarNew.ThinkResult.Done || (result === WarNew.ThinkResult.DoneIfQueue && queue.length > 1)) {
+                        queue.shift();
+                        this.think();
+                    }
+                } else {
+                    this.wait(60);
+                }
+            };
+
+            Entity.prototype.tryMove = function (target, pathType, maxIterations) {
+                if (!this.isUnit() || !this.isAlive())
+                    return false;
+
+                var curTile = this._tile();
+                if (!curTile)
+                    return false;
+
+                var recalculated = false;
+                var path = this._path;
+                if (!path || path.target !== target) {
+                    path = this._path = WarNew.Pathfinder.getPath(this, target, pathType, maxIterations);
+                    recalculated = true;
+
+                    if (!path)
+                        return false;
+                }
+
+                var nextTile = path.peek();
+                if (!nextTile || !this.trySetTile(nextTile, false)) {
+                    if (recalculated)
+                        return false;
+
+                    path = this._path = WarNew.Pathfinder.getPath(this, target, pathType, maxIterations);
+                    recalculated = true;
+
+                    nextTile = path ? path.peek() : null;
+                    if (!nextTile || !this.trySetTile(nextTile, false))
+                        return false;
+                }
+
+                path.pop();
+
+                var dx = nextTile.x - curTile.x;
+                var dy = nextTile.y - curTile.y;
+
+                var dir = (dx < 0 ? WarNew.Direction.Left : (dx > 0 ? WarNew.Direction.Right : 0)) | (dy < 0 ? WarNew.Direction.Up : (dy > 0 ? WarNew.Direction.Down : 0));
+                var moveDelta = Math.max(this.getMoveSpeed() * WarNew.ENTITY_MOVE_SPEED_MULTIPLIER, 0.0001);
+
+                this._setActionState({
+                    type: WarNew.ActionType.Moving,
+                    direction: dir,
+                    moveStepX: dx * moveDelta,
+                    moveStepY: dy * moveDelta,
+                    moveEndX: nextTile.center.x,
+                    moveEndY: nextTile.center.y,
+                    endTick: Math.max(Math.floor(WarNew.TILE_SIZE / moveDelta), 1)
+                });
+
+                return true;
+            };
+
+            Entity.prototype._tryOccupy = function (entity, type) {
+                if (!entity || entity === this)
+                    return false;
+
+                if (type === WarNew.EntityContainType.Builder) {
+                    var ents = this._builders();
+                    if (this.isBeingConstructed() && ents.length < this.getBuilderCapacity()) {
+                        ents.push(entity);
+                        this._builders(ents);
+                        return true;
+                    }
+                } else if (type === WarNew.EntityContainType.Cargo) {
+                    var ents = this._cargo();
+                    if (this.isAlive() && ents.length < this.getCargoCapacity()) {
+                        ents.push(entity);
+                        this._cargo(ents);
+                        return true;
+                    }
+                } else if (type === WarNew.EntityContainType.Miner) {
+                    var ents = this._miners();
+                    if (this.isAlive() && ents.length < this.getMinerCapacity()) {
+                        ents.push(entity);
+                        this._miners(ents);
+                        return true;
+                    }
+                }
+                return false;
+            };
+
+            Entity.prototype.trySetEntityContainer = function (entity, type) {
+                var success = entity && entity._tryOccupy(this, type);
+                if (success) {
+                    var oldTile = this._tile();
+                    if (oldTile) {
+                        oldTile.removeEntity(this);
+                        this._tile(null);
+                    }
+
+                    var oldEntity = this._container();
+                    if (oldEntity) {
+                        oldEntity.removeEntity(this);
+                    }
+
+                    this._container(entity);
+                }
+                return success;
+            };
+
+            Entity.prototype.trySetTile = function (tile, updatePosition) {
+                if (!tile)
+                    return false;
+
+                var tw = this.getTilesWide();
+                var th = this.getTilesHigh();
+                if (tw > 1 || th > 1) {
+                    var result = this.placementTest(tile.x, tile.y, WarNew.PlacementTestFlag.ValidTiles, null, null);
+                    if (!result.valid)
+                        return false;
+
+                    var oldTile = this._tile();
+                    if (oldTile) {
+                        var oldTiles = this._terrain.getTilesWithinIndex(oldTile.x, oldTile.y, tw, th);
+                        for (var i = oldTiles.length - 1; i !== -1; --i)
+                            oldTiles[i].removeEntity(this);
+                    }
+
+                    var oldEntity = this._container();
+                    if (oldEntity) {
+                        oldEntity.removeEntity(this);
+                        this._container(null);
+                    }
+
+                    var newTiles = result.validTiles;
+                    for (var i = newTiles.length - 1; i !== -1; --i)
+                        newTiles[i]._tryOccupy(this);
+
+                    if (updatePosition)
+                        this._setPosition(tile.topLeft.x + tw * WarNew.TILE_SIZE / 2, tile.topLeft.y + th * WarNew.TILE_SIZE / 2);
+                } else {
+                    var result = this.placementTest(tile.x, tile.y, 0, null, null);
+                    if (!result.valid)
+                        return false;
+
+                    var oldTile = this._tile();
+                    if (oldTile) {
+                        oldTile.removeEntity(this);
+                    }
+
+                    var oldEntity = this._container();
+                    if (oldEntity) {
+                        oldEntity.removeEntity(this);
+                        this._container(null);
+                    }
+
+                    tile._tryOccupy(this);
+
+                    if (updatePosition)
+                        this._setPosition(tile.center.x, tile.center.y);
+                }
+
+                this._tile(tile);
+
+                return true;
+            };
+
+            Entity.prototype.update = function () {
+                var curAction = this._action;
+                if (curAction) {
+                    if (curAction.tick(++this._actionTicks, this._actionParams)) {
+                        if (this._actionParams.onActionComplete) {
+                            this._actionParams.onActionComplete();
+                        }
+                        curAction = this._action = null;
+                    }
+                }
+
+                if (!curAction) {
+                    this.think();
+                }
+
+                this._sequence.update();
+            };
+
+            Entity.prototype.wait = function (ticks) {
+                this._setActionState({
+                    type: WarNew.ActionType.Waiting,
+                    endTick: ticks
+                });
+            };
+
+            Entity.prototype._initActionStates = function () {
+                var self = this;
+                this._actionStates[WarNew.ActionType.Waiting] = {
+                    sequenceName: "idle",
+                    tick: function (actionTicks, actionParams) {
+                        return actionTicks >= actionParams.endTick || self._orderQueue[0] !== actionParams.order || self._orderQueue.length !== actionParams.orderQueueLength;
+                    }
+                };
+
+                this._actionStates[WarNew.ActionType.Moving] = {
+                    sequenceName: "move",
+                    tick: function (actionTicks, actionParams) {
+                        if (actionTicks >= actionParams.endTick) {
+                            self._setPosition(actionParams.moveEndX, actionParams.moveEndY);
+                            return true;
+                        } else {
+                            self._setPosition(self._position.x + actionParams.moveStepX, self._position.y + actionParams.moveStepY);
+                            return false;
+                        }
+                    }
+                };
+
+                this._actionStates[WarNew.ActionType.Attacking] = {
+                    sequenceName: "attack",
+                    tick: function (actionTicks, actionParams) {
+                        if (actionTicks === actionParams.endTick) {
+                            console.log("END ATTACK");
+                            return true;
+                        } else if (actionTicks === actionParams.swingTick) {
+                            console.log("SWING");
+                        }
+
+                        return false;
+                    }
+                };
+
+                this._actionStates[WarNew.ActionType.BeingConstructed] = {
+                    sequenceName: "construction_site",
+                    tick: function (actionTicks, actionParams) {
+                        var index = actionParams.sequenceIndex;
+                        var nextSeqTick = actionParams.sequenceIncreaseTicks[index];
+                        if (actionTicks === nextSeqTick) {
+                            if (index === 0 || index === 2)
+                                self._sequence.incrementFrame();
+else if (index === 1)
+                                self._setSequence("construction");
+
+                            ++actionParams.sequenceIndex;
+                        }
+
+                        var oldHealth = self._health();
+                        var newHealth = Math.min(oldHealth + actionParams.healthPerTick, self.getHealthMax());
+                        if (oldHealth !== newHealth) {
+                            self._health(newHealth);
+                        }
+
+                        self._progress(actionTicks / actionParams.endTick);
+
+                        if (actionTicks === actionParams.endTick) {
+                            return true;
+                        }
+
+                        return false;
+                    }
+                };
             };
 
             Entity.prototype._initSequences = function () {
                 var obj = this._data.sequences;
                 var names = ["attack", "construction", "construction_site", "idle", "move"];
+                var playerID = this._owner().getID();
                 for (var i = 0, ii = names.length; i < ii; ++i) {
                     var name = names[i];
                     var seqData = obj[name];
                     if (seqData) {
-                        var image = WarNew.ImageCache.getImage(seqData.imageID || obj.imageID, this._owner().id);
-
                         this._sequences[name] = new WarNew.Sequence({
                             type: seqData.type || obj.type,
-                            image: image,
+                            image: WarNew.ImageCache.getImage(seqData.imageID || obj.imageID, playerID),
                             frameWidth: seqData.frameWidth || obj.frameWidth,
                             frameHeight: seqData.frameHeight || obj.frameHeight,
                             frames: seqData.frames,
@@ -513,38 +1654,54 @@ var Engine;
                 }
             };
 
+            Entity.prototype._setActionState = function (params) {
+                var actionState = this._actionStates[params.type];
+                if (actionState) {
+                    params.order = this._orderQueue[0];
+                    params.orderQueueLength = this._orderQueue.length;
+
+                    this._actionTicks = 0;
+                    this._actionParams = params;
+                    this._action = actionState;
+                    this._setSequence(actionState.sequenceName, params.direction);
+                }
+            };
+
             Entity.prototype._setSequence = function (sequenceName, direction) {
                 var sequence = this._sequences[sequenceName];
                 if (sequence) {
-                    if (sequence !== this._currentSequence) {
+                    if (sequence !== this._sequence) {
                         sequence.reset();
-                        this._currentSequence = sequence;
+                        this._sequence = sequence;
 
-                        var fw = sequence.frameWidth;
-                        var fh = sequence.frameHeight;
                         var dr = this._drawRect;
-                        dr.x = this._position.x - (fw >> 1);
-                        dr.y = this._position.y - (fh >> 1);
-                        dr.width = fw;
-                        dr.height = fh;
+                        if (dr) {
+                            dr.x = this._position.x - (sequence.frameWidth >> 1);
+                            dr.y = this._position.y - (sequence.frameHeight >> 1);
+                            dr.width = sequence.frameWidth;
+                            dr.height = sequence.frameHeight;
+                        }
                     }
 
-                    if (direction) {
+                    if (direction)
                         this._direction = direction;
-                    }
                     sequence.setDirection(this._direction);
                 }
             };
 
-            Entity.prototype._updateRects = function () {
+            Entity.prototype._setPosition = function (x, y) {
+                this._position.x = x;
+                this._position.y = y;
+
                 var sr = this._selectionRect;
-                sr.x = this._position.x - (sr.width >> 1);
-                sr.y = this._position.y - (sr.height >> 1);
+                sr.x = x - (sr.width >> 1);
+                sr.y = y - (sr.height >> 1);
 
                 var dr = this._drawRect;
+                dr.x = x - (dr.width >> 1);
+                dr.y = y - (dr.height >> 1);
 
-                dr.x = this._position.x - (dr.width >> 1);
-                dr.y = this._position.y - (dr.height >> 1);
+                this._world.getQuadtree().update(this);
             };
             return Entity;
         })();
@@ -555,11 +1712,223 @@ var Engine;
 var Engine;
 (function (Engine) {
     (function (WarNew) {
+        (function (EntityOrder) {
+            function defaultOrder(ent, target) {
+                if (target instanceof WarNew.Tile) {
+                    var targetTile = target;
+                    move(ent, targetTile);
+                } else if (target instanceof WarNew.Entity) {
+                    var targetEntity = target;
+
+                    var entTeam = ent.getOwner().getTeam();
+                    var targetTeam = targetEntity.getOwner().getTeam();
+
+                    if (targetTeam.isNeutral() === false && entTeam !== targetTeam)
+                        attack(ent, target);
+else
+                        move(ent, target);
+                }
+            }
+            EntityOrder.defaultOrder = defaultOrder;
+
+            function attack(ent, target) {
+                if (ent.hasWeapon()) {
+                    if (target instanceof WarNew.Entity) {
+                        _issueOrder(ent, {
+                            type: WarNew.OrderType.AttackEntity,
+                            targetEntity: target
+                        });
+                    } else if (target instanceof WarNew.Tile) {
+                        _issueOrder(ent, {
+                            type: WarNew.OrderType.AttackToTile,
+                            targetTile: target
+                        });
+                    }
+                } else {
+                    move(ent, target);
+                }
+            }
+            EntityOrder.attack = attack;
+
+            function build(ent, structure, targetTile) {
+            }
+            EntityOrder.build = build;
+
+            function holdPosition(ent) {
+                if (!ent.canMove())
+                    return;
+
+                _issueOrder(ent, {
+                    type: WarNew.OrderType.HoldPosition
+                });
+            }
+            EntityOrder.holdPosition = holdPosition;
+
+            function move(ent, target) {
+                if (!ent.canMove())
+                    return;
+
+                if (target instanceof WarNew.Entity) {
+                    _issueOrder(ent, {
+                        type: WarNew.OrderType.FollowEntity,
+                        targetEntity: target
+                    });
+                } else if (target instanceof WarNew.Tile) {
+                    _issueOrder(ent, {
+                        type: WarNew.OrderType.MoveToTile,
+                        targetTile: target
+                    });
+                }
+            }
+            EntityOrder.move = move;
+
+            function patrol(ent, target) {
+                if (!ent.canMove())
+                    return;
+
+                if (target instanceof WarNew.Entity) {
+                    _issueOrder(ent, {
+                        type: WarNew.OrderType.PatrolToEntity,
+                        targetEntity: target
+                    });
+                } else if (target instanceof WarNew.Tile) {
+                    _issueOrder(ent, {
+                        type: WarNew.OrderType.PatrolToTile,
+                        targetTile: target
+                    });
+                }
+            }
+            EntityOrder.patrol = patrol;
+
+            function setRallyPoint(ent, target) {
+                if (!ent.trainsUnits())
+                    return;
+
+                ent._rallyPoint = target;
+            }
+            EntityOrder.setRallyPoint = setRallyPoint;
+
+            function stop(ent) {
+                ent._orderQueue = [];
+            }
+            EntityOrder.stop = stop;
+
+            function trainUnit(ent, unitType) {
+                if (ent.getUnitsTrained().indexOf(unitType) === -1)
+                    return;
+
+                var data = WarNew.Data.AllEntityData[unitType];
+                if (!data)
+                    return;
+            }
+            EntityOrder.trainUnit = trainUnit;
+
+            function _issueOrder(ent, order, queueFront) {
+                order.tryCount = 0;
+                if (queueFront)
+                    ent._orderQueue.unshift(order);
+else
+                    ent._orderQueue.push(order);
+            }
+        })(WarNew.EntityOrder || (WarNew.EntityOrder = {}));
+        var EntityOrder = WarNew.EntityOrder;
+    })(Engine.WarNew || (Engine.WarNew = {}));
+    var WarNew = Engine.WarNew;
+})(Engine || (Engine = {}));
+var Engine;
+(function (Engine) {
+    (function (WarNew) {
+        (function (EntityThink) {
+            var _thinkStates = [];
+
+            _thinkStates[WarNew.OrderType.AttackEntity] = AttackEntity;
+
+            _thinkStates[WarNew.OrderType.BuildAtTile] = BuildAtTile;
+
+            _thinkStates[WarNew.OrderType.ClearArea] = ClearArea;
+            _thinkStates[WarNew.OrderType.FollowEntity] = FollowEntity;
+            _thinkStates[WarNew.OrderType.HarvestGold] = HarvestGold;
+            _thinkStates[WarNew.OrderType.HoldPosition] = HoldPosition;
+            _thinkStates[WarNew.OrderType.MoveToTile] = MoveToTile;
+            _thinkStates[WarNew.OrderType.PatrolToEntity] = PatrolToEntity;
+            _thinkStates[WarNew.OrderType.PatrolToTile] = PatrolToTile;
+
+            function think(entity, order) {
+                var state = _thinkStates[order.type];
+                return (state ? state(entity, order) : WarNew.ThinkResult.Done);
+            }
+            EntityThink.think = think;
+
+            function AttackEntity(attacker, order) {
+                return WarNew.ThinkResult.Done;
+            }
+
+            function BuildAtTile(builder, order) {
+                return WarNew.ThinkResult.Done;
+            }
+
+            function ClearArea(entity, order) {
+                return WarNew.ThinkResult.Done;
+            }
+
+            function FollowEntity(follower, order) {
+                return WarNew.ThinkResult.Done;
+            }
+
+            function HarvestGold(harvester, order) {
+                return WarNew.ThinkResult.Done;
+            }
+
+            function HoldPosition(entity, order) {
+                return WarNew.ThinkResult.Done;
+            }
+
+            function MoveToTile(mover, order) {
+                var curTile = mover.getTile();
+                if (!curTile) {
+                    mover.wait(40);
+                    return WarNew.ThinkResult.NotDone;
+                }
+
+                var destTile = order.targetTile;
+                if (curTile === destTile) {
+                    return WarNew.ThinkResult.Done;
+                }
+
+                if (!mover.tryMove(destTile, WarNew.PathType.ToTarget)) {
+                    if (++order.tryCount > 1) {
+                        console.log("\"I QUIT MOVING!\" says " + mover.getName());
+                        return WarNew.ThinkResult.Done;
+                    }
+
+                    mover.wait(40);
+                }
+
+                return WarNew.ThinkResult.NotDone;
+            }
+
+            function PatrolToEntity(patroller, order) {
+                return WarNew.ThinkResult.Done;
+            }
+
+            function PatrolToTile(patroller, order) {
+                return WarNew.ThinkResult.Done;
+            }
+        })(WarNew.EntityThink || (WarNew.EntityThink = {}));
+        var EntityThink = WarNew.EntityThink;
+    })(Engine.WarNew || (Engine.WarNew = {}));
+    var WarNew = Engine.WarNew;
+})(Engine || (Engine = {}));
+var Engine;
+(function (Engine) {
+    (function (WarNew) {
         ko.bindingHandlers["Healthbar"] = {
-            init: function (element, valueAccessor, allBindingsAccessor, entity, bindingContext) {
+            init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
             },
-            update: function (element, valueAccessor, allBindingsAccessor, entity, bindingContext) {
-                var percent = Math.floor((entity.health / entity.healthMax) * 100);
+            update: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+                var entity = valueAccessor();
+
+                var percent = Math.floor((entity.getHealth() / entity.getHealthMax()) * 100);
 
                 if (percent > 74) {
                     element.style.backgroundColor = "#347004";
@@ -639,7 +2008,7 @@ var Engine;
             var _imageCanvi = {};
 
             function getImage(imageId, playerId) {
-                if (typeof playerId === "undefined" || playerId === 0) {
+                if (playerId === undefined || playerId === 0) {
                     return Engine.AssetManager.getImage(imageId);
                 }
 
@@ -710,6 +2079,177 @@ var Engine;
 var Engine;
 (function (Engine) {
     (function (WarNew) {
+        var Path = (function () {
+            function Path(pathID, bestTile, bestHeuristic, target) {
+                this.pathID = pathID;
+                this.bestTile = bestTile;
+                this.isComplete = (bestHeuristic === 0);
+                this.target = target;
+                this._pathArray = this._makePathArray(bestTile);
+            }
+            Path.prototype.dispose = function () {
+                this.bestTile = null;
+
+                this.target = null;
+                this._pathArray = null;
+            };
+
+            Path.prototype.peek = function () {
+                var pa = this._pathArray;
+                return pa.length !== 0 ? pa[pa.length - 1] : null;
+            };
+
+            Path.prototype.pop = function () {
+                var pa = this._pathArray;
+                return pa.length !== 0 ? pa.pop() : null;
+            };
+
+            Path.prototype.length = function () {
+                return this._pathArray.length;
+            };
+
+            Path.prototype._makePathArray = function (tile) {
+                var ret = [];
+                while (tile.__pathParent) {
+                    ret.push(tile);
+                    tile = tile.__pathParent;
+                }
+                return ret;
+            };
+            return Path;
+        })();
+        WarNew.Path = Path;
+    })(Engine.WarNew || (Engine.WarNew = {}));
+    var WarNew = Engine.WarNew;
+})(Engine || (Engine = {}));
+var Engine;
+(function (Engine) {
+    (function (WarNew) {
+        (function (Pathfinder) {
+            var _prevPathID = -1;
+
+            function distance(ax, ay, aWidth, aHeight, bx, by, bWidth, bHeight) {
+                var Ax0 = ax, Ax1 = ax + aWidth;
+                var Ay0 = ay, Ay1 = ay + aHeight;
+
+                var Bx0 = bx, Bx1 = bx + bWidth;
+                var By0 = by, By1 = by + bHeight;
+
+                var dist = -1;
+                if (Bx1 <= Ax0) {
+                    dist = Ax0 - Bx1;
+                    if (By1 <= Ay0)
+                        dist = Math.max(dist, Ay0 - By1);
+else if (By0 >= Ay1)
+                        dist = Math.max(dist, By0 - Ay1);
+                } else if (Bx0 >= Ax1) {
+                    dist = Bx0 - Ax1;
+                    if (By1 <= Ay0)
+                        dist = Math.max(dist, Ay0 - By1);
+else if (By0 >= Ay1)
+                        dist = Math.max(dist, By0 - Ay1);
+                } else {
+                    if (By1 <= Ay0)
+                        dist = Ay0 - By1;
+else if (By0 >= Ay1)
+                        dist = By0 - Ay1;
+                }
+
+                return dist + 1;
+            }
+            Pathfinder.distance = distance;
+
+            function getPath(entity, target, type, maxIterations) {
+                if (!entity) {
+                    return null;
+                }
+
+                var startTile = entity.getTile();
+                if (!startTile) {
+                    return null;
+                }
+
+                var WEIGHT = 10;
+                var WEIGHT_DIAG = 14;
+
+                var heuristicFunc = target.getPathHeuristic(type, WEIGHT);
+                if (!heuristicFunc) {
+                    return null;
+                }
+
+                maxIterations = maxIterations || WarNew.PATHFINDER_MAX_ITERATIONS;
+
+                var pathID = ++_prevPathID;
+                var openList = new Engine.BinaryHeap(function (tile) {
+                    return tile.__pathF;
+                });
+                var bestTile = null;
+                var bestHeuristic = Engine.MAX_INT;
+
+                startTile.__resetPath(pathID);
+                startTile.__pathOpen = true;
+                startTile.__pathH = heuristicFunc(startTile);
+
+                openList.push(startTile);
+
+                for (var i = 0; i < maxIterations && openList.size() !== 0; ++i) {
+                    var tile = openList.pop();
+                    tile.__pathClosed = true;
+
+                    if (tile.__pathH < bestHeuristic) {
+                        bestTile = tile;
+                        bestHeuristic = tile.__pathH;
+
+                        if (bestHeuristic === 0)
+                            break;
+                    }
+
+                    var tileX = tile.x;
+                    var tileY = tile.y;
+                    var tileG = tile.__pathG;
+                    var nbrs = tile.neighbors;
+                    for (var n = nbrs.length - 1; n !== -1; --n) {
+                        var nbrTile = nbrs[n];
+                        if (!nbrTile.canOccupy(entity))
+                            continue;
+
+                        if (nbrTile.__pathID !== pathID)
+                            nbrTile.__resetPath(pathID);
+
+                        if (nbrTile.__pathClosed)
+                            continue;
+
+                        var tempG = tileG + (tileX === nbrTile.x || tileY === nbrTile.y ? WEIGHT : WEIGHT_DIAG);
+
+                        if (!nbrTile.__pathOpen || tempG < nbrTile.__pathG) {
+                            var heur = heuristicFunc(nbrTile);
+
+                            nbrTile.__pathG = tempG;
+                            nbrTile.__pathH = heur;
+                            nbrTile.__pathF = tempG + heur;
+                            nbrTile.__pathParent = tile;
+
+                            if (nbrTile.__pathOpen) {
+                                openList.rescoreElement(nbrTile);
+                            } else {
+                                openList.push(nbrTile);
+                                nbrTile.__pathOpen = true;
+                            }
+                        }
+                    }
+                }
+
+                return new WarNew.Path(pathID, bestTile, bestHeuristic, target);
+            }
+            Pathfinder.getPath = getPath;
+        })(WarNew.Pathfinder || (WarNew.Pathfinder = {}));
+        var Pathfinder = WarNew.Pathfinder;
+    })(Engine.WarNew || (Engine.WarNew = {}));
+    var WarNew = Engine.WarNew;
+})(Engine || (Engine = {}));
+var Engine;
+(function (Engine) {
+    (function (WarNew) {
         var Player = (function () {
             function Player(id, world) {
                 this._id = id;
@@ -721,62 +2261,37 @@ var Engine;
                 this._foodUsed = 12;
                 this._foodCreated = 20;
             }
-            Object.defineProperty(Player.prototype, "id", {
-                get: function () {
-                    return this._id;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Player.prototype, "race", {
-                get: function () {
-                    return this._race;
-                },
-                enumerable: true,
-                configurable: true
-            });
+            Player.prototype.getID = function () {
+                return this._id;
+            };
+            Player.prototype.getRace = function () {
+                return this._race;
+            };
+            Player.prototype.getTeam = function () {
+                return this._team;
+            };
 
-            Object.defineProperty(Player.prototype, "gold", {
-                get: function () {
-                    return this._gold;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Player.prototype, "lumber", {
-                get: function () {
-                    return this._lumber;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Player.prototype, "oil", {
-                get: function () {
-                    return this._oil;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Player.prototype, "foodUsed", {
-                get: function () {
-                    return this._foodUsed;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Player.prototype, "foodCreated", {
-                get: function () {
-                    return this._foodCreated;
-                },
-                enumerable: true,
-                configurable: true
-            });
+            Player.prototype.getGold = function () {
+                return this._gold;
+            };
+            Player.prototype.getLumber = function () {
+                return this._lumber;
+            };
+            Player.prototype.getOil = function () {
+                return this._oil;
+            };
+            Player.prototype.getFoodUsed = function () {
+                return this._foodUsed;
+            };
+            Player.prototype.getFoodCreated = function () {
+                return this._foodCreated;
+            };
 
             Player.prototype.dispose = function () {
                 this._world = null;
             };
 
-            Player.prototype.decode = function (raw) {
+            Player.prototype.init = function (raw) {
                 this._type = raw ? raw.playerType : WarNew.PlayerType.None;
 
                 this._race = "human";
@@ -790,28 +2305,41 @@ var Engine;
 var Engine;
 (function (Engine) {
     (function (WarNew) {
+        function formatIconID(str, liveGame) {
+            var player = liveGame.getPlayer();
+            if (player) {
+                var race = player.getRace();
+                str = str.replace(/\{race\}/g, race);
+            }
+            return str;
+        }
+
         ko.bindingHandlers["Portrait"] = {
-            init: function (element, valueAccessor, allBindingsAccessor, entity, bindingContext) {
+            init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
                 element.width = 46;
                 element.height = 38;
             },
-            update: function (element, valueAccessor, allBindingsAccessor, entity, bindingContext) {
+            update: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
                 var liveGame = bindingContext.$root;
 
+                var params = valueAccessor();
+
                 var ctx = element.getContext("2d");
-                if (!entity) {
+                if (!params) {
                     ctx.clearRect(0, 0, element.width, element.height);
                     return;
                 }
 
-                var sprite = WarNew.AllSpriteData.getSprite(entity.iconID, entity.owner.id);
+                var iconID = formatIconID(params.iconID, liveGame);
+
+                var sprite = WarNew.AllSpriteData.getSprite(iconID, params.player ? params.player.getID() : undefined);
                 if (!sprite) {
                     ctx.clearRect(0, 0, element.width, element.height);
                     return;
                 }
 
-                var downButton = liveGame.downButton;
-                if (downButton && entity === ko.dataFor(downButton)) {
+                var downButton = liveGame.getDownButton();
+                if (downButton && params.data === ko.dataFor(downButton)) {
                     element.style.margin = "1px 0 0 1px";
                 } else {
                     element.style.margin = "0";
@@ -828,30 +2356,23 @@ var Engine;
     (function (WarNew) {
         var Sequence = (function () {
             function Sequence(params) {
+                this.frameWidth = params.frameWidth;
+                this.frameHeight = params.frameHeight;
+
                 this._type = params.type;
                 this._image = params.image;
                 this._frames = params.frames;
                 this._frameTick = params.frameTick;
-                this._frameWidth = params.frameWidth;
-                this._frameHeight = params.frameHeight;
 
                 this.reset();
                 this.setDirection(params.direction);
             }
-            Object.defineProperty(Sequence.prototype, "frameWidth", {
-                get: function () {
-                    return this._frameWidth;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Sequence.prototype, "frameHeight", {
-                get: function () {
-                    return this._frameHeight;
-                },
-                enumerable: true,
-                configurable: true
-            });
+            Sequence.prototype.getFrameWidth = function () {
+                return this.frameWidth;
+            };
+            Sequence.prototype.getFrameHeight = function () {
+                return this.frameHeight;
+            };
 
             Sequence.prototype.reset = function () {
                 this._ticks = 0;
@@ -901,7 +2422,7 @@ var Engine;
                     if (!direction)
                         direction = WarNew.Direction.Down;
 
-                    this._xPosition = Sequence._dirToFrameX[direction] * this._frameWidth;
+                    this._xPosition = Sequence._dirToFrameX[direction] * this.frameWidth;
                     this._flipX = ((direction & WarNew.Direction.Left) !== 0);
                 }
             };
@@ -916,9 +2437,9 @@ var Engine;
 
             Sequence.prototype._frameAdjust = function () {
                 if (this._type === WarNew.SequenceType.Directional) {
-                    this._yPosition = this._frames[this._frameIndex] * this._frameHeight;
+                    this._yPosition = this._frames[this._frameIndex] * this.frameHeight;
                 } else if (this._type === WarNew.SequenceType.Vertical) {
-                    this._yPosition = this._frames[this._frameIndex] * this._frameHeight;
+                    this._yPosition = this._frames[this._frameIndex] * this.frameHeight;
                 } else {
                     this._yPosition = Math.floor(this._frameIndex * 0.2);
                     this._xPosition = this._frameIndex % 5;
@@ -929,25 +2450,25 @@ var Engine;
                 if (!this._image)
                     return;
 
+                x = (x + 0.5) << 0;
+                y = (y + 0.5) << 0;
+
                 if (this._flipX) {
-                    ctx.save();
-                    ctx.translate(x, 0);
                     ctx.scale(-1, 1);
-                    ctx.translate(-x, 0);
+                    x = -x;
                 }
 
-                var frameWidth = this._frameWidth;
-                var frameHeight = this._frameHeight;
+                var fw = this.frameWidth;
+                var fh = this.frameHeight;
                 if (atCenter) {
-                    x -= (frameWidth >> 1);
-                    y -= (frameHeight >> 1);
+                    x -= (fw >> 1);
+                    y -= (fh >> 1);
                 }
 
-                ctx.drawImage(this._image, this._xPosition, this._yPosition, frameWidth, frameHeight, x, y, frameWidth, frameHeight);
+                ctx.drawImage(this._image, this._xPosition, this._yPosition, fw, fh, x, y, fw, fh);
 
-                if (this._flipX) {
-                    ctx.restore();
-                }
+                if (this._flipX)
+                    ctx.scale(-1, 1);
             };
             Sequence._dirToFrameX = [0, 2, 0, 1, 2, 0, 1, 0, 4, 3, 0, 0, 3, 0, 0, 0];
             return Sequence;
@@ -959,69 +2480,53 @@ var Engine;
 var Engine;
 (function (Engine) {
     (function (WarNew) {
+        var Team = (function () {
+            function Team() {
+                this._players = [];
+            }
+            Team.prototype.id = function () {
+                return this._id;
+            };
+            Team.prototype.isNeutral = function () {
+                return this._id === 0;
+            };
+            Team.prototype.name = function () {
+                return this._name;
+            };
+            return Team;
+        })();
+        WarNew.Team = Team;
+    })(Engine.WarNew || (Engine.WarNew = {}));
+    var WarNew = Engine.WarNew;
+})(Engine || (Engine = {}));
+var Engine;
+(function (Engine) {
+    (function (WarNew) {
         var Terrain = (function () {
             function Terrain() {
             }
-            Object.defineProperty(Terrain.prototype, "mesh", {
-                get: function () {
-                    return this._mesh.mesh;
-                },
-                enumerable: true,
-                configurable: true
-            });
+            Terrain.prototype.getMesh = function () {
+                return this._mesh.getMesh();
+            };
 
-            Object.defineProperty(Terrain.prototype, "terrainType", {
-                get: function () {
-                    return this._terrainType;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Terrain.prototype, "tileCount", {
-                get: function () {
-                    return this._tilesWide * this._tilesDeep;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Terrain.prototype, "tilesWide", {
-                get: function () {
-                    return this._tilesWide;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Terrain.prototype, "tilesDeep", {
-                get: function () {
-                    return this._tilesDeep;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Terrain.prototype, "unitsWide", {
-                get: function () {
-                    return this._unitsWide;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Terrain.prototype, "unitsDeep", {
-                get: function () {
-                    return this._unitsDeep;
-                },
-                enumerable: true,
-                configurable: true
-            });
-
-            Object.defineProperty(Terrain.prototype, "something", {
-                get: function () {
-                    return this._tilesWide;
-                },
-                set: function (value) {
-                },
-                enumerable: true,
-                configurable: true
-            });
+            Terrain.prototype.getTerrainType = function () {
+                return this._terrainType;
+            };
+            Terrain.prototype.getTileCount = function () {
+                return this._tilesWide * this._tilesDeep;
+            };
+            Terrain.prototype.getTilesWide = function () {
+                return this._tilesWide;
+            };
+            Terrain.prototype.getTilesDeep = function () {
+                return this._tilesDeep;
+            };
+            Terrain.prototype.getUnitsWide = function () {
+                return this._unitsWide;
+            };
+            Terrain.prototype.getUnitsDeep = function () {
+                return this._unitsDeep;
+            };
 
             Terrain.prototype.dispose = function () {
                 var tiles = this._tiles;
@@ -1033,7 +2538,7 @@ var Engine;
                 this._mesh.dispose();
             };
 
-            Terrain.prototype.decode = function (raw) {
+            Terrain.prototype.init = function (raw) {
                 var terrainType = this._terrainType = raw ? raw.type : "forest";
                 var tilesWide = this._tilesWide = raw ? raw.width : 32;
                 var tilesDeep = this._tilesDeep = raw ? raw.height : 32;
@@ -1045,16 +2550,45 @@ var Engine;
 
                 var id = -1;
                 var tiles = this._tiles = [];
-                for (var z = 0; z < tilesDeep; ++z) {
+                for (var y = 0; y < tilesDeep; ++y) {
                     for (var x = 0; x < tilesWide; ++x) {
-                        var tile = new WarNew.Tile(this, ++id, x, z);
+                        var tile = new WarNew.Tile(this, ++id, x, y);
                         tiles.push(tile);
                     }
                 }
 
                 var rawTiles = raw ? raw.tiles : [];
-                for (var i = 0, ii = tiles.length; i < ii; ++i) {
-                    tiles[i].decode(rawTiles[i]);
+                var tileID = 0;
+                for (var y = 0; y < tilesDeep; ++y) {
+                    var northValid = (y !== 0);
+                    var southValid = (y !== tilesDeep - 1);
+
+                    for (var x = 0; x < tilesWide; ++x) {
+                        var westValid = (x !== 0);
+                        var eastValid = (x !== tilesWide - 1);
+
+                        var nbrs = [];
+                        if (westValid)
+                            nbrs.push(tiles[(x - 1) + tilesWide * y]);
+                        if (northValid && westValid)
+                            nbrs.push(tiles[(x - 1) + tilesWide * (y - 1)]);
+                        if (northValid)
+                            nbrs.push(tiles[x + tilesWide * (y - 1)]);
+                        if (northValid && eastValid)
+                            nbrs.push(tiles[(x + 1) + tilesWide * (y - 1)]);
+                        if (eastValid)
+                            nbrs.push(tiles[(x + 1) + tilesWide * y]);
+                        if (southValid && eastValid)
+                            nbrs.push(tiles[(x + 1) + tilesWide * (y + 1)]);
+                        if (southValid)
+                            nbrs.push(tiles[x + tilesWide * (y + 1)]);
+                        if (southValid && westValid)
+                            nbrs.push(tiles[(x - 1) + tilesWide * (y + 1)]);
+
+                        tiles[tileID].init(nbrs, rawTiles[tileID]);
+
+                        ++tileID;
+                    }
                 }
             };
 
@@ -1071,34 +2605,35 @@ var Engine;
             };
 
             Terrain.prototype.getTileAtIndex = function (ix, iy, clamp) {
+                var tw = this._tilesWide;
+                var td = this._tilesDeep;
                 if (clamp) {
-                    ix = Engine.MathUtil.clamp(ix, 0, this._tilesWide - 1);
-                    iy = Engine.MathUtil.clamp(iy, 0, this._tilesDeep - 1);
-                } else if (ix < 0 || iy < 0 || ix >= this._tilesWide || iy >= this._tilesDeep) {
+                    ix = Engine.MathUtil.clamp(ix, 0, tw - 1);
+                    iy = Engine.MathUtil.clamp(iy, 0, td - 1);
+                } else if (ix < 0 || iy < 0 || ix >= tw || iy >= td) {
                     return null;
                 }
-                return this._tiles[ix + this._tilesWide * iy];
+                return this._tiles[ix + tw * iy];
             };
 
             Terrain.prototype.getTilesWithinIndex = function (tileX, tileY, tilesWide, tilesHigh) {
-                var sx = Engine.MathUtil.clamp(tileX, 0, this._tilesWide - 1);
-                var sy = Engine.MathUtil.clamp(tileY, 0, this._tilesDeep - 1);
-                var ex = Engine.MathUtil.clamp(tileX + tilesWide, 0, this._tilesWide);
-                var ey = Engine.MathUtil.clamp(tileY + tilesHigh, 0, this._tilesDeep);
+                var tw = this._tilesWide;
+                var td = this._tilesDeep;
 
                 var ret = [];
                 var tiles = this._tiles;
+                var sx = Engine.MathUtil.clamp(tileX, 0, tw - 1);
+                var sy = Engine.MathUtil.clamp(tileY, 0, td - 1);
+                var ex = Engine.MathUtil.clamp(tileX + tilesWide, 0, tw);
+                var ey = Engine.MathUtil.clamp(tileY + tilesHigh, 0, td);
                 for (var y = sy; y < ey; ++y) {
                     for (var x = sx; x < ex; ++x)
-                        ret.push(tiles[x + this._tilesWide * y]);
+                        ret.push(tiles[x + tw * y]);
                 }
                 return ret;
             };
 
             Terrain.prototype.draw = function (ctx, bounds, drawGrid, drawTileNumbers, drawPath) {
-                if (typeof drawGrid === "undefined") { drawGrid = false; }
-                if (typeof drawTileNumbers === "undefined") { drawTileNumbers = false; }
-                if (typeof drawPath === "undefined") { drawPath = false; }
                 var left = Math.max(bounds.x, 0);
                 var top = Math.max(bounds.y, 0);
                 var right = Math.min(left + bounds.width, this._unitsWide);
@@ -1118,9 +2653,51 @@ var Engine;
                 for (var y = sy; y <= ey; ++y) {
                     for (var x = sx; x <= ex; ++x) {
                         var tile = tiles[x + tilesWide * y];
-                        var tilePos = tile.position;
-                        ctx.drawImage(tilesheet, tile.atlasX, tile.atlasY, WarNew.TILE_SIZE, WarNew.TILE_SIZE, tilePos.x, tilePos.y, WarNew.TILE_SIZE, WarNew.TILE_SIZE);
+                        var tilePos = tile.topLeft;
+                        ctx.drawImage(tilesheet, tile._atlasX, tile._atlasY, WarNew.TILE_SIZE, WarNew.TILE_SIZE, tilePos.x, tilePos.y, WarNew.TILE_SIZE, WarNew.TILE_SIZE);
                     }
+                }
+
+                if (drawTileNumbers) {
+                    ctx.save();
+                     {
+                        ctx.globalAlpha = 0.3;
+                        ctx.fillStyle = "#fff";
+                        ctx.font = "normal 10px arial";
+                        for (var y = sy; y <= ey; ++y) {
+                            for (var x = sx; x <= ex; ++x) {
+                                var tile = tiles[x + tilesWide * y];
+                                var tilePos = tile.topLeft;
+                                ctx.fillText("" + x + "," + y, tilePos.x, tilePos.y + 10);
+                            }
+                        }
+                    }
+                    ctx.restore();
+                }
+
+                if (drawGrid) {
+                    ctx.save();
+                     {
+                        ctx.globalAlpha = 0.3;
+                        ctx.lineWidth = 1;
+                        ctx.strokeStyle = "#000";
+                        ctx.beginPath();
+                        var py = 0.5 + WarNew.TILE_SIZE + sy * WarNew.TILE_SIZE;
+                        for (var y = sy; y < ey; ++y) {
+                            ctx.moveTo(left, py);
+                            ctx.lineTo(right, py);
+                            py += WarNew.TILE_SIZE;
+                        }
+
+                        var px = 0.5 + WarNew.TILE_SIZE + sx * WarNew.TILE_SIZE;
+                        for (var x = sx; x < ex; ++x) {
+                            ctx.moveTo(px, top);
+                            ctx.lineTo(px, bottom);
+                            px += WarNew.TILE_SIZE;
+                        }
+                        ctx.stroke();
+                    }
+                    ctx.restore();
                 }
             };
             return Terrain;
@@ -1241,13 +2818,9 @@ var Engine;
 
                 this._mesh = new THREE.Mesh(geom, material);
             }
-            Object.defineProperty(TerrainMesh.prototype, "mesh", {
-                get: function () {
-                    return this._mesh;
-                },
-                enumerable: true,
-                configurable: true
-            });
+            TerrainMesh.prototype.getMesh = function () {
+                return this._mesh;
+            };
 
             TerrainMesh.prototype.dispose = function () {
                 this._geometry.dispose();
@@ -1255,13 +2828,15 @@ var Engine;
             };
 
             TerrainMesh.prototype.updateTile = function (tile) {
+                var tileID = tile.getID();
+
                 var geom = this._geometry;
 
                  {
                     var atw = WarNew.TILE_ATLAS_TILES_WIDE;
                     var ath = WarNew.TILE_ATLAS_TILES_HIGH;
 
-                    var aIndex = tile.atlasIndex;
+                    var aIndex = tile._atlasIndex;
                     var ax = (aIndex % atw);
                     var ay = Math.floor(aIndex / atw);
 
@@ -1275,7 +2850,7 @@ var Engine;
                     var v1 = v0 - uvY;
 
                     var uvs = geom.attributes["uv"].array;
-                    var u = 12 * tile.id - 1;
+                    var u = 12 * tileID - 1;
 
                     uvs[++u] = u1;
                     uvs[++u] = v1;
@@ -1297,13 +2872,13 @@ var Engine;
                 }
 
                  {
-                    var h1 = tile.data.layer * WarNew.TERRAIN_HEIGHT_SCALE;
+                    var h1 = tile.getData().layer * WarNew.TERRAIN_HEIGHT_SCALE;
                     var h0 = h1 - WarNew.TERRAIN_HEIGHT_SCALE;
 
                     var positions = geom.attributes["position"].array;
-                    var p = 18 * tile.id + 1;
+                    var p = 18 * tileID + 1;
 
-                    var cf = tile.cornerFlags;
+                    var cf = tile.getCornerFlags();
 
                     positions[p] = ((cf & 0x8) !== 0) ? h1 : h0;
                     p += 3;
@@ -1336,72 +2911,41 @@ var Engine;
 (function (Engine) {
     (function (WarNew) {
         var Tile = (function () {
-            function Tile(terrain, id, x, z) {
+            function Tile(terrain, id, x, y) {
                 this._terrain = terrain;
                 this._id = id;
-                this._x = x;
-                this._z = z;
-                this._position = new Engine.Vec2(x * WarNew.TILE_SIZE, z * WarNew.TILE_SIZE);
+                this.x = x;
+                this.y = y;
+                this.topLeft = new Engine.Vec2(x * WarNew.TILE_SIZE, y * WarNew.TILE_SIZE);
+                this.center = this.topLeft.clone().add(WarNew.TILE_SIZE >> 1, WarNew.TILE_SIZE >> 1);
 
                 this._occupiers = [];
-            }
-            Object.defineProperty(Tile.prototype, "id", {
-                get: function () {
-                    return this._id;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Tile.prototype, "position", {
-                get: function () {
-                    return this._position;
-                },
-                enumerable: true,
-                configurable: true
-            });
 
-            Object.defineProperty(Tile.prototype, "type", {
-                get: function () {
-                    return this._type;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Tile.prototype, "data", {
-                get: function () {
-                    return this._data;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Tile.prototype, "cornerFlags", {
-                get: function () {
-                    return this._cornerFlags;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Tile.prototype, "atlasIndex", {
-                get: function () {
-                    return this._atlasIndex;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Tile.prototype, "atlasX", {
-                get: function () {
-                    return this._atlasX;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(Tile.prototype, "atlasY", {
-                get: function () {
-                    return this._atlasY;
-                },
-                enumerable: true,
-                configurable: true
-            });
+                this._specialFlags = [];
+            }
+            Tile.prototype.__resetPath = function (pathID) {
+                this.__pathID = pathID;
+                this.__pathG = 0;
+                this.__pathH = 0;
+                this.__pathF = 0;
+                this.__pathOpen = false;
+                this.__pathClosed = false;
+                this.__pathParent = null;
+            };
+
+            Tile.prototype.getID = function () {
+                return this._id;
+            };
+
+            Tile.prototype.getType = function () {
+                return this._type;
+            };
+            Tile.prototype.getData = function () {
+                return this._data;
+            };
+            Tile.prototype.getCornerFlags = function () {
+                return this._cornerFlags;
+            };
 
             Tile.prototype.dispose = function () {
                 this._terrain = null;
@@ -1409,7 +2953,9 @@ var Engine;
                 this._data = null;
             };
 
-            Tile.prototype.decode = function (raw) {
+            Tile.prototype.init = function (neighbors, raw) {
+                this.neighbors = neighbors;
+
                 if (raw) {
                     var tileType = 0xf & (raw >> 0);
                     var cornerFlags = 0xf & (raw >> 4);
@@ -1420,8 +2966,83 @@ var Engine;
                 }
             };
 
+            Tile.prototype.canOccupy = function (ent, ret) {
+                if (!ent)
+                    return false;
+
+                var eflags = ent.getOccupyFlags();
+
+                if ((eflags & this._occupyAllowed) !== eflags) {
+                    if (ret && ret.message)
+                        ret.message = "Cannot place there.";
+                    return false;
+                }
+
+                var valid = true;
+                var occupiers = this._occupiers;
+                for (var i = occupiers.length - 1; i != -1; --i) {
+                    var occ = occupiers[i];
+
+                    if (ent === occ)
+                        continue;
+
+                    if (ret && ret.ignoreEnt && occ === ret.ignoreEnt)
+                        continue;
+
+                    if (ret && ret.ignorePlayerUnits && occ.getOwner() == ret.ignorePlayerUnits && occ.isUnit())
+                        continue;
+
+                    if ((eflags & occ.getOccupyFlags()) !== 0) {
+                        valid = false;
+                        if (ret) {
+                            if (ret.message)
+                                ret.message = "Invalid placement.";
+                            if (ret.blockingEntities && ret.blockingEntities.indexOf(occ) === -1)
+                                ret.blockingEntities.push(occ);
+                        }
+                    }
+                }
+                return valid;
+            };
+
+            Tile.prototype.getPathHeuristic = function (type, weight) {
+                var x = this.x;
+                var y = this.y;
+                if (type === WarNew.PathType.ToTarget) {
+                    return function (fromTile) {
+                        return weight * Math.max(Math.abs(x - fromTile.x), Math.abs(y - fromTile.y));
+                    };
+                } else if (type === WarNew.PathType.AvoidTarget) {
+                    var LARGE_NUMBER = (Engine.MAX_INT >> 1);
+                    return function (tile) {
+                        return LARGE_NUMBER - weight * Math.max(Math.abs(x - tile.x), Math.abs(y - tile.y));
+                    };
+                }
+
+                return null;
+            };
+
+            Tile.prototype.removeEntity = function (entity) {
+                var index = this._occupiers.indexOf(entity);
+                if (index !== -1) {
+                    this._occupiers.splice(index, 1);
+                }
+            };
+
+            Tile.prototype.addSpecialFlag = function (flag) {
+                var sf = this._specialFlags[flag];
+                this._specialFlags[flag] = (sf ? sf + 1 : 1);
+            };
+            Tile.prototype.removeSpecialFlag = function (flag) {
+                var sf = this._specialFlags[flag];
+                this._specialFlags[flag] = (sf ? sf - 1 : 0);
+            };
+            Tile.prototype.hasSpecialFlag = function (flag) {
+                return this._specialFlags[flag] || false;
+            };
+
             Tile.prototype.setTileType = function (tileType, cornerFlags, variant) {
-                var terrainType = this._terrain.terrainType;
+                var terrainType = this._terrain.getTerrainType();
 
                 var allData = WarNew.Data.AllTileData[terrainType];
                 if (!allData)
@@ -1435,7 +3056,7 @@ var Engine;
                 if (!variants || variants.length === 0)
                     return;
 
-                if (typeof variant !== "undefined")
+                if (variant !== undefined)
                     variant = Engine.MathUtil.clamp(variant, 0, variants.length - 1);
 else
                     variant = Engine.Random.integer(0, variants.length);
@@ -1482,6 +3103,16 @@ else
 
                 this._terrain.onTileTypeSet(this);
             };
+
+            Tile.prototype._tryOccupy = function (entity) {
+                if (entity && !this.canOccupy(entity)) {
+                    return false;
+                }
+
+                this.removeEntity(entity);
+                this._occupiers.push(entity);
+                return true;
+            };
             return Tile;
         })();
         WarNew.Tile = Tile;
@@ -1491,31 +3122,66 @@ else
 var Engine;
 (function (Engine) {
     (function (WarNew) {
+        var TileRegion = (function () {
+            function TileRegion(x, y, width, height) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+            }
+            TileRegion.prototype.getPathHeuristic = function (type, weight) {
+                var x = this.x;
+                var y = this.y;
+                var width = this.width;
+                var height = this.height;
+
+                if (type === WarNew.PathType.ToArea) {
+                    return function (tile) {
+                        return weight * WarNew.Pathfinder.distance(tile.x, tile.y, 1, 1, x, y, width, height);
+                    };
+                } else if (type === WarNew.PathType.AvoidArea) {
+                    var LARGE_NUMBER = (Engine.MAX_INT >> 1);
+                    return function (tile) {
+                        return LARGE_NUMBER - weight * WarNew.Pathfinder.distance(tile.x, tile.y, 1, 1, x, y, width, height);
+                    };
+                } else if (type === WarNew.PathType.ClearArea) {
+                    var x0 = x - 1;
+                    var y0 = y - 1;
+                    var x1 = x + width;
+                    var y1 = y + height;
+                    return function (tile) {
+                        var x = tile.x, y = tile.y;
+                        if (x <= x0 || x > x1 || y <= y0 || y > y1)
+                            return 0;
+else
+                            return weight * Math.min(Math.min(x - x0, x1 - x), Math.min(y - y0, y1 - y));
+                    };
+                }
+
+                return null;
+            };
+            return TileRegion;
+        })();
+        WarNew.TileRegion = TileRegion;
+    })(Engine.WarNew || (Engine.WarNew = {}));
+    var WarNew = Engine.WarNew;
+})(Engine || (Engine = {}));
+var Engine;
+(function (Engine) {
+    (function (WarNew) {
         var World = (function () {
             function World() {
             }
-            Object.defineProperty(World.prototype, "terrain", {
-                get: function () {
-                    return this._terrain;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(World.prototype, "quadtree", {
-                get: function () {
-                    return this._quadtree;
-                },
-                enumerable: true,
-                configurable: true
-            });
+            World.prototype.getTerrain = function () {
+                return this._terrain;
+            };
+            World.prototype.getQuadtree = function () {
+                return this._quadtree;
+            };
 
-            Object.defineProperty(World.prototype, "entities", {
-                get: function () {
-                    return this._entities;
-                },
-                enumerable: true,
-                configurable: true
-            });
+            World.prototype.getEntities = function () {
+                return this._entities;
+            };
 
             World.prototype.dispose = function () {
                 this._terrain.dispose();
@@ -1527,56 +3193,57 @@ var Engine;
                 }
             };
 
-            World.prototype.decode = function (raw) {
+            World.prototype.init = function (raw) {
                 var terrain = this._terrain = new WarNew.Terrain();
-                terrain.decode(raw ? raw.terrain : undefined);
+                terrain.init(raw ? raw.terrain : undefined);
 
-                this._quadtree = new WarNew.WorldQuadtree(new Engine.Rect(0, 0, terrain.unitsWide, terrain.unitsDeep));
+                this._quadtree = new WarNew.WorldQuadtree(new Engine.Rect(0, 0, terrain.getUnitsWide(), terrain.getUnitsDeep()), 4, 4);
 
                 var players = this._players = [];
                 var rawPlayers = raw ? raw.players : [];
                 for (var p = 0; p < WarNew.PLAYERS_MAX; ++p) {
                     var player = new WarNew.Player(p, this);
-                    player.decode(rawPlayers[p]);
+                    player.init(rawPlayers[p]);
                     players.push(player);
                 }
 
-                this._nextEntityId = terrain.tileCount;
+                this._prevEntityID = terrain.getTileCount();
 
-                var entities = this._entities = [];
+                this._entities = [];
                 var entitiesById = this._entitiesById = [];
                 this._entitiesByType = [];
+
+                var ents = [];
+                var rawEnts = [];
 
                 var rawEntities = raw ? raw.entities : [];
                 for (var i = 0, ii = rawEntities.length; i < ii; ++i) {
                     var rawEnt = rawEntities[i];
 
-                    this._decodeEntity(rawEnt);
+                    var raw_0 = rawEnt[0] || 0;
+                    var playerID = 0xf & (raw_0 >> 0);
+                    var entType = 0xff & (raw_0 >> 4);
+                    var entID = 0x7ffff & (raw_0 >> 12);
+
+                    var entData = WarNew.Data.AllEntityData[entType];
+                    var entOwner = this.getPlayerById(playerID);
+                    if (!entData || !entOwner || entitiesById[entID]) {
+                        continue;
+                    }
+
+                    this._prevEntityID = Math.max(this._prevEntityID, entID);
+
+                    ents[entID] = new WarNew.Entity(entID, this, entType, entData, entOwner);
+                    rawEnts[entID] = rawEnt;
                 }
-            };
 
-            World.prototype.spawnEntity = function (p, id) {
-                var data = WarNew.Data.AllEntityData[p.type];
-                if (!data) {
-                    return null;
+                for (var id in ents) {
+                    var ent = ents[id];
+
+                    ent.init(rawEnts[id]);
+
+                    this._addEntity(ent);
                 }
-
-                if (typeof id === "undefined") {
-                    id = this._nextEntityId;
-                } else {
-                    this._nextEntityId = Math.max(this._nextEntityId, id);
-                }
-                ++this._nextEntityId;
-
-                var ent = new WarNew.Entity(id, this, data, p);
-
-                this._addEntity(ent);
-
-                return ent;
-            };
-
-            World.prototype.destroyEntity = function (ent) {
-                this._removeEntity(ent);
             };
 
             World.prototype.getPlayerById = function (pid) {
@@ -1595,72 +3262,61 @@ var Engine;
                 return this._quadtree.getItemsInRect(rect);
             };
 
-            World.prototype._decodeEntity = function (raw) {
-                var raw_0 = raw[0];
-                var playerId = 0xf & (raw_0 >> 0);
-                var entityType = 0xff & (raw_0 >> 4);
-                var entityId = 0x7ffff & (raw_0 >> 12);
-
-                var raw_1 = raw[1];
-                var tileID = 0x7ffff & (raw_1 >> 0);
-
-                var raw_2 = raw[2];
-                var health = 0xfff & (raw_2 >> 0);
-                var mana = 0x1f & (raw_2 >> 12);
-                var spawnState = 0x7 & (raw_2 >> 17);
-                var goldContained = 0x7ff & (raw_2 >> 20);
-
-                var raw_3 = raw[3];
-                var posX = 0x7fff & (raw_3 >> 0);
-                var posY = 0x7fff & (raw_3 >> 15);
-
-                return this.spawnEntity({
-                    owner: this.getPlayerById(playerId),
-                    type: entityType,
-                    posX: posX,
-                    posY: posY
-                }, entityId);
+            World.prototype.step = function () {
+                var ents = this._entities;
+                for (var i = 0, ii = ents.length; i < ii; ++i)
+                    ents[i].update();
             };
 
             World.prototype._encodeEntity = function (ent) {
                 var raw_0 = 0;
-                raw_0 |= (ent.owner.id << 0);
-                raw_0 |= (ent.type << 4);
-                raw_0 |= (ent.id << 12);
+                raw_0 |= (ent.getOwner().getID() << 0);
+                raw_0 |= (ent.getType() << 4);
+                raw_0 |= (ent.getID() << 12);
 
                 return [raw_0];
             };
 
             World.prototype._addEntity = function (ent) {
                 this._entities.push(ent);
-                this._entitiesById[ent.id] = ent;
+                this._entitiesById[ent.getID()] = ent;
 
-                var typeList = this._entitiesByType[ent.type];
+                var type = ent.getType();
+                var typeList = this._entitiesByType[type];
                 if (!typeList) {
-                    typeList = this._entitiesByType[ent.type] = [];
+                    typeList = this._entitiesByType[type] = [];
                 }
                 typeList.push(ent);
 
                 this._quadtree.insert(ent);
             };
 
-            World.prototype._removeEntity = function (ent) {
-                var index = this._entities.indexOf(ent);
-                if (!ent || index === -1) {
+            World.prototype._removeEntity = function (a) {
+                var ent, index;
+                if (a instanceof WarNew.Entity) {
+                    ent = a;
+                    index = this._entities.indexOf(ent);
+                } else {
+                    index = a;
+                    ent = this._entities[index];
+                }
+
+                if (index === -1) {
                     return;
                 }
 
                 this._entities.splice(index, 1);
-                delete this._entitiesById[ent.id];
+                delete this._entitiesById[ent.getID()];
 
-                var typeList = this._entitiesByType[ent.type];
+                var type = ent.getType();
+                var typeList = this._entitiesByType[type];
                 if (typeList) {
                     var index = typeList.indexOf(ent);
                     if (index !== -1) {
                         typeList.splice(index, 1);
                     }
                     if (typeList.length === 0) {
-                        delete this._entitiesByType[ent.type];
+                        delete this._entitiesByType[type];
                     }
                 }
 
@@ -1669,6 +3325,77 @@ var Engine;
             return World;
         })();
         WarNew.World = World;
+    })(Engine.WarNew || (Engine.WarNew = {}));
+    var WarNew = Engine.WarNew;
+})(Engine || (Engine = {}));
+var Engine;
+(function (Engine) {
+    (function (WarNew) {
+        (function (WorldEvent) {
+            var _names = [];
+            var Event = (function () {
+                function Event(name) {
+                    this.name = name;
+                    _names.push(name);
+                }
+                return Event;
+            })();
+            WorldEvent.Event = Event;
+
+            var _handlers = {};
+            function _add(evt, delegate) {
+                var h = _handlers[evt.name];
+                if (!h)
+                    h = _handlers[evt.name] = [];
+                h.push(delegate);
+            }
+            function _remove(evt, delegate) {
+                var h = _handlers[evt.name];
+                if (!h)
+                    return;
+                var index = h.indexOf(delegate);
+                if (index !== -1)
+                    h.splice(index, 1);
+            }
+            function _trigger(evt) {
+                var argArray = [];
+                for (var _i = 0; _i < (arguments.length - 1); _i++) {
+                    argArray[_i] = arguments[_i + 1];
+                }
+                var h = _handlers[evt.name];
+                if (!h)
+                    return;
+                for (var i = 0, ii = h.length; i < ii; ++i)
+                    h[i].apply(null, argArray);
+            }
+
+            var EntityEvent = (function (_super) {
+                __extends(EntityEvent, _super);
+                function EntityEvent(name) {
+                    _super.call(this, "entity_" + name);
+                }
+                EntityEvent.prototype.subscribe = function (f) {
+                    _add(this, f);
+                };
+                EntityEvent.prototype.unsubscribe = function (f) {
+                    _remove(this, f);
+                };
+                EntityEvent.prototype.trigger = function (ent, oldVal, newVal) {
+                    _trigger(this, ent, oldVal, newVal);
+                };
+                return EntityEvent;
+            })(Event);
+            WorldEvent.EntityEvent = EntityEvent;
+
+            WorldEvent.Entity = {
+                container: new EntityEvent("container"),
+                health: new EntityEvent("health"),
+                mana: new EntityEvent("mana"),
+                spawnState: new EntityEvent("spawnState"),
+                tile: new EntityEvent("tile")
+            };
+        })(WarNew.WorldEvent || (WarNew.WorldEvent = {}));
+        var WorldEvent = WarNew.WorldEvent;
     })(Engine.WarNew || (Engine.WarNew = {}));
     var WarNew = Engine.WarNew;
 })(Engine || (Engine = {}));
@@ -1691,13 +3418,26 @@ var Engine;
                 this._topRight = null;
                 this._bottomLeft = null;
                 this._bottomRight = null;
+                this._isLeaf = true;
             }
+            QTBucket.deepestBucket = function (root, item) {
+                var rect = item.getQTRect();
+                var b = root;
+                while (b._isLeaf === false) {
+                    var q = b.getRectQuadrants(rect);
+                    if (q.length !== 1)
+                        break;
+                    b = q[0];
+                }
+                return b;
+            };
+
             QTBucket.prototype.dispose = function () {
                 this._tree = null;
                 this._parent = null;
                 this._bounds = null;
                 this._items = null;
-                if (!this.isLeaf()) {
+                if (!this._topLeft) {
                     this._topLeft.dispose();
                     this._topRight.dispose();
                     this._bottomLeft.dispose();
@@ -1707,7 +3447,7 @@ var Engine;
             };
 
             QTBucket.prototype.draw = function (ctx) {
-                if (this.isLeaf()) {
+                if (this._isLeaf) {
                     var bounds = this._bounds;
                     ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
                 } else {
@@ -1720,25 +3460,55 @@ var Engine;
 
             QTBucket.prototype.insert = function (item) {
                 this._items.push(item);
-                this._increment(1);
 
-                if (this.isLeaf() && this._items.length > WarNew.QUADTREE_NODE_MAX_ITEMS && this._depth < WarNew.QUADTREE_NODE_MAX_DEPTH) {
-                    this._split();
+                var c = this;
+                do {
+                    ++c._count;
+                    c = c._parent;
+                } while(c !== null);
+
+                var tree = this._tree;
+                if (this._isLeaf && this._items.length > tree.bucketCapacity && this._depth < tree.maxDepth) {
+                    if (!this._topLeft) {
+                        var b = this._bounds;
+                        var nextDepth = this._depth + 1;
+
+                        var mx = this._midX;
+                        var my = this._midY;
+                        var hw = b.width * 0.5;
+                        var hh = b.height * 0.5;
+
+                        this._topLeft = new QTBucket(tree, this, new Engine.Rect(b.x, b.y, hw, hh), nextDepth);
+                        this._topRight = new QTBucket(tree, this, new Engine.Rect(mx, b.y, hw, hh), nextDepth);
+                        this._bottomLeft = new QTBucket(tree, this, new Engine.Rect(b.x, my, hw, hh), nextDepth);
+                        this._bottomRight = new QTBucket(tree, this, new Engine.Rect(mx, my, hw, hh), nextDepth);
+                    }
+                    this._isLeaf = false;
+
+                    var items = this._items;
+                    for (var i = items.length - 1; i !== -1; --i) {
+                        tree.update(items[i]);
+                    }
                 }
             };
 
             QTBucket.prototype.remove = function (item) {
                 var index = this._items.indexOf(item);
-                if (index === -1) {
+                if (index === -1)
                     return;
-                }
 
                 this._items.splice(index, 1);
-                this._decrement(1);
-            };
 
-            QTBucket.prototype.isLeaf = function () {
-                return this._topLeft === null;
+                var c = this;
+                var mergeNode = null;
+                do {
+                    if (--c._count === 0)
+                        mergeNode = c;
+                    c = c._parent;
+                } while(c !== null);
+
+                if (mergeNode)
+                    mergeNode._isLeaf = true;
             };
 
             QTBucket.prototype.getItemsAtPoint = function (point, ret) {
@@ -1756,9 +3526,8 @@ var Engine;
                     }
                 }
 
-                if (this.isLeaf() === false) {
-                    var q = this.getPointQuadrant(point);
-                    q.getItemsAtPoint(point, ret);
+                if (!this._isLeaf) {
+                    this.getPointQuadrant(point).getItemsAtPoint(point, ret);
                 }
             };
 
@@ -1775,7 +3544,7 @@ var Engine;
                     }
                 }
 
-                if (this.isLeaf() === false) {
+                if (!this._isLeaf) {
                     var q = this.getRectQuadrants(rect);
                     for (var i = 0, ii = q.length; i < ii; ++i)
                         q[i].getItemsInRect(rect, ret);
@@ -1818,69 +3587,17 @@ else
                         return [this._topRight, this._bottomRight, this._topLeft, this._bottomLeft];
                 }
             };
-
-            QTBucket.prototype._increment = function (amount) {
-                var c = this;
-                do {
-                    c._count += amount;
-                    c = c._parent;
-                } while(c !== null);
-            };
-
-            QTBucket.prototype._decrement = function (amount) {
-                var c = this;
-                var mergeNode = null;
-                do {
-                    c._count -= amount;
-                    if (c._count === 0) {
-                        mergeNode = c;
-                    }
-                    c = c._parent;
-                } while(c !== null);
-
-                if (mergeNode !== null && !mergeNode.isLeaf()) {
-                    console.log("QT merge");
-
-                    mergeNode._topLeft.dispose();
-                    mergeNode._topLeft = null;
-                    mergeNode._topRight.dispose();
-                    mergeNode._topRight = null;
-                    mergeNode._bottomLeft.dispose();
-                    mergeNode._bottomLeft = null;
-                    mergeNode._bottomRight.dispose();
-                    mergeNode._bottomRight = null;
-                }
-            };
-
-            QTBucket.prototype._split = function () {
-                console.log("QT split");
-                var b = this._bounds;
-                var tree = this._tree;
-                var nextDepth = this._depth + 1;
-
-                var mx = this._midX;
-                var my = this._midY;
-                var hw = b.width * 0.5;
-                var hh = b.height * 0.5;
-
-                this._topLeft = new QTBucket(tree, this, new Engine.Rect(b.x, b.y, hw, hh), nextDepth);
-                this._topRight = new QTBucket(tree, this, new Engine.Rect(mx, b.y, hw, hh), nextDepth);
-                this._bottomLeft = new QTBucket(tree, this, new Engine.Rect(b.x, my, hw, hh), nextDepth);
-                this._bottomRight = new QTBucket(tree, this, new Engine.Rect(mx, my, hw, hh), nextDepth);
-
-                var items = this._items;
-                for (var i = items.length - 1; i !== -1; --i) {
-                    tree.update(items[i]);
-                }
-            };
             return QTBucket;
         })();
         WarNew.QTBucket = QTBucket;
 
         var WorldQuadtree = (function () {
-            function WorldQuadtree(bounds) {
-                this._root = new QTBucket(this, null, bounds, 0);
+            function WorldQuadtree(bounds, bucketCap, maxDepth) {
+                this.bucketCapacity = bucketCap;
+                this.maxDepth = maxDepth;
+
                 this._map = [];
+                this._root = new QTBucket(this, null, bounds, 0);
             }
             WorldQuadtree.prototype.dispose = function () {
                 this._root.dispose();
@@ -1897,37 +3614,36 @@ else
 
             WorldQuadtree.prototype.insert = function (item) {
                 var id = item.getID();
-                if (typeof this._map[id] !== "undefined") {
+                if (this._map[id] !== undefined) {
                     return;
                 }
 
-                var bucket = this._deepestBucket(item);
+                var bucket = QTBucket.deepestBucket(this._root, item);
 
-                bucket.insert(item);
                 this._map[id] = [item, bucket];
+                bucket.insert(item);
             };
 
             WorldQuadtree.prototype.update = function (item) {
-                var id = item.getID();
-                var arr = this._map[id];
-                if (typeof arr === "undefined") {
+                var arr = this._map[item.getID()];
+                if (arr === undefined) {
                     return;
                 }
 
                 var oldBucket = arr[1];
-                var newBucket = this._deepestBucket(item);
+                var newBucket = QTBucket.deepestBucket(this._root, item);
                 if (oldBucket !== newBucket) {
                     oldBucket.remove(item);
 
-                    newBucket.insert(item);
                     arr[1] = newBucket;
+                    newBucket.insert(item);
                 }
             };
 
             WorldQuadtree.prototype.remove = function (item) {
                 var id = item.getID();
                 var arr = this._map[id];
-                if (typeof arr === "undefined") {
+                if (arr === undefined) {
                     return;
                 }
 
@@ -1948,18 +3664,6 @@ else
                 this._root.getItemsInRect(rect, items);
                 return items;
             };
-
-            WorldQuadtree.prototype._deepestBucket = function (item) {
-                var rect = item.getQTRect();
-                var b = this._root;
-                while (b.isLeaf() === false) {
-                    var q = b.getRectQuadrants(rect);
-                    if (q.length !== 1)
-                        break;
-                    b = q[0];
-                }
-                return b;
-            };
             return WorldQuadtree;
         })();
         WarNew.WorldQuadtree = WorldQuadtree;
@@ -1973,6 +3677,7 @@ var Engine;
             Data.AllEntityData = [];
 
             var defaultEntity = {
+                abilities: [],
                 armorBase: 0,
                 buildTime: 60,
                 buttonX: 0,
@@ -1987,6 +3692,7 @@ var Engine;
                 name: "Default Entity",
                 oilCost: 0,
                 occupyFlags: WarNew.Occupy.None | 0,
+                page: WarNew.CommandPage.Default,
                 pointValue: 0,
                 priority: 0,
                 selectable: true,
@@ -2012,6 +3718,7 @@ var Engine;
                 isStructure: false,
                 tilesHigh: 1,
                 tilesWide: 1,
+                unitsTrained: [],
                 acquisitionRange: 0,
                 boxWidth: 0,
                 boxHeight: 0,
@@ -2028,6 +3735,7 @@ var Engine;
                 iconId: "icon-default-structure",
                 name: "Default Structure",
                 occupyFlags: WarNew.Occupy.LandStructure,
+                page: WarNew.CommandPage.BasicBuild,
                 sequences: {
                     type: WarNew.SequenceType.Vertical,
                     imageID: "gold_mine",
@@ -2952,12 +4660,6 @@ var Engine;
     })(Engine.WarNew || (Engine.WarNew = {}));
     var WarNew = Engine.WarNew;
 })(Engine || (Engine = {}));
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 var Engine;
 (function (Engine) {
     (function (WarNew) {
@@ -3014,6 +4716,10 @@ var Engine;
                     enable2dPhysics: false,
                     enable3d: true,
                     showStats: true,
+                    customVendors: [
+                        "compressor.js",
+                        "underscore-min.js"
+                    ],
                     statesDirectory: "script/state/"
                 });
             }
@@ -3044,6 +4750,10 @@ var Engine;
 var Engine;
 (function (Engine) {
     (function (WarNew) {
+        function _entitySortFunction(a, b) {
+            return b.getSortOrder() - a.getSortOrder();
+        }
+
         var LiveGame = (function (_super) {
             __extends(LiveGame, _super);
             function LiveGame() {
@@ -3051,126 +4761,82 @@ var Engine;
                     hasUI: true
                 });
 
+                var self = this;
+
                 this._player = ko.observable();
 
-                this._selectedEntities = ko.observableArray();
-
                 this._hoverTarget = ko.observable();
-                this._hoverTile = ko.observable();
+                this._hoverTile = null;
 
-                this._groupIndicesIndex = ko.observable(0);
+                this._group = ko.observableArray([]);
 
-                var self = this;
-                this._groupIndices = ko.computed(function () {
-                    var indices = [];
-                    var prevType = -1;
-                    var selected = self._selectedEntities();
-                    for (var i = 0, ii = selected.length; i < ii; ++i) {
-                        var type = selected[i].type;
-                        if (type !== prevType) {
-                            indices.push(i);
-                            prevType = type;
-                        }
-                    }
+                this._groupType = WarNew.EntityType.None;
 
-                    if (self._groupIndicesIndex() >= indices.length) {
-                        self._groupIndicesIndex(0);
-                    }
+                this._selectedEntities = ko.observableArray();
+                this._selectedIds = ko.observableArray();
+                this._selectedEntities.subscribe(function (selected) {
+                    var ids = self._selectedIds();
+                    ids.length = 0;
+                    for (var i = selected.length - 1; i !== -1; --i)
+                        ids[selected[i].getID()] = true;
+                    self._selectedIds.valueHasMutated();
 
-                    return indices;
+                    var oldType = self._groupType;
+
+                    var ent = _.find(selected, function (ent) {
+                        return ent.getType() === oldType;
+                    });
+
+                    self.setGroupType(ent ? ent.getType() : (selected.length > 0 ? selected[0].getType() : WarNew.EntityType.None));
                 });
 
-                this._hoverButton = ko.observable();
+                this._groupIds = ko.observableArray();
+
+                this._currentCommands = ko.observableArray([]);
+
+                this._hoverCommand = ko.observable();
                 this._downButton = ko.observable();
                 this._tooltip = ko.observable();
                 this._tooltipExtended = ko.observable();
                 this._statusBarText = ko.computed(function () {
-                    var btn = self._hoverButton();
-                    if (btn) {
-                        var ent = ko.dataFor(btn);
-                        if (ent) {
-                            return ent.name;
-                        }
-                    }
-
+                    var cmd = self._hoverCommand();
+                    if (cmd)
+                        return cmd.getName();
                     var target = self._hoverTarget();
-                    if (target instanceof WarNew.Entity) {
-                        return (target).name;
-                    }
+                    if (target instanceof WarNew.Entity)
+                        return (target).getName();
                 });
             }
-            Object.defineProperty(LiveGame.prototype, "player", {
-                get: function () {
-                    return this._player();
-                },
-                enumerable: true,
-                configurable: true
-            });
+            LiveGame.prototype.getPlayer = function () {
+                return this._player();
+            };
 
-            Object.defineProperty(LiveGame.prototype, "selectedEntities", {
-                get: function () {
-                    return this._selectedEntities();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(LiveGame.prototype, "noEntitiesSelected", {
-                get: function () {
-                    return this._selectedEntities().length === 0;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(LiveGame.prototype, "oneEntitySelected", {
-                get: function () {
-                    return this._selectedEntities().length === 1;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(LiveGame.prototype, "multipleEntitiesSelected", {
-                get: function () {
-                    return this._selectedEntities().length > 1;
-                },
-                enumerable: true,
-                configurable: true
-            });
+            LiveGame.prototype.getSelectedEntities = function () {
+                return this._selectedEntities();
+            };
 
-            Object.defineProperty(LiveGame.prototype, "hoverButton", {
-                get: function () {
-                    return this._hoverButton();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(LiveGame.prototype, "downButton", {
-                get: function () {
-                    return this._downButton();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(LiveGame.prototype, "tooltip", {
-                get: function () {
-                    return this._tooltip();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(LiveGame.prototype, "tooltipExtended", {
-                get: function () {
-                    return this._tooltipExtended();
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(LiveGame.prototype, "statusBarText", {
-                get: function () {
-                    return this._statusBarText();
-                },
-                enumerable: true,
-                configurable: true
-            });
+            LiveGame.prototype.getGroup = function () {
+                return this._group();
+            };
+            LiveGame.prototype.getCurrentCommands = function () {
+                return this._currentCommands();
+            };
+
+            LiveGame.prototype.getHoverCommand = function () {
+                return this._hoverCommand();
+            };
+            LiveGame.prototype.getDownButton = function () {
+                return this._downButton();
+            };
+            LiveGame.prototype.getTooltip = function () {
+                return this._tooltip();
+            };
+            LiveGame.prototype.getTooltipExtended = function () {
+                return this._tooltipExtended();
+            };
+            LiveGame.prototype.getStatusBarText = function () {
+                return this._statusBarText();
+            };
 
             LiveGame.prototype.onUICreated = function (dom) {
                 var self = this;
@@ -3178,27 +4844,44 @@ var Engine;
                     Engine.App.instance.setState("MainMenu");
                 });
 
-                dom.on("click", ".entityButton", function () {
+                dom.on("click", ".iconButton.entity", function () {
                     var ent = ko.dataFor(this);
                     var selected = self._selectedEntities();
                     if (selected.length === 1) {
-                        self._camera.setCenter(ent.position);
+                        self._camera.setCenter(ent.getPosition());
+                    } else if (!self.isEntityInGroup(ent)) {
+                        self.setGroupType(ent.getType());
                     } else {
-                        self._selectedEntities([ent]);
+                        selected.length = 0;
+                        selected.push(ent);
+                        self._selectedEntities.valueHasMutated();
                     }
                 });
 
-                dom.on("mouseover", ".entityButton", function () {
-                    self._hoverButton(this);
-                });
-                dom.on("mouseout", ".entityButton", function () {
-                    self._hoverButton(null);
+                dom.on("click", ".iconButton.command", function () {
+                    var command = ko.dataFor(this);
+                    self.issueCommand(command);
                 });
 
-                dom.on("mousedown", ".entityButton", function () {
+                dom.on("mouseover", ".iconButton", function () {
+                    var d = ko.dataFor(this);
+                    if (d instanceof WarNew.Command)
+                        self._hoverCommand(d);
+else if (d instanceof WarNew.Entity)
+                        self._hoverTarget(d);
+                });
+                dom.on("mouseout", ".iconButton", function () {
+                    var d = ko.dataFor(this);
+                    if (d instanceof WarNew.Command)
+                        self._hoverCommand(null);
+else if (d instanceof WarNew.Entity)
+                        self._hoverTarget(null);
+                });
+
+                dom.on("mousedown", ".iconButton", function () {
                     self._downButton(this);
                 });
-                dom.on("mouseup", ".entityButton", function () {
+                dom.on("mouseup", ".iconButton", function () {
                     self._downButton(null);
                 });
             };
@@ -3242,14 +4925,26 @@ var Engine;
                 });
             };
             LiveGame.prototype._begin = function () {
-                var world = this._world = new WarNew.World();
-                world.decode(WarNew.TEST_WORLD_DATA);
+                var self = this;
 
-                this._camera = new WarNew.Camera2D(new Engine.Vec2(), world.terrain.unitsWide, world.terrain.unitsDeep);
+                var world = this._world = new WarNew.World();
+                world.init(WarNew.TEST_WORLD_DATA);
+
+                var terrain = world.getTerrain();
+                this._camera = new WarNew.Camera2D(new Engine.Vec2(), terrain.getUnitsWide(), terrain.getUnitsDeep());
 
                 this._player(world.getPlayerById(2));
 
                 this._mainSurface = this.create2dSurface();
+                this._mainSurface.canvas.bind("mouseout", function () {
+                    if (self._hoverTarget() !== null)
+                        self._hoverTarget(null);
+                    self._hoverTile = null;
+                    self._mouseInView = false;
+                });
+                this._mainSurface.canvas.bind("mouseover", function () {
+                    self._mouseInView = true;
+                });
 
                 this._userState = WarNew.UserState.Default;
                 this._selectionStart = new Engine.Vec2();
@@ -3258,15 +4953,28 @@ var Engine;
 
                 this._selectionRect = new Engine.Rect();
                 this._selectedEntities([]);
-                this._hoverTile(null);
+
+                this._hoverTile = null;
                 this._hoverTarget(null);
 
-                this._groupIndicesIndex(0);
+                this._groupType = WarNew.EntityType.None;
+                this._currentCommands([]);
+                this._currentPage = WarNew.CommandPage.Default;
+                this._pendingCommand = null;
 
-                this._hoverButton(null);
+                this._drawGrid = false;
+                this._drawEntityIDs = false;
+                this._drawPath = false;
+                this._drawTileNumbers = false;
+                this._drawQuadtree = false;
+
                 this._downButton(null);
                 this._tooltip(null);
                 this._tooltipExtended(null);
+
+                (this._mainSurface.context).mozImageSmoothingEnabled = false;
+                (this._mainSurface.context).webkitImageSmoothingEnabled = false;
+                (this._mainSurface.context).imageSmoothingEnabled = false;
             };
             LiveGame.prototype.end = function () {
                 this._world.dispose();
@@ -3285,103 +4993,30 @@ var Engine;
 
                 this._selectionRect = null;
                 this._selectedEntities([]);
+
                 this._hoverTarget(null);
-                this._hoverTile(null);
+                this._hoverTile = null;
 
-                this._groupIndicesIndex(0);
+                this._groupType = WarNew.EntityType.None;
+                this._currentCommands([]);
+                this._currentPage = WarNew.CommandPage.Default;
+                this._pendingCommand = null;
 
-                this._hoverButton(null);
                 this._downButton(null);
                 this._tooltip(null);
                 this._tooltipExtended(null);
             };
 
-            LiveGame.prototype.selectEntities = function (ents, add) {
-                var list = ents;
-
-                if (add) {
-                    var selected = this._selectedEntities();
-
-                    if (ents.length === 1) {
-                        var index = selected.indexOf(ents[0]);
-                        if (index === -1) {
-                            selected.push(ents[0]);
-                        } else {
-                            selected.splice(index, 1);
-                        }
-                    } else {
-                        for (var i = ents.length - 1; i !== -1; --i) {
-                            var ent = ents[i];
-                            if (selected.indexOf(ent) === -1)
-                                selected.push(ent);
-                        }
-                    }
-
-                    list = selected;
-                }
-
-                this._filterEntities(list);
-
-                this._selectedEntities(list);
-            };
-
-            LiveGame.prototype._startSelection = function (pageX, pageY) {
-                var rect = this._mainSurface.rect;
-                this._userState = WarNew.UserState.Selecting;
-                this._camera.getPointAt(pageX - rect.x, pageY - rect.y, this._selectionStart);
-            };
-            LiveGame.prototype._endSelection = function () {
-                this._userState = WarNew.UserState.Default;
-
-                var sr = this._selectionRect;
-                var ents = this._world.getEntitiesInRect(sr);
-                for (var i = ents.length - 1; i !== -1; --i) {
-                    var ent = ents[i];
-                    if (!ent.selectionRect.intersectsRect(sr))
-                        ents.splice(i, 1);
-                }
-
-                if (ents.length !== 0) {
-                    this.selectEntities(ents, Engine.Input.isKeyDown(Engine.Key.KEY_SHIFT));
-                }
-            };
-
-            LiveGame.prototype._filterEntities = function (ents) {
-                if (ents.length === 0) {
-                    return;
-                }
-
-                var player = this._player();
-
-                var savedEnt = null;
-                for (var i = ents.length - 1; i !== -1; --i) {
-                    var ent = ents[i];
-                    if (!ent.isSelectable) {
-                        ents.splice(i, 1);
-                    } else if (!ent.isUnit || ent.owner !== player) {
-                        savedEnt = ents.splice(i, 1)[0];
-                    }
-                }
-
-                if (ents.length === 0 && savedEnt) {
-                    ents.push(savedEnt);
-                } else {
-                    ents.sort(function (a, b) {
-                        return b.sortOrder - a.sortOrder;
-                    });
-
-                    if (ents.length > WarNew.ENTITY_MAX_SELECTION) {
-                        ents.splice(WarNew.ENTITY_MAX_SELECTION, ents.length - WarNew.ENTITY_MAX_SELECTION);
-                    }
-                }
-            };
-
             LiveGame.prototype.update = function (dt) {
-                Engine.AssetManager.getCursor("hand").apply();
+                this._world.step();
+                this._world.step();
+
+                var cursor = "hand";
 
                 var camera = this._camera;
                 var rect = this._mainSurface.rect;
                 var mousePos = Engine.Input.getMousePosition();
+                var userState = this._userState;
 
                 this._mouseInView = rect.containsPoint(mousePos);
 
@@ -3414,52 +5049,106 @@ var Engine;
                 camera.getPointAt(mousePos.x - rect.x, mousePos.y - rect.y, this._worldMouseCoords);
 
                 if (this._mouseInView) {
-                    this._hoverTile(this._world.terrain.getTileAtPoint(this._worldMouseCoords, false));
+                    var world = this._world;
+                    var wmc = this._worldMouseCoords;
 
-                    var ents = this._world.getEntitiesAtPoint(this._worldMouseCoords);
+                    this._hoverTile = world.getTerrain().getTileAtPoint(wmc, false);
+
+                    var ents = world.getEntitiesAtPoint(wmc);
                     for (var i = ents.length - 1; i !== -1; --i) {
                         var ent = ents[i];
-                        if (!ent.selectionRect.containsPoint(this._worldMouseCoords)) {
+                        if (!ent.getSelectionRect().containsPoint(wmc) || !ent.isSelectable())
                             ents.splice(i, 1);
-                        }
                     }
-                    this._hoverTarget(ents[0] || this._hoverTile);
-                } else {
-                    this._hoverTile(null);
-                    this._hoverTarget(null);
+
+                    if (ents.length > 0) {
+                        cursor = "magnify";
+                        if (this._hoverTarget() !== ents[0])
+                            this._hoverTarget(ents[0]);
+                    } else {
+                        if (this._hoverTarget() !== this._hoverTile)
+                            this._hoverTarget(this._hoverTile);
+                    }
+
+                    if (userState === WarNew.UserState.Targeting) {
+                        cursor = "yellow_crosshairs";
+                    }
                 }
 
-                var userState = this._userState;
                 if (userState === WarNew.UserState.Selecting) {
                     this._selectionRect.fromPoints(this._selectionStart, this._worldMouseCoords);
                 }
+
+                Engine.AssetManager.getCursor(cursor).apply();
             };
 
             LiveGame.prototype.draw = function () {
                 var ctx = this._mainSurface.context;
-                ctx.fillStyle = "#fff";
+                ctx.fillStyle = "#6b6";
                 ctx.fillRect(0, 0, this._mainSurface.width, this._mainSurface.height);
 
                 ctx.save();
                  {
-                    this._camera.apply(ctx);
+                    var world = this._world;
+                    var camera = this._camera;
+                    var camRect = camera.getRect();
 
-                    this._world.terrain.draw(ctx, this._camera.rect);
+                    camera.apply(ctx);
 
-                    this._world.quadtree.draw(ctx);
+                    world.getTerrain().draw(ctx, camRect, this._drawGrid, this._drawTileNumbers, this._drawPath);
 
-                    ctx.lineWidth = 1;
-                    ctx.strokeStyle = "#0f0";
-                    var selected = this._selectedEntities();
-                    for (var i = 0, ii = selected.length; i < ii; ++i) {
-                        var ent = selected[i];
-                        var sr = ent.selectionRect;
-                        ctx.strokeRect(sr.x + 0.5, sr.y + 0.5, sr.width, sr.height);
+                    if (this._drawQuadtree) {
+                        world.getQuadtree().draw(ctx);
                     }
 
-                    var ents = this._world.getEntitiesInRect(this._camera.rect);
+                    var ents = world.getEntitiesInRect(camRect);
+
+                    if (ents.length > 0) {
+                        var hoverTarget = this._hoverTarget();
+
+                        ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+                        ctx.strokeStyle = "#0f0";
+                        for (var i = ents.length - 1; i !== -1; --i) {
+                            var ent = ents[i];
+                            if (this.isEntitySelected(ent)) {
+                                var sr = ent.getSelectionRect();
+                                if (this.isEntityInGroup(ent)) {
+                                    ctx.lineWidth = 2;
+                                    ctx.fillRect(sr.x, sr.y, sr.width, sr.height);
+                                    ctx.strokeRect(sr.x, sr.y, sr.width, sr.height);
+                                } else {
+                                    ctx.lineWidth = 1;
+                                    ctx.strokeRect(sr.x + 0.5, sr.y + 0.5, sr.width, sr.height);
+                                }
+
+                                if (hoverTarget === ent) {
+                                    ctx.save();
+                                     {
+                                        ctx.fillStyle = "#ff0";
+
+                                        ctx.fillRect(sr.x - 2, sr.y - 2, 4, 4);
+                                        ctx.fillRect(sr.right - 2, sr.y - 2, 4, 4);
+                                        ctx.fillRect(sr.right - 2, sr.bottom - 2, 4, 4);
+                                        ctx.fillRect(sr.x - 2, sr.bottom - 2, 4, 4);
+                                    }
+                                    ctx.restore();
+                                }
+                            }
+                        }
+                    }
+
                     for (var i = 0, ii = ents.length; i < ii; ++i) {
                         ents[i].draw(ctx);
+                    }
+
+                    if (this._drawEntityIDs) {
+                        ctx.font = "normal 10px tahoma";
+                        ctx.fillStyle = "#fff";
+                        for (var e = 0, ee = ents.length; e < ee; ++e) {
+                            var entity = ents[e];
+                            var p = entity.getPosition();
+                            ctx.fillText(entity.getID().toString(), p.x - 4, p.y - 16);
+                        }
                     }
 
                     var userState = this._userState;
@@ -3468,9 +5157,44 @@ var Engine;
                         ctx.lineWidth = 1;
                         ctx.strokeStyle = "#0f0";
                         ctx.strokeRect(sr.x + 0.5, sr.y + 0.5, sr.width, sr.height);
+                    } else if (userState === WarNew.UserState.PlacingEntity) {
+                        if (this._hoverTile)
+                            this._pendingCommand.placementEntity.drawPlacement(ctx, this._hoverTile.x, this._hoverTile.y);
                     }
                 }
                 ctx.restore();
+            };
+
+            LiveGame.prototype.onKeyDown = function (key) {
+                var hotCmd = _.find(this._currentCommands(), function (cmd) {
+                    return cmd && cmd.getHotkey() === key;
+                });
+
+                if (hotCmd) {
+                    this.issueCommand(hotCmd);
+                    return;
+                }
+
+                if (key === Engine.Key.KEY_TAB) {
+                    this._cycleGroup(Engine.Input.isKeyDown(Engine.Key.KEY_SHIFT));
+                    Engine.Input.preventDefault();
+                } else if (key === Engine.Key.KEY_NUMPAD_0) {
+                    this._drawGrid = !this._drawGrid;
+                } else if (key === Engine.Key.KEY_NUMPAD_1) {
+                    this._drawTileNumbers = !this._drawTileNumbers;
+                } else if (key === Engine.Key.KEY_NUMPAD_2) {
+                    this._drawPath = !this._drawPath;
+                } else if (key === Engine.Key.KEY_NUMPAD_3) {
+                    this._drawEntityIDs = !this._drawEntityIDs;
+                } else if (key === Engine.Key.KEY_NUMPAD_4) {
+                    this._drawQuadtree = !this._drawQuadtree;
+                }
+            };
+
+            LiveGame.prototype.onBufferedKeyDown = function (key) {
+                if (key === Engine.Key.KEY_TAB) {
+                    Engine.Input.preventDefault();
+                }
             };
 
             LiveGame.prototype.onMouseDown = function (x, y, button) {
@@ -3484,7 +5208,15 @@ var Engine;
                     if (button === Engine.Key.KEY_MOUSE_LEFT) {
                         this._startSelection(x, y);
                     } else if (button === Engine.Key.KEY_MOUSE_RIGHT) {
-                        this._selectedEntities([]);
+                        var result = this.issueCommand();
+                        if (result.success) {
+                        }
+                    }
+                } else if (userState === WarNew.UserState.Targeting || userState === WarNew.UserState.PlacingEntity) {
+                    if (button === Engine.Key.KEY_MOUSE_LEFT) {
+                        this.issueCommand();
+                    } else {
+                        this.setPage(WarNew.CommandPage.Default);
                     }
                 }
             };
@@ -3497,16 +5229,16 @@ var Engine;
                     }
                 }
 
-                if (button === Engine.Key.KEY_MOUSE_LEFT) {
+                if (button === Engine.Key.KEY_MOUSE_LEFT && this._downButton() !== null) {
                     this._downButton(null);
                 }
             };
 
             LiveGame.prototype.onMouseWheel = function (delta) {
                 if (delta > 0) {
-                    this._camera.setZoom(this._camera.zoom * (1 + WarNew.CAMERA_ZOOM_INCREMENT));
+                    this._camera.setZoom(this._camera.getZoom() * (1 + WarNew.CAMERA_ZOOM_INCREMENT));
                 } else if (delta < 0) {
-                    this._camera.setZoom(this._camera.zoom * (1 - WarNew.CAMERA_ZOOM_INCREMENT));
+                    this._camera.setZoom(this._camera.getZoom() * (1 - WarNew.CAMERA_ZOOM_INCREMENT));
                 }
             };
 
@@ -3518,6 +5250,294 @@ var Engine;
                 mainSurface.height = height - 16 - 16;
 
                 this._camera.resize(mainSurface.width, mainSurface.height);
+            };
+
+            LiveGame.prototype.isEntityInGroup = function (ent) {
+                return this._groupIds()[ent.getID()] || false;
+            };
+
+            LiveGame.prototype.isEntitySelected = function (ent) {
+                return this._selectedIds()[ent.getID()] || false;
+            };
+
+            LiveGame.prototype.issueCommand = function (command) {
+                var player = this._player();
+                var selected = this._selectedEntities();
+                var doQueue = Engine.Input.isKeyDown(Engine.Key.KEY_SHIFT);
+
+                var result = null;
+
+                if (command) {
+                    if (command instanceof WarNew.UserCommand) {
+                        result = (command).tryExecute(this);
+                    } else {
+                        var worldCommand = command;
+                        result = worldCommand.canExecute(player, selected, null);
+
+                        if (result.success) {
+                            if (worldCommand.requiresTarget()) {
+                                var plotEntType = worldCommand.plotEntityType();
+                                if (plotEntType === WarNew.EntityType.None) {
+                                    this._userState = WarNew.UserState.Targeting;
+                                } else {
+                                    this._userState = WarNew.UserState.PlacingEntity;
+
+                                    worldCommand.placementEntity = new WarNew.Entity(Engine.MAX_INT, this._world, plotEntType, WarNew.Data.AllEntityData[plotEntType], this._player());
+                                }
+
+                                this._pendingCommand = worldCommand;
+                                this.setPage(WarNew.CommandPage.Targeting);
+                            } else {
+                                result = worldCommand.tryExecute(player, selected, null, doQueue);
+                            }
+                        }
+                    }
+                } else {
+                    var target = this._hoverTarget() || this._hoverTile;
+
+                    if (this._userState === WarNew.UserState.Targeting) {
+                        result = this._pendingCommand.tryExecute(player, selected, target, doQueue);
+                    } else if (this._userState === WarNew.UserState.PlacingEntity) {
+                        target = this._hoverTile;
+                        result = this._pendingCommand.tryExecute(player, selected, target, doQueue);
+                    } else {
+                        result = WarNew.WorldCommand.instance.tryExecute(player, selected, target, doQueue);
+                    }
+                    console.log(result);
+                    if (result.success) {
+                        this.setPage(WarNew.CommandPage.Default);
+                    }
+                }
+
+                if (result.message) {
+                }
+
+                return result;
+            };
+
+            LiveGame.prototype.setGroupType = function (entType) {
+                var player = this._player();
+                var group = _.filter(this._selectedEntities(), function (ent) {
+                    return ent.getType() === entType && ent.getOwner() === player;
+                });
+                this._group(group);
+
+                var ids = this._groupIds();
+                ids.length = 0;
+                for (var i = group.length - 1; i !== -1; --i)
+                    ids[group[i].getID()] = true;
+                this._groupIds.valueHasMutated();
+
+                this._groupType = entType;
+
+                this.setPage(WarNew.CommandPage.Default);
+            };
+
+            LiveGame.prototype.setPage = function (page) {
+                var commands = [];
+                for (var i = WarNew.COMMANDS_MAX - 1; i !== -1; --i)
+                    commands[i] = null;
+
+                function pushCommand(cmd) {
+                    commands[cmd.getButtonY() * WarNew.COMMAND_BUTTON_X_MAX + cmd.getButtonX()] = cmd;
+                }
+
+                if (page === WarNew.CommandPage.AdvancedBuild) {
+                    pushCommand(WarNew.CancelCommand.instance);
+                } else if (page === WarNew.CommandPage.BasicBuild) {
+                    var group = this._group();
+                    if (group.length > 0) {
+                        var ent = group[0];
+
+                        _.each(ent.getStructuresBuilt(), function (entType) {
+                            var data = WarNew.Data.AllEntityData[entType];
+                            if (!data)
+                                return;
+
+                            pushCommand(new WarNew.BuildCommand(entType));
+                        });
+                    }
+
+                    pushCommand(WarNew.CancelCommand.instance);
+                } else if (page === WarNew.CommandPage.Targeting) {
+                    pushCommand(WarNew.CancelCommand.instance);
+                } else {
+                    this._userState = WarNew.UserState.Default;
+                    this._pendingCommand = null;
+
+                    var stop = false;
+                    var attack = false;
+                    var move = false;
+                    var patrol = false;
+                    var holdPosition = false;
+                    var setRallyPoint = false;
+
+                    var player = this._player();
+                    var selected = this._selectedEntities();
+                    for (var i = 0, ii = selected.length; i < ii; ++i) {
+                        var ent = selected[i];
+
+                        if (ent.getOwner() !== player)
+                            continue;
+
+                        if (ent.canMove() || ent.hasWeapon())
+                            stop = true;
+
+                        if (ent.hasWeapon())
+                            attack = true;
+
+                        if (ent.canMove()) {
+                            move = true;
+                            patrol = true;
+                            holdPosition = true;
+                        }
+
+                        if (ent.trainsUnits())
+                            setRallyPoint = true;
+                    }
+
+                    if (stop)
+                        pushCommand(WarNew.StopCommand.instance);
+                    if (attack)
+                        pushCommand(WarNew.AttackCommand.instance);
+                    if (move)
+                        pushCommand(WarNew.MoveCommand.instance);
+                    if (patrol)
+                        pushCommand(WarNew.PatrolCommand.instance);
+                    if (holdPosition)
+                        pushCommand(WarNew.HoldPositionCommand.instance);
+                    if (setRallyPoint)
+                        pushCommand(WarNew.SetRallyPointCommand.instance);
+
+                    var group = this._group();
+                    if (group.length > 0) {
+                        var ent = group[0];
+
+                        _.each(ent.getAbilities(), function (abType) {
+                            pushCommand(new WarNew.AbilityCommand(abType));
+                        });
+
+                        _.each(ent.getUnitsTrained(), function (entType) {
+                            pushCommand(new WarNew.TrainCommand(entType));
+                        });
+
+                        var showBasic = false;
+                        var showAdvanced = false;
+                        _.each(ent.getStructuresBuilt(), function (entType) {
+                            var data = WarNew.Data.AllEntityData[entType];
+                            if (!data)
+                                return;
+
+                            showBasic = showBasic || (data.page === WarNew.CommandPage.BasicBuild);
+                            showAdvanced = showAdvanced || (data.page === WarNew.CommandPage.AdvancedBuild);
+                        });
+
+                        if (showBasic)
+                            pushCommand(WarNew.BasicBuildCommand.instance);
+                        if (showAdvanced)
+                            pushCommand(WarNew.AdvancedBuildCommand.instance);
+                    }
+                }
+
+                this._currentPage = page;
+                this._currentCommands(commands);
+            };
+
+            LiveGame.prototype.selectEntities = function (ents, add) {
+                if (add) {
+                    var selected = this._selectedEntities();
+
+                    if (ents.length === 1) {
+                        var index = selected.indexOf(ents[0]);
+                        if (index === -1) {
+                            selected.push(ents[0]);
+                        } else {
+                            selected.splice(index, 1);
+                        }
+                    } else {
+                        for (var i = ents.length - 1; i !== -1; --i) {
+                            var ent = ents[i];
+                            if (selected.indexOf(ent) === -1)
+                                selected.push(ent);
+                        }
+                    }
+
+                    this._filterEntities(selected);
+                    this._selectedEntities.valueHasMutated();
+                } else {
+                    this._filterEntities(ents);
+                    this._selectedEntities(ents);
+                }
+            };
+
+            LiveGame.prototype._cycleGroup = function (backwards) {
+                var oldType = this._groupType;
+                var selected = this._selectedEntities();
+
+                var i = backwards ? 0 : selected.length - 1;
+                var ii = backwards ? selected.length : -1;
+                var inc = i > ii ? -1 : 1;
+                while (i !== ii) {
+                    if (selected[i].getType() === oldType) {
+                        var nextEnt = selected[i - inc] || selected[ii - inc];
+                        var nextEntType = nextEnt.getType();
+                        if (nextEntType !== oldType)
+                            this.setGroupType(nextEntType);
+                        return;
+                    }
+                    i += inc;
+                }
+
+                this.setGroupType(WarNew.EntityType.None);
+            };
+
+            LiveGame.prototype._endSelection = function () {
+                this._userState = WarNew.UserState.Default;
+
+                var sr = this._selectionRect;
+                var ents = this._world.getEntitiesInRect(sr);
+                for (var i = ents.length - 1; i !== -1; --i) {
+                    var ent = ents[i];
+                    if (!ent.getSelectionRect().intersectsRect(sr))
+                        ents.splice(i, 1);
+                }
+
+                if (ents.length !== 0) {
+                    this.selectEntities(ents, Engine.Input.isKeyDown(Engine.Key.KEY_SHIFT));
+                }
+            };
+
+            LiveGame.prototype._filterEntities = function (ents) {
+                if (ents.length === 0) {
+                    return;
+                }
+
+                var player = this._player();
+
+                var savedEnt = null;
+                for (var i = ents.length - 1; i !== -1; --i) {
+                    var ent = ents[i];
+                    if (!ent.isSelectable()) {
+                        ents.splice(i, 1);
+                    } else if (!ent.isUnit() || ent.getOwner() !== player) {
+                        savedEnt = ents.splice(i, 1)[0];
+                    }
+                }
+
+                if (ents.length === 0 && savedEnt) {
+                    ents.push(savedEnt);
+                } else {
+                    ents.sort(_entitySortFunction);
+
+                    if (ents.length > WarNew.ENTITY_MAX_SELECTION)
+                        ents.splice(WarNew.ENTITY_MAX_SELECTION, ents.length - WarNew.ENTITY_MAX_SELECTION);
+                }
+            };
+
+            LiveGame.prototype._startSelection = function (pageX, pageY) {
+                var rect = this._mainSurface.rect;
+                this._userState = WarNew.UserState.Selecting;
+                this._camera.getPointAt(pageX - rect.x, pageY - rect.y, this._selectionStart);
             };
             return LiveGame;
         })(Engine.AppState);

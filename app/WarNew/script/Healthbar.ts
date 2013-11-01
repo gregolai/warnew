@@ -3,13 +3,15 @@
 module Engine.WarNew {
 
 	ko.bindingHandlers["Healthbar"] = {
-
-		init: function (element: HTMLDivElement, valueAccessor: () => any, allBindingsAccessor: () => any, entity: Entity, bindingContext: KnockoutBindingContext): void {
+		
+		init: function (element: HTMLDivElement, valueAccessor: () => Entity, allBindingsAccessor: () => any, viewModel: any, bindingContext: KnockoutBindingContext): void {
 
 		},
-		update: function(element: HTMLDivElement, valueAccessor: () => any, allBindingsAccessor: () => any, entity: Entity, bindingContext: KnockoutBindingContext): void {
+		update: function(element: HTMLDivElement, valueAccessor: () => Entity, allBindingsAccessor: () => any, viewModel: any, bindingContext: KnockoutBindingContext): void {
 
-			var percent = Math.floor((entity.health / entity.healthMax) * 100);
+			var entity = valueAccessor();
+
+			var percent = Math.floor((entity.getHealth() / entity.getHealthMax()) * 100);
 
 			if (percent > 74) {
 				element.style.backgroundColor = "#347004";

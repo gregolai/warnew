@@ -55,6 +55,7 @@ module Engine {
 	export interface InputListener {
 
 		onKeyDown?(key: Key): void;
+		onBufferedKeyDown?(key: Key): void;
 		onKeyUp?(key: Key): void;
 
 		onMouseDown?(x: number, y: number, button: Key): void;

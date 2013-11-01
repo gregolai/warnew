@@ -19,6 +19,19 @@ module Engine {
 			return new Vec2(this.x, this.y);
 		}
 
+		set(v: Vec2): Vec2;
+		set(x: number, y: number): Vec2;
+		set(a: any, y?: number): Vec2 {
+			if (y === undefined) {
+				this.x = a.x;
+				this.y = a.y;
+			} else {
+				this.x = a;
+				this.y = y;
+			}
+			return this;
+		}
+
 		toString(): string {
 			return this.x + ", " + this.y;
 		}
@@ -26,50 +39,71 @@ module Engine {
 		toArray(): number[] {
 			return [this.x, this.y];
 		}
-		fromArray(v: number[]): void {
+		fromArray(v: number[]): Vec2 {
 			this.x = v[0] || 0;
 			this.y = v[1] || 0;
+			return this;
 		}
 
-		fromVec2(v: Vec2): void {
-			this.x = v.x;
-			this.y = v.y;
-		}
-
-		add(rhs: Vec2): void {
-			this.x += rhs.x;
-			this.y += rhs.y;
-		}
-
-		subtract(rhs: Vec2): void {
-			this.x -= rhs.x;
-			this.y -= rhs.y;
-		}
-
-		multiply(rhs: number): void;
-		multiply(rhs: Vec2): void;
-		multiply(rhs: any): void {
-			if (rhs instanceof Vec2) {
-				this.x *= rhs.x;
-				this.y *= rhs.y;
+		add(v: Vec2): Vec2;
+		add(x: number, y: number): Vec2;
+		add(a: any, y?: number): Vec2 {
+			if (y === undefined) {
+				this.x += a.x;
+				this.y += a.y;
+			} else {
+				this.x += a;
+				this.y += y;
 			}
-			else {
-				this.x *= rhs;
-				this.y *= rhs;
-			}
+			return this;
 		}
 
-		invert(): void {
+		subtract(v: Vec2): Vec2;
+		subtract(x: number, y: number): Vec2;
+		subtract(a: any, y?: number): Vec2 {
+			if (y === undefined) {
+				this.x -= a.x;
+				this.y -= a.y;
+			} else {
+				this.x -= a;
+				this.y -= y;
+			}
+			return this;
+		}
+
+		
+		multiply(v: Vec2): Vec2;
+		multiply(c: number): Vec2;
+		multiply(x: number, y: number): Vec2;
+		multiply(a: any, y?: number): Vec2 {
+			if (y === undefined) {
+				if (a instanceof Vec2) {
+					this.x *= a.x;
+					this.y *= a.y;
+				} else {
+					this.x *= a;
+					this.y *= a;
+				}
+			} else {
+				this.x *= a;
+				this.y *= y;
+			}
+			return this;
+		}
+
+		invert(): Vec2 {
 			this.x = -this.x;
 			this.y = -this.y;
+			return this;
 		}
-
-		setLength(length: number) {
+		
+		setLength(length: number): Vec2 {
 			this.normalize();
 			this.multiply(length);
+			return this;
 		}
 
-		normalize(): void {
+		normalize(): Vec2 {
 			if (this.lengthSqr === 0) {
 				this.x = 0;
 				this.y = 1;
@@ -78,52 +112,45 @@ module Engine {
 				this.x *= invLen;
 				this.y *= invLen;
 			}
+			return this;
 		}
 
-		static inverse(vec: Vec2): Vec2 {
-			return new Vec2(-vec.x, -vec.y);
+		lerp(v: Vec2, t: number): Vec2 {
+			this.x += t * (v.x - this.x);
+			this.y += t * (v.y - this.y);
+			return this;
 		}
 
-		static add(left: Vec2, right: Vec2): Vec2 {
-			return new Vec2(left.x + right.x, left.y + right.y);
+		dot(v: Vec2): number {
+			return this.x * v.x + this.y * v.y;
 		}
 
-		static subtract(left: Vec2, right: Vec2): Vec2 {
-			return new Vec2(left.x - right.x, left.y - right.y);
-		}
-
-		static multiply(left: Vec2, right: number): Vec2;
-		static multiply(left: Vec2, right: Vec2): Vec2;
-		static multiply(left: Vec2, right: any): Vec2 {
-			if (right instanceof Vec2)
-				return new Vec2(left.x * right.x, left.y * right.y);
-			else
-				return new Vec2(left.x * <number>right, left.y * <number>right);
-		}
-
-		static lerp(left: Vec2, right: Vec2, t: number): Vec2 {
-			return new Vec2(left.x + t * (right.x - left.x), left.y + t * (right.y - left.y));
-		}
-
-		static dot(left: Vec2, right: Vec2): number {
-			return left.x * right.x + left.y * right.y;
-		}
-
-		static distance(left: Vec2, right: Vec2): number {
-			var dx = right.x - left.x;
-			var dy = right.y - left.y;
+		distance(v: Vec2): number;
+		distance(x: number, y: number): number;
+		distance(a: any, y?: number): number {
+			if (y === undefined) {
+				var dx = this.x - a.x;
+				var dy = this.y - a.y;
+			} else {
+				var dx = this.x - a;
+				var dy = this.y - y;
+			}
 			return Math.sqrt(dx * dx + dy * dy);
 		}
 
-		static distanceSqr(left: Vec2, right: Vec2): number {
-			var dx = right.x - left.x;
-			var dy = right.y - left.y;
+		distanceSqr(v: Vec2): number;
+		distanceSqr(x: number, y: number): number;
+		distanceSqr(a: any, y?: number): number {
+			if (y === undefined) {
+				var dx = this.x - a.x;
+				var dy = this.y - a.y;
+			} else {
+				var dx = this.x - a;
+				var dy = this.y - y;
+			}
 			return dx * dx + dy * dy;
 		}
 
-		static equals(a: Vec2, b: Vec2): boolean {
-			return (a.x === b.x && a.y === b.y);
-		}
 	}
 
 }

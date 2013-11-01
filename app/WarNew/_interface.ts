@@ -2,6 +2,43 @@
 
 module Engine.WarNew {
 
+	export interface ActionState {
+		sequenceName: string;
+		tick: (actionTicks: number, actionParams: ActionParams) => boolean;
+	}
+
+	export interface ActionParams {
+		type: ActionType;
+		onActionComplete?: () => void;
+		direction?: Direction;
+
+		// Moving
+		moveStepX?: number;
+		moveStepY?: number;
+		moveEndX?: number;
+		moveEndY?: number;
+		
+		// Attacking, Casting
+		targetEntity?: Entity;      // ENTITY BEING TARGETED
+		targetTile?: Tile;          // TILE BEING TARGETED
+		swingTick?: number;         // TICK WHEN ATTACK/CAST SWING OCCURS
+
+		// Attacking, Casting, BeingConstructed, Moving, Waiting
+		endTick?: number;           // TICK WHEN ACTION ENDS
+
+		// BeingConstructed
+		buildTile?: Tile;
+		builder?: Entity;
+		healthPerTick?: number;
+		sequenceIndex?: number;
+		sequenceIncreaseTicks?: number[];
+
+		// FILLED OUT IN _setActionState method:
+		// Waiting
+		order?: Order;
+		orderQueueLength?: number;
+	}
+
 	export interface AnimationSequences {
 		type: SequenceType;
 		imageID: string;
@@ -35,8 +72,15 @@ module Engine.WarNew {
 		frameHeight?: number;
 	}
 
+	export interface CommandResult {
+		success: boolean;
+		message?: string;
+		validEntities?: Entity[];
+	}
+
 	export interface EntityData {
 
+		abilities: AbilityType[];
 		armorBase: number;
 		buildTime: number;
 		buttonX: number;
@@ -50,7 +94,8 @@ module Engine.WarNew {
 		lumberCost: number;
 		name: string;
 		oilCost: number;
-		occupyFlags: BitFlags<Occupy>;
+		occupyFlags: number;
+		page: CommandPage;
 		pointValue: number;
 		priority: number;
 		selectable: boolean;
@@ -71,6 +116,7 @@ module Engine.WarNew {
 		isStructure: boolean;
 		tilesHigh: number;
 		tilesWide: number;
+		unitsTrained: EntityType[];
 
 		// IS UNIT
 		acquisitionRange: number;
@@ -88,6 +134,47 @@ module Engine.WarNew {
 	}
 
 	export interface ImageCanvas extends HTMLCanvasElement, HTMLImageElement { };
+
+	export interface Order {
+		type: OrderType;
+		patrollingBack?: boolean;      // NOT SET - USED FOR PATROL DIRECTION (INITIALLY UNDEFINED/FALSE)
+		tryCount?: number;          // SET IN _order METHOD
+
+		// CastOnEntity, CastOnTile
+		//abilityType?: AbilityType;
+		
+		// MoveFromArea
+		//area?: TileArea;
+
+		// BuildAtTile
+		entity?: Entity;
+
+		// HarvestGold
+		resource?: ResourceType;
+
+		// PatrolToTile - NOT INITIALLY SET
+		sourceTile?: Tile;
+
+		// AttackEntity, CastOnEntity, HarvestGold, FollowEntity, PatrolToEntity
+		targetEntity?: Entity;
+
+		// AttackToTile, BuildAtTile, CastOnTile, MoveToTile, PatrolToTile
+		targetTile?: Tile;
+
+		// SelfUpgrade
+		upgradeElapsed?: number;
+		upgradeTo?: EntityType;
+	}
+
+	export interface PlacementTestResult {
+		valid: boolean;
+		message?: string;
+		validTiles?: Tile[];
+		invalidTiles?: Tile[];
+		blockingEntities?: Entity[];
+		ignoreEnt?: Entity;
+		ignorePlayerUnits?: Player;
+	}
 
 	export interface RawTeamData {
 		name: string;
@@ -117,7 +204,19 @@ module Engine.WarNew {
 		entities: number[][];
 	}
 
-	export interface WorldTarget {
+	export enum SpawnState {
+		None			= 0,
+		Constructing	= 1,
+		Alive			= 2,
+		Dead			= 3
+	}
+
+	export interface WorldPathTarget {
+		getPathHeuristic(type: PathType, weight: number): (fromTile: Tile) => number;
+	}
+
+	export interface WorldTarget extends WorldPathTarget {
 		getID(): number;
 	}
+
 }

@@ -5,10 +5,12 @@ module Engine {
 	export class Surface2D {
 
 		private _canvas: HTMLCanvasElement;
+		private _$canvas: JQuery;
 		private _context: CanvasRenderingContext2D;
 		private _zIndex: number;
 		private _rect: Rect;
 
+		get canvas() { return this._$canvas; }
 		get context() { return this._context; }
 
 		get zIndex() { return this._zIndex; }
@@ -45,6 +47,7 @@ module Engine {
 				c.appendChild(this._canvas);
 			}
 
+			this._$canvas = $(this._canvas);
 			this._context = this._canvas.getContext("2d");
 
 			this.zIndex = 0;
@@ -53,7 +56,8 @@ module Engine {
 
 		dispose(): void {
 			var container = this._canvas.parentNode;
-			container.removeChild(this._canvas);
+			if(container)
+				container.removeChild(this._canvas);
 
 			this._canvas = null;
 			this._context = null;

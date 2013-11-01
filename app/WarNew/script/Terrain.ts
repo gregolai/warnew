@@ -14,17 +14,14 @@ module Engine.WarNew {
 		private _unitsDeep: number;
 		private _tiles: Tile[];
 
-		get mesh() { return this._mesh.mesh; }
+		getMesh() { return this._mesh.getMesh(); }
 
-		get terrainType() { return this._terrainType; }
-		get tileCount() { return this._tilesWide * this._tilesDeep; }
-		get tilesWide() { return this._tilesWide; }
-		get tilesDeep() { return this._tilesDeep; }
-		get unitsWide() { return this._unitsWide; }
-		get unitsDeep() { return this._unitsDeep; }
-
-		set something(value: number) { }
-		get something() { return this._tilesWide; }
+		getTerrainType() { return this._terrainType; }
+		getTileCount() { return this._tilesWide * this._tilesDeep; }
+		getTilesWide() { return this._tilesWide; }
+		getTilesDeep() { return this._tilesDeep; }
+		getUnitsWide() { return this._unitsWide; }
+		getUnitsDeep() { return this._unitsDeep; }
 
 		constructor() {
 		}
@@ -39,7 +36,7 @@ module Engine.WarNew {
 			this._mesh.dispose();
 		}
 
-		decode(raw?: RawTerrainData): void {
+		init(raw?: RawTerrainData): void {
 
 			var terrainType = this._terrainType = raw ? raw.type : "forest";
 			var tilesWide = this._tilesWide = raw ? raw.width : 32;
@@ -53,18 +50,41 @@ module Engine.WarNew {
 			// CREATE THE TILES
 			var id = -1;
 			var tiles = this._tiles = [];
-			for (var z = 0; z < tilesDeep; ++z) {
+			for (var y = 0; y < tilesDeep; ++y) {
 				for (var x = 0; x < tilesWide; ++x) {
-					var tile = new Tile(this, ++id, x, z);
+					var tile = new Tile(this, ++id, x, y);
 					tiles.push(tile);
 				}
 			}
 
 			// DECODE RAW TILE DATA
 			var rawTiles = raw ? raw.tiles : [];
-			for (var i = 0, ii = tiles.length; i < ii; ++i) {
-				tiles[i].decode(rawTiles[i]);
+			var tileID = 0;
+			for (var y = 0; y < tilesDeep; ++y) {
+				var northValid = (y !== 0);
+				var southValid = (y !== tilesDeep - 1);
+
+				for (var x = 0; x < tilesWide; ++x) {
+					var westValid = (x !== 0);
+					var eastValid = (x !== tilesWide - 1);
+
+					var nbrs: Tile[] = [];
+					if (westValid)					nbrs.push(tiles[(x - 1) + tilesWide * y]);
+					if (northValid && westValid)	nbrs.push(tiles[(x - 1) + tilesWide * (y - 1)]);
+					if (northValid)					nbrs.push(tiles[x + tilesWide * (y - 1)]);
+					if (northValid && eastValid)	nbrs.push(tiles[(x + 1) + tilesWide * (y - 1)]);
+					if (eastValid)					nbrs.push(tiles[(x + 1) + tilesWide * y]);
+					if (southValid && eastValid)	nbrs.push(tiles[(x + 1) + tilesWide * (y + 1)]);
+					if (southValid)					nbrs.push(tiles[x + tilesWide * (y + 1)]);
+					if (southValid && westValid)	nbrs.push(tiles[(x - 1) + tilesWide * (y + 1)]);
+
+					// IS EITHER RAW OR UNDEFINED
+					tiles[tileID].init(nbrs, rawTiles[tileID]);
+
+					++tileID;
+				}
 			}
+
 		}
 
 		onTileTypeSet(tile: Tile): void {
@@ -80,31 +100,36 @@ module Engine.WarNew {
 		}
 
 		getTileAtIndex(ix: number, iy: number, clamp: boolean): Tile {
+			var tw = this._tilesWide;
+			var td = this._tilesDeep;
 			if (clamp) {
-				ix = MathUtil.clamp(ix, 0, this._tilesWide - 1);
-				iy = MathUtil.clamp(iy, 0, this._tilesDeep - 1);
-			} else if (ix < 0 || iy < 0 || ix >= this._tilesWide || iy >= this._tilesDeep) {
+				ix = MathUtil.clamp(ix, 0, tw - 1);
+				iy = MathUtil.clamp(iy, 0, td - 1);
+			} else if (ix < 0 || iy < 0 || ix >= tw || iy >= td) {
 				return null;
 			}
-			return this._tiles[ix + this._tilesWide * iy];
+			return this._tiles[ix + tw * iy];
 		}
 
 		getTilesWithinIndex(tileX: number, tileY: number, tilesWide: number, tilesHigh: number): Tile[] {
-			var sx = MathUtil.clamp(tileX, 0, this._tilesWide - 1);
-			var sy = MathUtil.clamp(tileY, 0, this._tilesDeep - 1);
-			var ex = MathUtil.clamp(tileX + tilesWide, 0, this._tilesWide);
-			var ey = MathUtil.clamp(tileY + tilesHigh, 0, this._tilesDeep);
+
+			var tw = this._tilesWide;
+			var td = this._tilesDeep;
 
 			var ret: Tile[] = [];
 			var tiles = this._tiles;
+			var sx = MathUtil.clamp(tileX, 0, tw - 1);
+			var sy = MathUtil.clamp(tileY, 0, td - 1);
+			var ex = MathUtil.clamp(tileX + tilesWide, 0, tw);
+			var ey = MathUtil.clamp(tileY + tilesHigh, 0, td);
 			for (var y = sy; y < ey; ++y) {
 				for (var x = sx; x < ex; ++x)
-					ret.push(tiles[x + this._tilesWide * y]);
+					ret.push(tiles[x + tw * y]);
 			}
 			return ret;
 		}
 
-		draw(ctx: CanvasRenderingContext2D, bounds: Rect, drawGrid = false, drawTileNumbers = false, drawPath = false): void {
+		draw(ctx: CanvasRenderingContext2D, bounds: Rect, drawGrid, drawTileNumbers, drawPath): void {
 
 			var left = Math.max(bounds.x, 0);
 			var top = Math.max(bounds.y, 0);
@@ -125,15 +150,58 @@ module Engine.WarNew {
 			for (var y = sy; y <= ey; ++y) {
 				for (var x = sx; x <= ex; ++x) {
 					var tile = tiles[x + tilesWide * y];
-					var tilePos = tile.position;
+					var tilePos = tile.topLeft;
 					ctx.drawImage(
 						tilesheet,
-						tile.atlasX, tile.atlasY,
+						tile._atlasX, tile._atlasY,
 						TILE_SIZE, TILE_SIZE,
 						tilePos.x, tilePos.y,
 						TILE_SIZE, TILE_SIZE);
 				}
 			}
+
+			if (drawTileNumbers) {
+				ctx.save();
+				{
+					ctx.globalAlpha = 0.3;
+					ctx.fillStyle = "#fff";
+					ctx.font = "normal 10px arial";
+					for (var y = sy; y <= ey; ++y) {
+						for (var x = sx; x <= ex; ++x) {
+							var tile = tiles[x + tilesWide * y];
+							var tilePos = tile.topLeft;
+							ctx.fillText("" + x + "," + y, tilePos.x, tilePos.y + 10);
+						}
+					}
+				}
+				ctx.restore();
+			}
+
+			if (drawGrid) {
+				ctx.save();
+				{
+					ctx.globalAlpha = 0.3;
+					ctx.lineWidth = 1;
+					ctx.strokeStyle = "#000";
+					ctx.beginPath();
+					var py = 0.5 + TILE_SIZE + sy * TILE_SIZE;
+					for (var y = sy; y < ey; ++y) {
+						ctx.moveTo(left, py);
+						ctx.lineTo(right, py);
+						py += TILE_SIZE;
+					}
+
+					var px = 0.5 + TILE_SIZE + sx * TILE_SIZE;
+					for (var x = sx; x < ex; ++x) {
+						ctx.moveTo(px, top);
+						ctx.lineTo(px, bottom);
+						px += TILE_SIZE;
+					}
+					ctx.stroke();
+				}
+				ctx.restore();
+			}
+
 		}
 	}
 

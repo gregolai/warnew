@@ -15,12 +15,13 @@ module Engine.WarNew {
 	export class Sequence {
 		private static _dirToFrameX = [0, 2, 0, 1, 2, 0, 1, 0, 4, 3, 0, 0, 3, 0, 0, 0];
 
+		frameWidth: number;
+		frameHeight: number;
+
 		private _type: SequenceType;
 		private _image: HTMLImageElement;
 		private _frames: number[];
 		private _frameTick: number;			// how fast to flip frames
-		private _frameWidth: number;
-		private _frameHeight: number;
 
 		private _ticks: number;
 		private _frameIndex: number;
@@ -29,16 +30,17 @@ module Engine.WarNew {
 		private _flipX: boolean;
 		private _elapsed: boolean;
 
-		get frameWidth() { return this._frameWidth; }
-		get frameHeight() { return this._frameHeight; }
+		getFrameWidth() { return this.frameWidth; }
+		getFrameHeight() { return this.frameHeight; }
 
 		constructor(params: SequenceParams) {
+			this.frameWidth = params.frameWidth;
+			this.frameHeight = params.frameHeight;
+
 			this._type = params.type;
 			this._image = params.image;
 			this._frames = params.frames;
 			this._frameTick = params.frameTick;
-			this._frameWidth = params.frameWidth;
-			this._frameHeight = params.frameHeight;
 
 			this.reset();
 			this.setDirection(params.direction);
@@ -97,7 +99,7 @@ module Engine.WarNew {
 				if (!direction)
 					direction = Direction.Down;
 
-				this._xPosition = Sequence._dirToFrameX[direction] * this._frameWidth;
+				this._xPosition = Sequence._dirToFrameX[direction] * this.frameWidth;
 				this._flipX = ((direction & Direction.Left) !== 0);
 			}
 		}
@@ -114,11 +116,11 @@ module Engine.WarNew {
 		private _frameAdjust(): void {
 			if (this._type === SequenceType.Directional) {
 
-				this._yPosition = this._frames[this._frameIndex] * this._frameHeight;
+				this._yPosition = this._frames[this._frameIndex] * this.frameHeight;
 
 			} else if (this._type === SequenceType.Vertical) {
 
-				this._yPosition = this._frames[this._frameIndex] * this._frameHeight;
+				this._yPosition = this._frames[this._frameIndex] * this.frameHeight;
 
 			} else {
 
@@ -133,30 +135,31 @@ module Engine.WarNew {
 			if (!this._image)
 				return;
 
+			// AVOID SUB-PIXEL ANTI-ALIASING
+			x = (x + 0.5) << 0;
+			y = (y + 0.5) << 0;
+
 			if (this._flipX) {
-				ctx.save();
-				ctx.translate(x, 0);
 				ctx.scale(-1, 1);
-				ctx.translate(-x, 0);
+				x = -x;
 			}
 
-			var frameWidth = this._frameWidth;
-			var frameHeight = this._frameHeight;
+			var fw = this.frameWidth;
+			var fh = this.frameHeight;
 			if (atCenter) {
-				x -= (frameWidth >> 1);
-				y -= (frameHeight >> 1);
+				x -= (fw >> 1);
+				y -= (fh >> 1);
 			}
 
 			ctx.drawImage(
 				this._image,
 				this._xPosition, this._yPosition,
-				frameWidth, frameHeight,
+				fw, fh,
 				x, y,
-				frameWidth, frameHeight);
+				fw, fh);
 
-			if (this._flipX) {
-				ctx.restore();
-			}
+			if (this._flipX)
+				ctx.scale(-1, 1);
 
 		}
 	}

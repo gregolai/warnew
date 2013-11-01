@@ -16,6 +16,7 @@
 /// <reference path="script/AppState.ts" />
 /// <reference path="script/AssetManager.ts" />
 /// <reference path="script/AsyncLock.ts"/>
+/// <reference path="script/BinaryHeap.ts"/>
 /// <reference path="script/CtxUtil.ts" />
 /// <reference path="script/Cursor.ts"/>
 /// <reference path="script/FileUtil.ts"/>

@@ -25,8 +25,19 @@
     <TypeScriptCompile Include="_game.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="script\TileRegion.ts" />
+    <Content Include="script\order\Order.ts" />
+    <Content Include="script\order\_include.ts" />
+    <Content Include="vendor\compressor.d.ts" />
+    <Content Include="_ext.ts" />
     <Content Include="index.html" />
     <Content Include="script\Command.ts" />
+    <Content Include="script\WorldEvent.ts" />
+    <Content Include="script\Path.ts" />
+    <Content Include="script\Pathfinder.ts" />
+    <Content Include="script\EntityThink.ts" />
+    <Content Include="script\Team.ts" />
+    <Content Include="script\EntityOrder.ts" />
     <Content Include="script\Healthbar.ts" />
     <Content Include="script\data\SpriteData.ts" />
     <Content Include="script\Portrait.ts" />
@@ -54,6 +65,7 @@
     <TypeScriptCompile Include="script\ImageCache.ts" />
     <TypeScriptCompile Include="script\state\MainMenu\MainMenu.ts" />
     <Content Include="script\state\MainMenu\_include.ts" />
+    <Content Include="vendor\underscore.d.ts" />
     <Content Include="_enum.ts" />
     <Content Include="_include.ts" />
     <Content Include="_interface.ts" />

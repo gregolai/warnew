@@ -39,4 +39,5 @@ module Engine {
 
 	export var ROOT_DIRECTORY_FROM_APP = "../../";
 	export var ROOT_VENDOR_DIRECTORY = ROOT_DIRECTORY_FROM_APP + "vendor/";
+	export var CUSTOM_VENDOR_DIRECTORY = "vendor/";
 }

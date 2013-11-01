@@ -13,9 +13,9 @@ module Engine.WarNew {
 		private _zoom: number;
 		private _invZoom: number;
 
-		get center() { return this._center; }
-		get rect() { return this._rect; }
-		get zoom() { return this._zoom; }
+		getCenter() { return this._center; }
+		getRect() { return this._rect; }
+		getZoom() { return this._zoom; }
 
 		constructor(center: Vec2, boundsWidth: number, boundsHeight: number) {
 			this._center = center.clone();

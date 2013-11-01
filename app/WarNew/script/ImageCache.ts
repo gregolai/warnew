@@ -76,7 +76,7 @@ module Engine.WarNew {
 		export function getImage(imageId: string, playerId?: number): ImageCanvas {
 
 			// NEUTRAL PLAYER IS DEFAULT COLOR -> PLAYER ID == 0
-			if (typeof playerId === "undefined" || playerId === 0) {
+			if (playerId === undefined || playerId === 0) {
 				return <ImageCanvas>AssetManager.getImage(imageId);
 			}
 

@@ -8,6 +8,19 @@ module Engine.WarNew {
 	}
 
 	export class QTBucket {
+
+		static deepestBucket(root: QTBucket, item: IQuadtreeItem): QTBucket {
+			var rect = item.getQTRect();
+			var b = root;
+			while (b._isLeaf === false) {
+				var q = b.getRectQuadrants(rect);
+				if (q.length !== 1)
+					break;
+				b = q[0];
+			}
+			return b;
+		}
+
 		private _tree: WorldQuadtree;
 		private _parent: QTBucket;
 		private _bounds: Rect;
@@ -22,6 +35,7 @@ module Engine.WarNew {
 		private _topRight: QTBucket;
 		private _bottomLeft: QTBucket;
 		private _bottomRight: QTBucket;
+		private _isLeaf: boolean;
 
 		constructor(tree: WorldQuadtree, parent: QTBucket, bounds: Rect, depth: number) {
 			this._tree = tree;
@@ -38,6 +52,7 @@ module Engine.WarNew {
 			this._topRight = null;
 			this._bottomLeft = null;
 			this._bottomRight = null;
+			this._isLeaf = true;
 		}
 
 		dispose(): void {
@@ -45,7 +60,7 @@ module Engine.WarNew {
 			this._parent = null;
 			this._bounds = null;
 			this._items = null;
-			if (!this.isLeaf()) {
+			if (!this._topLeft) {
 				this._topLeft.dispose();
 				this._topRight.dispose();
 				this._bottomLeft.dispose();
@@ -56,7 +71,7 @@ module Engine.WarNew {
 
 		draw(ctx: CanvasRenderingContext2D): void {
 
-			if (this.isLeaf()) {
+			if (this._isLeaf) {
 				// ONLY DRAW DEEPEST NODES
 				var bounds = this._bounds;
 				ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
@@ -70,32 +85,72 @@ module Engine.WarNew {
 
 		insert(item: IQuadtreeItem): void {
 
+			// INSERT
 			this._items.push(item);
-			this._increment(1);
 
-			if (this.isLeaf() && this._items.length > QUADTREE_NODE_MAX_ITEMS && this._depth < QUADTREE_NODE_MAX_DEPTH) {
-				this._split();
+			// INCREMENT (TRICKLE UP)
+			var c = this;
+			do {
+				++c._count;
+				c = c._parent;
+			} while (c !== null);
+
+			// SPLIT
+			var tree = this._tree;
+			if (this._isLeaf && this._items.length > tree.bucketCapacity && this._depth < tree.maxDepth) {
+
+				if (!this._topLeft) {
+					// ONLY CREATE CHILD BUCKETS ONCE AND CHANGE _isLeaf
+					var b = this._bounds;
+					var nextDepth = this._depth + 1;
+
+					var mx = this._midX;
+					var my = this._midY;
+					var hw = b.width * 0.5;
+					var hh = b.height * 0.5;
+
+					this._topLeft = new QTBucket(tree, this, new Rect(b.x, b.y, hw, hh), nextDepth);
+					this._topRight = new QTBucket(tree, this, new Rect(mx, b.y, hw, hh), nextDepth);
+					this._bottomLeft = new QTBucket(tree, this, new Rect(b.x, my, hw, hh), nextDepth);
+					this._bottomRight = new QTBucket(tree, this, new Rect(mx, my, hw, hh), nextDepth);
+				}
+				this._isLeaf = false;
+
+				var items = this._items;
+				for (var i = items.length - 1; i !== -1; --i) {
+					tree.update(items[i]);
+				}
 			}
+
 		}
 
 		remove(item: IQuadtreeItem): void {
 
 			var index = this._items.indexOf(item);
-			if (index === -1) {
+			if (index === -1)
 				return;
-			}
 
+			// REMOVE
 			this._items.splice(index, 1);
-			this._decrement(1);
-		}
+			
+			// DECREMENT (TRICKLE UP)
+			var c = this;
+			var mergeNode: QTBucket = null;
+			do {
+				if (--c._count === 0)
+					mergeNode = c;
+				c = c._parent;
+			} while (c !== null);
 
-		isLeaf(): boolean {
-			return this._topLeft === null;
+			// MERGE
+			if (mergeNode)
+				mergeNode._isLeaf = true;
 		}
 
 		getItemsAtPoint(point: Vec2, ret: IQuadtreeItem[]): void {
 
 			if (this._count === 0) {
+				// EARLY EXIT IF NO ITEMS IN SELF OR CHILDREN
 				return;
 			}
 
@@ -109,16 +164,16 @@ module Engine.WarNew {
 				}
 			}
 
-			if (this.isLeaf() === false) {
+			if (!this._isLeaf) {
 				// NOT A LEAF
-				var q = this.getPointQuadrant(point);
-				q.getItemsAtPoint(point, ret);
+				this.getPointQuadrant(point).getItemsAtPoint(point, ret);
 			}
 		}
 
 		getItemsInRect(rect: Rect, ret: IQuadtreeItem[]): void {
 
 			if (this._count === 0) {
+				// EARLY EXIT IF NO ITEMS IN SELF OR CHILDREN
 				return;
 			}
 
@@ -130,7 +185,7 @@ module Engine.WarNew {
 				}
 			}
 
-			if (this.isLeaf() === false) {
+			if (!this._isLeaf) {
 				// NOT A LEAF
 				var q = this.getRectQuadrants(rect);
 				for (var i = 0, ii = q.length; i < ii; ++i)
@@ -177,70 +232,22 @@ module Engine.WarNew {
 			}
 		}
 
-		private _increment(amount: number): void {
-			var c = this;
-			do {
-				c._count += amount;
-				c = c._parent;
-			} while (c !== null);
-		}
-
-		private _decrement(amount: number): void {
-			var c = this;
-			var mergeNode: QTBucket = null;
-			do {
-				c._count -= amount;
-				if (c._count === 0) {
-					mergeNode = c;
-				}
-				c = c._parent;
-			} while (c !== null);
-
-			if (mergeNode !== null && !mergeNode.isLeaf()) {
-				console.log("QT merge");
-				// DO MERGE
-				mergeNode._topLeft.dispose();
-				mergeNode._topLeft = null;
-				mergeNode._topRight.dispose();
-				mergeNode._topRight = null;
-				mergeNode._bottomLeft.dispose();
-				mergeNode._bottomLeft = null;
-				mergeNode._bottomRight.dispose();
-				mergeNode._bottomRight = null;
-			}
-		}
-
-		private _split(): void {
-			console.log("QT split");
-			var b = this._bounds;
-			var tree = this._tree;
-			var nextDepth = this._depth + 1;
-
-			var mx = this._midX;
-			var my = this._midY;
-			var hw = b.width * 0.5;
-			var hh = b.height * 0.5;
-
-			this._topLeft = new QTBucket(tree, this, new Rect(b.x, b.y, hw, hh), nextDepth);
-			this._topRight = new QTBucket(tree, this, new Rect(mx, b.y, hw, hh), nextDepth);
-			this._bottomLeft = new QTBucket(tree, this, new Rect(b.x, my, hw, hh), nextDepth);
-			this._bottomRight = new QTBucket(tree, this, new Rect(mx, my, hw, hh), nextDepth);
-
-			var items = this._items;
-			for (var i = items.length - 1; i !== -1; --i) {
-				tree.update(items[i]);
-			}
-		}
 	}
 
 	export class WorldQuadtree {
 
-		private _root: QTBucket;
-		private _map: any[][];
+		bucketCapacity: number;
+		maxDepth: number;
 
-		constructor(bounds: Rect) {
-			this._root = new QTBucket(this, null, bounds, 0);
+		private _map: any[];
+		private _root: QTBucket;
+
+		constructor(bounds: Rect, bucketCap: number, maxDepth: number) {
+			this.bucketCapacity = bucketCap;
+			this.maxDepth = maxDepth;
+
 			this._map = [];
+			this._root = new QTBucket(this, null, bounds, 0);
 		}
 
 		dispose(): void {
@@ -260,32 +267,36 @@ module Engine.WarNew {
 		insert(item: IQuadtreeItem): void {
 
 			var id = item.getID();
-			if (typeof this._map[id] !== "undefined") {
+			if (this._map[id] !== undefined) {
+				// SKIP IF ALREADY INSERTED
 				return;
 			}
 
-			var bucket = this._deepestBucket(item);
+			var bucket = QTBucket.deepestBucket(this._root, item);
 
-			bucket.insert(item);
+			// map item BEFORE inserting into bucket
 			this._map[id] = [item, bucket];
+			bucket.insert(item);
+			
 		}
 
 		update(item: IQuadtreeItem): void {
-
-			var id = item.getID();
-			var arr = this._map[id];
-			if (typeof arr === "undefined") {
+			
+			var arr = this._map[item.getID()];
+			if (arr === undefined) {
+				// SKIP IF NOT FOUND
 				return;
 			}
 
-			var oldBucket = <QTBucket>arr[1];
-			var newBucket = this._deepestBucket(item);
+			var oldBucket = arr[1];
+			var newBucket = QTBucket.deepestBucket(this._root, item);
 			if (oldBucket !== newBucket) {
 
 				oldBucket.remove(item);
 
-				newBucket.insert(item);
+				// re-map item BEFORE inserting into bucket
 				arr[1] = newBucket;
+				newBucket.insert(item);
 			}
 
 		}
@@ -294,7 +305,8 @@ module Engine.WarNew {
 
 			var id = item.getID();
 			var arr = this._map[id];
-			if (typeof arr === "undefined") {
+			if (arr === undefined) {
+				// SKIP IF NOT FOUND
 				return;
 			}
 
@@ -314,18 +326,6 @@ module Engine.WarNew {
 			var items: IQuadtreeItem[] = [];
 			this._root.getItemsInRect(rect, items);
 			return items;
-		}
-
-		private _deepestBucket(item: IQuadtreeItem): QTBucket {
-			var rect = item.getQTRect();
-			var b = this._root;
-			while (b.isLeaf() === false) {
-				var q = b.getRectQuadrants(rect);
-				if (q.length !== 1)
-					break;
-				b = q[0];
-			}
-			return b;
 		}
 	}
 

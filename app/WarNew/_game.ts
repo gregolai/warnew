@@ -21,6 +21,10 @@ module Engine.WarNew {
 				enable3d: true,
 				showStats: true,
 
+				customVendors: [
+					"compressor.js",
+					"underscore-min.js"
+				],
 				statesDirectory: "script/state/",
 			});
 		}
