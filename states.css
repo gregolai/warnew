@@ -1,0 +1,490 @@
+#Editor {
+  height: 100%;
+}
+body,
+button {
+  cursor: url('../../../../asset/cursor/human_hand.gif') 2 0, none;
+}
+#Global {
+  height: 100%;
+  width: 100%;
+}
+#Global > .popupWrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+#Global > .popupWrapper > .popup {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  left: 50%;
+  top: 50%;
+  margin-left: -250px;
+  margin-top: -250px;
+  background-color: #aaa;
+}
+#Global > .popupWrapper > .popup > .message {
+  margin: 20px;
+  padding: 20px;
+  text-align: center;
+  background-color: #777;
+  color: #fff;
+}
+#Global > .popupWrapper > .popup > .btn {
+  position: absolute;
+  bottom: 20px;
+  width: 200px;
+  height: 100px;
+  background-color: #00f;
+  color: #fff;
+  line-height: 100px;
+  text-align: center;
+}
+#Global > .popupWrapper > .popup > .btn.ok {
+  left: 20px;
+}
+#Global > .popupWrapper > .popup > .btn.cancel {
+  right: 20px;
+}
+#Global > .popupWrapper > .popup > .btn.custom {
+  left: 50%;
+  margin-left: -100px;
+}
+#LiveGame {
+  font-size: 16px;
+  font-family: "SourceSansPro_regular";
+  color: #fff;
+}
+#LiveGame canvas {
+  image-rendering: optimizeSpeed;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: -o-crisp-edges;
+  image-rendering: optimize-contrast;
+  -ms-interpolation-mode: nearest-neighbor;
+}
+#LiveGame > .leftPanel {
+  position: absolute;
+  width: 176px;
+  height: 100%;
+}
+#LiveGame > .leftPanel > .inner {
+  margin-left: auto;
+  margin-right: auto;
+  width: 163px;
+}
+#LiveGame > .leftPanel > .inner > .entityButtonPanel {
+  height: 141px;
+  background-color: #666;
+}
+#LiveGame > .leftPanel > .inner > .commandButtonPanel {
+  margin-top: 20px;
+  height: 141px;
+  background-color: #aaa;
+}
+#LiveGame > .resourcePanel {
+  position: absolute;
+  left: 176px;
+  right: 16px;
+  height: 16px;
+  overflow: hidden;
+}
+#LiveGame > .resourcePanel > .resources {
+  float: left;
+  padding-left: 40px;
+}
+#LiveGame > .statusPanel {
+  position: absolute;
+  left: 176px;
+  bottom: 0;
+  right: 16px;
+  height: 16px;
+}
+#LiveGame > .statusPanel > .status {
+  float: left;
+}
+#LiveGame > .statusPanel > .costs {
+  float: right;
+  padding-right: 40px;
+}
+#LiveGame .resource {
+  float: left;
+  width: 80px;
+}
+#LiveGame .resource > .icon {
+  float: left;
+}
+#LiveGame .resource > .value {
+  float: left;
+  margin-left: 4px;
+  font-size: 0.8em;
+}
+#LiveGame .resource.gold > .icon {
+  width: 14px;
+  height: 14px;
+  background-image: url('../../../../asset/image/ui/human_ui.png');
+  background-position: -564px 0px;
+  background-repeat: no-repeat;
+}
+#LiveGame .resource.lumber > .icon {
+  width: 14px;
+  height: 14px;
+  background-image: url('../../../../asset/image/ui/human_ui.png');
+  background-position: -564px -14px;
+  background-repeat: no-repeat;
+}
+#LiveGame .resource.oil > .icon {
+  width: 14px;
+  height: 14px;
+  background-image: url('../../../../asset/image/ui/human_ui.png');
+  background-position: -564px -28px;
+  background-repeat: no-repeat;
+}
+#LiveGame .resource.food > .icon {
+  width: 14px;
+  height: 14px;
+  background-image: url('../../../../asset/image/ui/human_ui.png');
+  background-position: -564px -42px;
+  background-repeat: no-repeat;
+}
+#LiveGame .resource.mana > .icon {
+  width: 14px;
+  height: 14px;
+  background-image: url('../../../../asset/image/ui/human_ui.png');
+  background-position: -564px -56px;
+  background-repeat: no-repeat;
+}
+#LiveGame > .rightFillerPanel {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+}
+#LiveGame > .mainView {
+  position: absolute;
+}
+#LiveGame > .notifyMessage {
+  position: absolute;
+  left: 200px;
+  bottom: 32px;
+}
+#LiveGame > .pingPanel {
+  position: absolute;
+  width: 140px;
+  height: 80px;
+  background-color: blue;
+  right: 20px;
+  top: 20px;
+}
+#LiveGame .iconButton {
+  position: relative;
+  float: left;
+  width: 54px;
+  height: 53px;
+  background-image: url('../../../../asset/image/ui/human_ui.png');
+  background-position: -494px 0px;
+  background-repeat: no-repeat;
+}
+#LiveGame .iconButton.entity {
+  height: 53px;
+}
+#LiveGame .iconButton.entity.group > .groupFrame {
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  width: 50px;
+  height: 42px;
+  border: 1px solid #ff0;
+}
+#LiveGame .iconButton.entity > .healthbar {
+  position: absolute;
+  left: 2px;
+  top: 46px;
+  width: 50px;
+  height: 5px;
+  background-color: #343434;
+}
+#LiveGame .iconButton.entity > .healthbar > .bar {
+  height: 100%;
+}
+#LiveGame .iconButton.command {
+  height: 46px;
+}
+#LiveGame .iconButton.command.filler {
+  visibility: hidden;
+}
+#LiveGame .iconButton > .portrait {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+}
+#LiveGame .iconButton:hover > .hoverFrame {
+  position: absolute;
+  width: 52px;
+  height: 44px;
+  border: 1px solid #a0a0a4;
+}
+#LiveGame[race=human] > .leftPanel {
+  background-image: url('../../../../asset/image/ui/human/buttonpanel.png');
+}
+#LiveGame[race=human] > .resourcePanel {
+  background-image: url('../../../../asset/image/ui/human/resource.png');
+}
+#LiveGame[race=human] > .statusPanel {
+  background-image: url('../../../../asset/image/ui/human/statusline.png');
+}
+#LiveGame[race=human] > .rightFillerPanel {
+  background-image: url('../../../../asset/image/ui/human/filler-right.png');
+}
+#LiveGame[race=orc] > .leftPanel {
+  background-image: url('../../../../asset/image/ui/orc/buttonpanel.png');
+}
+#LiveGame[race=orc] > .resourcePanel {
+  background-image: url('../../../../asset/image/ui/orc/resource.png');
+}
+#LiveGame[race=orc] > .statusPanel {
+  background-image: url('../../../../asset/image/ui/orc/statusline.png');
+}
+#LiveGame[race=orc] > .rightFillerPanel {
+  background-image: url('../../../../asset/image/ui/orc/filler-right.png');
+}
+#Lobby {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #ddd;
+}
+#Lobby > .btnMainMenu {
+  display: block;
+  width: 200px;
+  height: 46px;
+  line-height: 46px;
+  font-family: "Sansus";
+  font-size: 20px;
+  padding: 0 8px 0 0;
+  border: 0;
+  outline: none;
+  background-color: transparent;
+  background-repeat: no-repeat, no-repeat;
+  background-position: 100% 0, 0% 0;
+  background-clip: border-box, content-box;
+  -moz-background-clip: border-box, content-box;
+  -webkit-background-clip: border-box, content-box;
+  color: #ede;
+  background-image: url('../../../../asset/image/ui/button_right.png'), url('../../../../asset/image/ui/button_left.png');
+}
+#Lobby > .btnMainMenu:hover {
+  color: #fff;
+  background-position: 100% -46px, 0% -46px;
+}
+#Lobby > .btnMainMenu:active {
+  background-position: 100% -92px, 0% -92px;
+}
+#Lobby > .btnMainMenu:disabled {
+  color: #999;
+  background-position: 100% -138px, 0% -138px;
+}
+#Lobby > .btnCreateRoomPopup,
+#Lobby > .btnRefreshList {
+  display: block;
+  width: 160px;
+  height: 46px;
+  line-height: 46px;
+  font-family: "Sansus";
+  font-size: 20px;
+  padding: 0 8px 0 0;
+  border: 0;
+  outline: none;
+  background-color: transparent;
+  background-repeat: no-repeat, no-repeat;
+  background-position: 100% 0, 0% 0;
+  background-clip: border-box, content-box;
+  -moz-background-clip: border-box, content-box;
+  -webkit-background-clip: border-box, content-box;
+  color: #ede;
+  background-image: url('../../../../asset/image/ui/button_right.png'), url('../../../../asset/image/ui/button_left.png');
+}
+#Lobby > .btnCreateRoomPopup:hover,
+#Lobby > .btnRefreshList:hover {
+  color: #fff;
+  background-position: 100% -46px, 0% -46px;
+}
+#Lobby > .btnCreateRoomPopup:active,
+#Lobby > .btnRefreshList:active {
+  background-position: 100% -92px, 0% -92px;
+}
+#Lobby > .btnCreateRoomPopup:disabled,
+#Lobby > .btnRefreshList:disabled {
+  color: #999;
+  background-position: 100% -138px, 0% -138px;
+}
+#Lobby > .roomTable {
+  width: 500px;
+  height: 400px;
+  background-color: #aaa;
+}
+#Lobby > .roomTable .col {
+  float: left;
+}
+#Lobby > .roomTable .name {
+  width: 40%;
+}
+#Lobby > .roomTable .status {
+  width: 40%;
+}
+#Lobby > .roomTable .players {
+  width: 10%;
+}
+#Lobby > .roomTable .join {
+  width: 10%;
+}
+#Lobby > .roomTable > .head {
+  background-color: #444;
+  color: #ddd;
+}
+#Lobby > .roomTable > .list {
+  background-color: #8c7;
+}
+#Lobby > .roomTable > .list.full {
+  background-color: #988;
+  color: #555;
+}
+#Lobby > .createRoom > .background {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  opacity: 0.7;
+}
+#Lobby > .createRoom > .window {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  padding: 50px;
+  margin-left: -250px;
+  margin-top: -250px;
+  width: 500px;
+  height: 500px;
+  background-color: #fff;
+  border: 1px solid #000;
+}
+#MainMenu {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  color: #fff;
+  background-color: #009;
+  background-image: url('../../../../asset/image/ui/curtain.jpg');
+}
+#MainMenu > .menu {
+  position: absolute;
+  width: 500px;
+  height: 100%;
+  left: 50%;
+  margin-left: -250px;
+  background: url('../../../../asset/image/ui/pattern.jpg');
+  text-align: center;
+}
+#MainMenu > .menu > .inner {
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.6);
+  margin: 60px;
+  padding: 60px;
+}
+#MainMenu > .menu > .inner .loading {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  margin-left: -12px;
+  width: 24px;
+  height: 24px;
+  background: url('../../../../asset/image/ui/loading.gif');
+}
+#MainMenu > .menu > .inner .btn {
+  display: block;
+  width: 200px;
+  height: 46px;
+  line-height: 46px;
+  font-family: "Sansus";
+  font-size: 20px;
+  padding: 0 8px 0 0;
+  border: 0;
+  outline: none;
+  background-color: transparent;
+  background-repeat: no-repeat, no-repeat;
+  background-position: 100% 0, 0% 0;
+  background-clip: border-box, content-box;
+  -moz-background-clip: border-box, content-box;
+  -webkit-background-clip: border-box, content-box;
+  color: #ede;
+  background-image: url('../../../../asset/image/ui/button_right.png'), url('../../../../asset/image/ui/button_left.png');
+  margin: 80px auto;
+}
+#MainMenu > .menu > .inner .btn:hover {
+  color: #fff;
+  background-position: 100% -46px, 0% -46px;
+}
+#MainMenu > .menu > .inner .btn:active {
+  background-position: 100% -92px, 0% -92px;
+}
+#MainMenu > .menu > .inner .btn:disabled {
+  color: #999;
+  background-position: 100% -138px, 0% -138px;
+}
+#Room {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  color: #000;
+  background-color: #aaa;
+}
+#Room .slot {
+  clear: both;
+}
+#Room .slot > div {
+  float: left;
+}
+#Room .slot > .color {
+  width: 50px;
+  height: 50px;
+}
+#Room .slot > .color > .number {
+  font-size: 32px;
+}
+#Room .slot[slot-index="0"] .color {
+  background-color: #f00;
+  color: #000;
+}
+#Room .slot[slot-index="1"] .color {
+  background-color: #00f;
+  color: #fff;
+}
+#Room .slot[slot-index="2"] .color {
+  background-color: #0ff;
+  color: #000;
+}
+#Room .slot[slot-index="3"] .color {
+  background-color: #a0a;
+  color: #fff;
+}
+#Room .slot[slot-index="4"] .color {
+  background-color: #f70;
+  color: #000;
+}
+#Room .slot[slot-index="5"] .color {
+  background-color: #222;
+  color: #fff;
+}
+#Room .slot[slot-index="6"] .color {
+  background-color: #eee;
+  color: #000;
+}
+#Room .slot[slot-index="7"] .color {
+  background-color: #ff0;
+  color: #000;
+}

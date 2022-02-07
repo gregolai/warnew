@@ -1,0 +1,63 @@
+#MainMenu {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  color: #fff;
+  background-color: #009;
+  background-image: url('../../../../asset/image/ui/curtain.jpg');
+}
+#MainMenu > .menu {
+  position: absolute;
+  width: 500px;
+  height: 100%;
+  left: 50%;
+  margin-left: -250px;
+  background: url('../../../../asset/image/ui/pattern.jpg');
+  text-align: center;
+}
+#MainMenu > .menu > .inner {
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.6);
+  margin: 60px;
+  padding: 60px;
+}
+#MainMenu > .menu > .inner .loading {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  margin-left: -12px;
+  width: 24px;
+  height: 24px;
+  background: url('../../../../asset/image/ui/loading.gif');
+}
+#MainMenu > .menu > .inner .btn {
+  display: block;
+  width: 200px;
+  height: 46px;
+  line-height: 46px;
+  font-family: "Sansus";
+  font-size: 20px;
+  padding: 0 8px 0 0;
+  border: 0;
+  outline: none;
+  background-color: transparent;
+  background-repeat: no-repeat, no-repeat;
+  background-position: 100% 0, 0% 0;
+  background-clip: border-box, content-box;
+  -moz-background-clip: border-box, content-box;
+  -webkit-background-clip: border-box, content-box;
+  color: #ede;
+  background-image: url('../../../../asset/image/ui/button_right.png'), url('../../../../asset/image/ui/button_left.png');
+  margin: 80px auto;
+}
+#MainMenu > .menu > .inner .btn:hover {
+  color: #fff;
+  background-position: 100% -46px, 0% -46px;
+}
+#MainMenu > .menu > .inner .btn:active {
+  background-position: 100% -92px, 0% -92px;
+}
+#MainMenu > .menu > .inner .btn:disabled {
+  color: #999;
+  background-position: 100% -138px, 0% -138px;
+}

@@ -1,112 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
+
+	<meta charset="utf-8" />
+
+	<title>WarNew</title>
+
+	<link type="text/css" rel="stylesheet" href="normalize.css" />
+	<link type="text/css" rel="stylesheet" href="base.css" />
+	
+
+	<script type="text/javascript" src="vendor/script/jquery.min.js"></script>
+	<script type="text/javascript" src="vendor/script/jquery.waitforimages.min.js"></script>
+	
+	<!-- RELEASE: Compile CSS TO SINGLE FILE -->
+	<!--
+	<link type="text/css" rel="stylesheet" href="game/state/states.css" />
+	
+	<script type="text/javascript" src="engine/Engine.js"></script>
+	<script type="text/javascript" src="game/Game.js"></script>
+	-->
+
+	<script type="text/javascript">
+
+
+	
+		$(document).ready(function(){
+
+			function loadScript(e,t){var n=document.createElement("script");n.type="text/javascript";n.async=true;n.onload=function(){t()};n.onerror=function(){throw"Error loading script: "+e};n.src=e;document.head.appendChild(n)}
+		
+			window.DEBUG = true;
+			
+			if(DEBUG){
+				var nocache = "?" + Date.now();
+				loadScript("engine/Engine.js" + nocache, function(){
+					loadScript("game/Game.js" + nocache, init);
+				});
+			} else {
+				init();
+			}
+			
+			function init(){
+				Engine.Game.init(function(){
+					$("#loading").fadeOut(700);
+				});
+			}
+		});
+	</script>
+
 	<style type="text/css">
 
-		body {
-			background-color: #998;
-			margin: 0;
-			padding: 0;
-		}
-
-		#panel {
-			position: absolute;
-			width: 200px;
-			height: 100%;
-			overflow-y: scroll;
-			background-color: #99b;
-		}
-
-		#panel #list {
-			padding: 10px 20px;
-			line-height: 18px;
-		}
-
-		#panel #list .link {
-			color: #ddd;
-			text-decoration: none;
-			cursor: pointer;
-		}
-
-		#panel #list .selected {
-			color: #fff;
-			text-decoration: underline;
-		}
-
-		#panel #list .link:hover {
-			text-decoration: underline;
-		}
-		
-		#viewer {
-			position: absolute;
-			left: 200px;
-			width: -webkit-calc(100% - 200px); /* Safari */
-			width: calc(100% - 200px);
-			height: 100%;
-			border: 0;
-		}
 	</style>
 </head>
 <body>
-	<div id="panel">
-		<div id="list">
-			<h1>Games</h1>
-			<br />
-		</div>
+	<div id="loading">
+		<div class="text">Loading...</div>
 	</div>
-	<iframe id="viewer"></iframe>
-	<script type="text/javascript">
-	
-		var files = [
-			"Breakout",
-			"WarNew"
-		];
-	
-		var list = document.getElementById("list");
-		var viewer = document.getElementById("viewer");
-		
-		var container = document.createElement("div");
-		list.appendChild(container);
-		
-		var divs = {};
-		var selected = null;
-		
-		function createFileDiv(name){
-		
-			var div = document.createElement("div");
-			div.className = "link";
-			div.textContent = name;
-			div.addEventListener( 'click', function () {
-				load(name);
-			});
-			container.appendChild(div);
 
-			divs[name] = div;
-		}
-		
-		function load(appName){
-		
-			if(selected !== null)
-				divs[selected].className = "link";
-		
-			divs[appName].className = "link selected";
-		
-			window.location.hash = appName;
-			selected = appName;
-			
-			viewer.src = "app/" + appName + "/?" + Date.now();
-			viewer.focus();
-		}
-		
-		for(var f=0, ff=files.length; f<ff; ++f){
-			createFileDiv(files[f]);
-		}
-
-		if(window.location.hash !== ""){
-			load("WarNew");
-		}
-		
-	</script>
+	<div id="game"></div>
 </body>
-
 </html>

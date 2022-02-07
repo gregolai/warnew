@@ -1,0 +1,83 @@
+@import "../common.less";
+
+#Lobby {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+
+	background-color: #ddd;
+
+	> .btnMainMenu {
+		.redButton(200px);
+	}
+
+	> .btnCreateRoomPopup, > .btnRefreshList {
+		
+		.redButton(160px);
+
+	}
+
+	> .roomTable {
+
+		width: 500px;
+		height: 400px;
+		background-color: #aaa;
+
+		.col { float: left; }
+
+		.name { width: 40%; }
+		.status { width: 40%; }
+		.players { width: 10%; }
+		.join { width: 10%; }
+
+
+		> .head {
+			background-color: #444;
+			color: #ddd;
+
+		}
+
+		> .list {
+
+			background-color: #8c7;
+
+			&.full {
+				background-color: #988;
+				color: #555;
+			}
+
+
+		}
+
+	}
+
+	> .createRoom {
+
+		> .background {
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			background-color: #000;
+			opacity: 0.7;
+		}
+
+		> .window {
+			position: absolute;
+			left: 50%;
+			top: 50%;
+
+			padding: 50px;
+
+			margin-left: -250px;
+			margin-top: -250px;
+
+			width: 500px;
+			height: 500px;
+
+			background-color: #fff;
+			border: 1px solid #000;
+		}
+	}
+}

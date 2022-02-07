@@ -1,0 +1,122 @@
+#Lobby {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #ddd;
+}
+#Lobby > .btnMainMenu {
+  display: block;
+  width: 200px;
+  height: 46px;
+  line-height: 46px;
+  font-family: "Sansus";
+  font-size: 20px;
+  padding: 0 8px 0 0;
+  border: 0;
+  outline: none;
+  background-color: transparent;
+  background-repeat: no-repeat, no-repeat;
+  background-position: 100% 0, 0% 0;
+  background-clip: border-box, content-box;
+  -moz-background-clip: border-box, content-box;
+  -webkit-background-clip: border-box, content-box;
+  color: #ede;
+  background-image: url('../../../../asset/image/ui/button_right.png'), url('../../../../asset/image/ui/button_left.png');
+}
+#Lobby > .btnMainMenu:hover {
+  color: #fff;
+  background-position: 100% -46px, 0% -46px;
+}
+#Lobby > .btnMainMenu:active {
+  background-position: 100% -92px, 0% -92px;
+}
+#Lobby > .btnMainMenu:disabled {
+  color: #999;
+  background-position: 100% -138px, 0% -138px;
+}
+#Lobby > .btnCreateRoomPopup,
+#Lobby > .btnRefreshList {
+  display: block;
+  width: 160px;
+  height: 46px;
+  line-height: 46px;
+  font-family: "Sansus";
+  font-size: 20px;
+  padding: 0 8px 0 0;
+  border: 0;
+  outline: none;
+  background-color: transparent;
+  background-repeat: no-repeat, no-repeat;
+  background-position: 100% 0, 0% 0;
+  background-clip: border-box, content-box;
+  -moz-background-clip: border-box, content-box;
+  -webkit-background-clip: border-box, content-box;
+  color: #ede;
+  background-image: url('../../../../asset/image/ui/button_right.png'), url('../../../../asset/image/ui/button_left.png');
+}
+#Lobby > .btnCreateRoomPopup:hover,
+#Lobby > .btnRefreshList:hover {
+  color: #fff;
+  background-position: 100% -46px, 0% -46px;
+}
+#Lobby > .btnCreateRoomPopup:active,
+#Lobby > .btnRefreshList:active {
+  background-position: 100% -92px, 0% -92px;
+}
+#Lobby > .btnCreateRoomPopup:disabled,
+#Lobby > .btnRefreshList:disabled {
+  color: #999;
+  background-position: 100% -138px, 0% -138px;
+}
+#Lobby > .roomTable {
+  width: 500px;
+  height: 400px;
+  background-color: #aaa;
+}
+#Lobby > .roomTable .col {
+  float: left;
+}
+#Lobby > .roomTable .name {
+  width: 40%;
+}
+#Lobby > .roomTable .status {
+  width: 40%;
+}
+#Lobby > .roomTable .players {
+  width: 10%;
+}
+#Lobby > .roomTable .join {
+  width: 10%;
+}
+#Lobby > .roomTable > .head {
+  background-color: #444;
+  color: #ddd;
+}
+#Lobby > .roomTable > .list {
+  background-color: #8c7;
+}
+#Lobby > .roomTable > .list.full {
+  background-color: #988;
+  color: #555;
+}
+#Lobby > .createRoom > .background {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  opacity: 0.7;
+}
+#Lobby > .createRoom > .window {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  padding: 50px;
+  margin-left: -250px;
+  margin-top: -250px;
+  width: 500px;
+  height: 500px;
+  background-color: #fff;
+  border: 1px solid #000;
+}

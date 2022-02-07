@@ -1,0 +1,12 @@
+<div id="MainMenu">
+
+	<div class="menu">
+		<div class="inner">
+			<div class="loading" data-bind="visible: isEnding()"></div>
+			<button class="btn singleplayer">Single Player</button>
+			<button class="btn editor" disabled>Editor</button>
+			<button class="btn multiplayer" data-bind="enable: $root.isConnected()">Multiplayer</button>
+		</div>
+	</div>
+
+</div>

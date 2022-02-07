@@ -1,0 +1,52 @@
+#Room {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  color: #000;
+  background-color: #aaa;
+}
+#Room .slot {
+  clear: both;
+}
+#Room .slot > div {
+  float: left;
+}
+#Room .slot > .color {
+  width: 50px;
+  height: 50px;
+}
+#Room .slot > .color > .number {
+  font-size: 32px;
+}
+#Room .slot[slot-index="0"] .color {
+  background-color: #f00;
+  color: #000;
+}
+#Room .slot[slot-index="1"] .color {
+  background-color: #00f;
+  color: #fff;
+}
+#Room .slot[slot-index="2"] .color {
+  background-color: #0ff;
+  color: #000;
+}
+#Room .slot[slot-index="3"] .color {
+  background-color: #a0a;
+  color: #fff;
+}
+#Room .slot[slot-index="4"] .color {
+  background-color: #f70;
+  color: #000;
+}
+#Room .slot[slot-index="5"] .color {
+  background-color: #222;
+  color: #fff;
+}
+#Room .slot[slot-index="6"] .color {
+  background-color: #eee;
+  color: #000;
+}
+#Room .slot[slot-index="7"] .color {
+  background-color: #ff0;
+  color: #000;
+}

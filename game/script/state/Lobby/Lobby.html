@@ -1,0 +1,32 @@
+<div id="Lobby">
+	<button class="btnMainMenu">Back to main menu</button>
+	<button class="btnCreateRoomPopup">Create Room</button>
+	<button class="btnRefreshList">Refresh List</button>
+	<div class="roomTable">
+		<div class="head">
+			<div class="col name">Name</div>
+			<div class="col status">Status</div>
+			<div class="col players">Players</div>
+			<div class="col join"></div>
+		</div>
+		<div class="list" data-bind="foreach: getRooms()">
+			<div class="room" data-bind="css: { full: playerCount >= playerCapacity }, attr: { 'room-id': id }">
+				<div class="col name"><span data-bind="text: name"></span></div>
+				<div class="col status"><span data-bind="text: 'status'"></span></div>
+				<div class="col players"><span data-bind="text: playerCount"></span>&nbsp;/&nbsp;<span data-bind="text: playerCapacity"></span></div>
+				<div class="col join"><button data-bind="enable: playerCount < playerCapacity" class="btnJoinRoom">Join</button></div>
+			</div>
+		</div>
+	</div>
+	<div class="createRoom" data-bind="visible: createRoomPopup()">
+		<div class="background"></div>
+		<div class="window">
+			<form class="createRoomForm">
+				<div>Room name<input class="name" type="text" /></div>
+				<div>Level (TODO)</div>
+				<div>Password (optional)<input class="password" type="password" /></div>
+				<div><input type="submit" value="Create!" /></div>
+			</form>
+		</div>
+	</div>
+</div>

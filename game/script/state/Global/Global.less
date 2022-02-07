@@ -1,0 +1,71 @@
+@import "../common.less";
+
+body, button {
+	cursor: url('@{CURSOR_ROOT}human_hand.gif') 2 0, none;
+}
+
+
+@POPUP_HEIGHT: 500px;
+@POPUP_WIDTH: 500px;
+
+@POPUP_BUTTON_WIDTH: 200px;
+@POPUP_BUTTON_HEIGHT: 100px;
+
+#Global {
+	height: 100%;
+width: 100%;
+	> .popupWrapper {
+
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.8);
+
+		> .popup {
+
+			position: absolute;
+			width: @POPUP_WIDTH;
+			height: @POPUP_HEIGHT;
+			left: 50%;
+			top: 50%;
+			margin-left: -@POPUP_WIDTH/2;
+			margin-top: -@POPUP_HEIGHT/2;
+		
+			background-color: #aaa;
+
+			> .message {
+				margin: 20px;
+				padding: 20px;
+				text-align: center;
+				background-color: #777;
+				color: #fff;
+			}
+
+			> .btn {
+			
+				position: absolute;
+				bottom: 20px;
+				width: @POPUP_BUTTON_WIDTH;
+				height: @POPUP_BUTTON_HEIGHT;
+				background-color: #00f;
+				color: #fff;
+				line-height: @POPUP_BUTTON_HEIGHT;
+				text-align: center;
+
+				&.ok {
+					left: 20px;
+				}
+
+				&.cancel {
+					right: 20px;
+				}
+
+				&.custom {
+					left: 50%;
+					margin-left: -@POPUP_BUTTON_WIDTH/2;
+				}
+			}
+		}
+
+	}
+}

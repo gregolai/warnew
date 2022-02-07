@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{70427830-C96B-48F4-BC92-458B1BCD455D}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <OutputPath>_unused\bin\</OutputPath>
+    <BaseIntermediateOutputPath>_unused\obj\</BaseIntermediateOutputPath>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <DebugSymbols>false</DebugSymbols>
+    <UseIISExpress>false</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" />
+  <ItemGroup>
+    <TypeScriptCompile Include="Game.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="lockstep_worker.js" />
+    <Content Include="script\action\Action_Moving.ts" />
+    <Content Include="script\action\Action_BeingConstructed.ts" />
+    <Content Include="script\action\_include.ts" />
+    <Content Include="script\CommandBuffer.ts" />
+    <Content Include="script\SingleplayerUpdateStrategy.ts" />
+    <Content Include="script\MultiplayerUpdateStrategy.ts" />
+    <Content Include="script\Encoder.ts" />
+    <Content Include="script\Server.ts" />
+    <Content Include="script\order\Order_BuildAtTile.ts" />
+    <Content Include="script\order\Order_ClearRegion.ts" />
+    <Content Include="script\order\Order_PatrolToTile.ts" />
+    <Content Include="script\order\Order_PatrolToEntity.ts" />
+    <Content Include="script\order\Order_MoveToTile.ts" />
+    <TypeScriptCompile Include="script\state\Global\Global.ts" />
+    <Content Include="script\state\Global\Global.html" />
+    <Content Include="script\state\Global\_include.ts" />
+    <Content Include="script\state\Lobby\Lobby.html" />
+    <TypeScriptCompile Include="script\state\Lobby\Lobby.ts" />
+    <Content Include="script\state\Lobby\_include.ts" />
+    <TypeScriptCompile Include="script\state\Room\Room.ts" />
+    <Content Include="script\state\Room\Room.html" />
+    <Content Include="script\state\Room\_include.ts" />
+    <Content Include="script\TileRegion.ts" />
+    <Content Include="script\order\Order_FollowEntity.ts" />
+    <Content Include="script\order\_include.ts" />
+    <Content Include="_ext.ts" />
+    <Content Include="script\Command.ts" />
+    <Content Include="script\WorldEvent.ts" />
+    <Content Include="script\Path.ts" />
+    <Content Include="script\Pathfinder.ts" />
+    <Content Include="script\Team.ts" />
+    <Content Include="script\Healthbar.ts" />
+    <Content Include="script\data\SpriteData.ts" />
+    <Content Include="script\Portrait.ts" />
+    <Content Include="script\data\EntityData.ts" />
+    <Content Include="script\Entity.ts" />
+    <Content Include="script\Sequence.ts" />
+    <Content Include="script\state\Editor\Editor.html" />
+    <Content Include="script\Camera2D.ts" />
+    <TypeScriptCompile Include="script\state\Editor\Editor.ts" />
+    <Content Include="script\state\Editor\_include.ts" />
+    <Content Include="script\state\LiveGame\LiveGame.html" />
+    <TypeScriptCompile Include="script\state\LiveGame\LiveGame.ts" />
+    <Content Include="script\state\LiveGame\_include.ts" />
+    <Content Include="script\Tile.ts" />
+    <Content Include="script\World.ts" />
+    <TypeScriptCompile Include="script\data\TileData.ts" />
+    <Content Include="script\data\_include.ts" />
+    <Content Include="script\Player.ts" />
+    <Content Include="script\state\MainMenu\MainMenu.html" />
+    <Content Include="script\state\_include.ts" />
+    <Content Include="script\Terrain.ts" />
+    <Content Include="script\TerrainMesh.ts" />
+    <Content Include="script\WorldQuadtree.ts" />
+    <Content Include="script\_include.ts" />
+    <TypeScriptCompile Include="script\ImageCache.ts" />
+    <TypeScriptCompile Include="script\state\MainMenu\MainMenu.ts" />
+    <Content Include="script\state\MainMenu\_include.ts" />
+    <Content Include="_enum.ts" />
+    <Content Include="_include.ts" />
+    <Content Include="_interface.ts" />
+    <Content Include="_var.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="script\state\MainMenu\MainMenu.less" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="script\state\Lobby\Lobby.less" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="script\state\LiveGame\LiveGame.less" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="script\state\Editor\Editor.less" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="script\state\ui_common.less" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="script\state\Room\Room.less" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="script\state\Global\Global.less" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TypeScriptEnableCompileOnSave>false</TypeScriptEnableCompileOnSave>
+    <TypeScriptRemoveComments>true</TypeScriptRemoveComments>
+    <TypeScriptOutFile>Game.js</TypeScriptOutFile>
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\Typescript\Microsoft.Typescript.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>31831</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>
+          </IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

@@ -1,0 +1,11 @@
+<div id="Global">
+
+	<div class="popupWrapper" data-bind="with: getPopupSettings(), visible: getPopupSettings()">
+		<div class="popup">
+			<div class="message" data-bind="text: message"></div>
+			<button class="btn ok" data-bind="visible: typeof onOk === 'function'">OK</button>
+			<button class="btn cancel" data-bind="visible: typeof onCancel === 'function'">CANCEL</button>
+		</div>
+	</div>
+	
+</div>

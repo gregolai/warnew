@@ -1,0 +1,51 @@
+body,
+button {
+  cursor: url('../../../../asset/cursor/human_hand.gif') 2 0, none;
+}
+#Global {
+  height: 100%;
+  width: 100%;
+}
+#Global > .popupWrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+#Global > .popupWrapper > .popup {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  left: 50%;
+  top: 50%;
+  margin-left: -250px;
+  margin-top: -250px;
+  background-color: #aaa;
+}
+#Global > .popupWrapper > .popup > .message {
+  margin: 20px;
+  padding: 20px;
+  text-align: center;
+  background-color: #777;
+  color: #fff;
+}
+#Global > .popupWrapper > .popup > .btn {
+  position: absolute;
+  bottom: 20px;
+  width: 200px;
+  height: 100px;
+  background-color: #00f;
+  color: #fff;
+  line-height: 100px;
+  text-align: center;
+}
+#Global > .popupWrapper > .popup > .btn.ok {
+  left: 20px;
+}
+#Global > .popupWrapper > .popup > .btn.cancel {
+  right: 20px;
+}
+#Global > .popupWrapper > .popup > .btn.custom {
+  left: 50%;
+  margin-left: -100px;
+}

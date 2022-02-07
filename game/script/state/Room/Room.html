@@ -1,0 +1,42 @@
+<div id="Room">
+	<p>I am a room.</p>
+	<button class="btnLeaveRoom">Return To Lobby</button>
+	<div data-bind="with: getRoomInfo()">
+		<div>Room name: <span data-bind="text: name"></span></div>
+		<div>Host: <span data-bind="text: host"></span></div>
+		<!-- ko if: $root.isHost() -->
+			<button class="btnStartCountdown" data-bind="visible: !$root.countdownStarted()">Start game!</button>
+			<button class="btnStopCountdown" data-bind="enable: $root.canStopCountdown(), visible: $root.countdownStarted()">Stop countdown</button>
+		<!-- /ko -->
+		<!-- ko if: $root.getCountdown() -->
+			<div data-bind="text: $root.getCountdown()"></div>
+		<!-- /ko -->
+		<div data-bind="foreach: slots">
+
+			<div class="slot" data-bind="css: { blank: !$data }, attr: { 'slot-index': $index }, if: $data">
+
+				<div class="color">
+					<div class="number" data-bind="text: $index()+1"></div>
+					<!-- ko if: isHost -->
+						<div>host</div>
+					<!-- /ko -->
+				</div>
+
+				<!-- ko if: status==="open" -->
+					<div>OPEN</div>
+				<!-- /ko -->
+
+				<!-- ko if: status==="closed" -->
+					<div>CLOSED</div>
+				<!-- /ko -->
+
+				<!-- ko if: status==="filled" && user -->
+					<div class="userID" data-bind="text: user.username"></div>
+				<!-- /ko -->
+
+			</div>
+
+		</div>
+
+	</div>
+</div>

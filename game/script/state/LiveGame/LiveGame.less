@@ -1,0 +1,248 @@
+@import "../common.less";
+
+#LiveGame {
+
+	font-size: 16px;
+	font-family: "SourceSansPro_regular";
+	color: #fff;
+
+	canvas {
+
+		image-rendering: optimizeSpeed;             // Older versions of FF
+		image-rendering: -moz-crisp-edges;          // FF 6.0+
+		image-rendering: -webkit-optimize-contrast; // Webkit
+		image-rendering: -o-crisp-edges;            // OS X & Windows Opera (12.02+)
+		image-rendering: optimize-contrast;         // Possible future browsers.
+		-ms-interpolation-mode: nearest-neighbor;   // IE
+	}
+
+	> .leftPanel {
+
+		position: absolute;
+		width: 176px;
+		height: 100%;
+
+		> .inner {
+
+			margin-left: auto;
+			margin-right: auto;
+			width: 163px;
+
+			> .entityButtonPanel {
+
+				height: 141px;
+				background-color: #666;
+			}
+
+			> .commandButtonPanel {
+
+				margin-top: 20px;
+				height: 141px;
+				background-color: #aaa;
+			}
+
+		}
+
+	}
+
+	> .resourcePanel {
+
+		position: absolute;
+		left: 176px;
+		right: 16px;
+		height: 16px;
+		overflow: hidden;
+
+		> .resources {
+			float: left;
+			padding-left: 40px;
+		}
+
+	}
+
+	> .statusPanel {
+
+		position: absolute;
+		left: 176px;
+		bottom: 0;
+		right: 16px;
+		height: 16px;
+
+		> .status {
+			float: left;
+		}
+		> .costs {
+			float: right;
+			padding-right: 40px;
+		}
+	}
+
+	
+	.resource {
+
+		float: left;
+		width: 80px;
+
+		> .icon {
+			float: left;
+		}
+
+		> .value {
+			float: left;
+			margin-left: 4px;
+			font-size: 0.8em;
+		}
+		
+		&.gold {
+			> .icon {
+				.sprite("@{UI_ROOT}human_ui.png", 564px, 0px, 14px, 14px);
+			}
+		}
+
+		&.lumber {
+			> .icon {
+				.sprite("@{UI_ROOT}human_ui.png", 564px, 14px, 14px, 14px);
+			}
+		}
+
+		&.oil {
+			> .icon {
+				.sprite("@{UI_ROOT}human_ui.png", 564px, 28px, 14px, 14px);
+			}
+		}
+
+		&.food {
+			> .icon {
+				.sprite("@{UI_ROOT}human_ui.png", 564px, 42px, 14px, 14px);
+			}
+		}
+
+		&.mana {
+			> .icon {
+				.sprite("@{UI_ROOT}human_ui.png", 564px, 56px, 14px, 14px);
+			}
+		}
+	}
+	
+	> .rightFillerPanel {
+		position: absolute;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		width: 16px;
+	}
+
+	> .mainView {
+		position: absolute;
+	}
+
+	> .notifyMessage {
+		position: absolute;
+		left: 200px;
+		bottom: 32px;
+	}
+
+	> .pingPanel {
+		position: absolute;
+		width: 140px;
+		height: 80px;
+		background-color: blue;
+		right: 20px;
+		top: 20px;
+	}
+
+	.iconButton {
+		position: relative;
+		float: left;
+		.sprite("@{UI_ROOT}human_ui.png", 494px, 0px, 54px, 53px);
+
+		&.entity {
+			height: 53px;
+
+			&.group {
+				> .groupFrame {
+					position: absolute;
+					left: 1px;
+					top: 1px;
+					width: 50px;
+					height: 42px;
+					border: 1px solid #ff0;
+				}
+			}
+
+			> .healthbar {
+				position: absolute;
+				left: 2px;
+				top: 46px;
+				width: 50px;
+				height: 5px;
+				background-color: #343434;
+
+				> .bar {
+					height: 100%;
+				}
+			}
+		}
+
+		&.command {
+			height: 46px;
+
+			&.filler {
+				visibility: hidden;
+			}
+		}
+
+		> .portrait {
+			position: absolute;
+			left: 4px;
+			top: 4px;
+		}
+
+		&:hover {
+			> .hoverFrame {
+				position: absolute;
+				width: 52px;
+				height: 44px;
+				border: 1px solid #a0a0a4;
+			}
+		}
+	}
+
+	&[race=human] {
+
+		> .leftPanel {
+			background-image: url('@{UI_ROOT_HUMAN}buttonpanel.png');
+		}
+
+		> .resourcePanel {
+			background-image: url('@{UI_ROOT_HUMAN}resource.png');
+		}
+
+		> .statusPanel {
+			background-image: url('@{UI_ROOT_HUMAN}statusline.png');
+		}
+
+		> .rightFillerPanel {
+			background-image: url('@{UI_ROOT_HUMAN}filler-right.png');
+		}
+	}
+
+	&[race=orc] {
+
+		> .leftPanel {
+			background-image: url('@{UI_ROOT_ORC}buttonpanel.png');
+		}
+
+		> .resourcePanel {
+			background-image: url('@{UI_ROOT_ORC}resource.png');
+		}
+
+		> .statusPanel {
+			background-image: url('@{UI_ROOT_ORC}statusline.png');
+		}
+
+		> .rightFillerPanel {
+			background-image: url('@{UI_ROOT_ORC}filler-right.png');
+		}
+	}
+}

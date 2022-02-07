@@ -1,0 +1,63 @@
+@STATE_TO_COMMON: "../";
+@ASSET_ROOT: "@{STATE_TO_COMMON}../../../asset/";
+@CURSOR_ROOT: "@{ASSET_ROOT}cursor/";
+@FONT_ROOT: "@{ASSET_ROOT}font/";
+@IMAGE_ROOT: "@{ASSET_ROOT}image/";
+@UI_ROOT: "@{IMAGE_ROOT}ui/";
+@UI_ROOT_HUMAN: "@{UI_ROOT}human/";
+@UI_ROOT_ORC: "@{UI_ROOT}orc/";
+
+@BUTTON_HEIGHT: 46px;
+@BUTTON_PADDING_RIGHT: 8px;
+
+.sprite(@url, @x, @y, @width, @height){
+	width: @width;
+	height: @height;
+	background-image: url('@{url}');
+	background-position: -@x -@y;
+	background-repeat: no-repeat;
+}
+
+.button(@width){
+	display: block;
+	width: @width;
+	height: @BUTTON_HEIGHT;
+	line-height: @BUTTON_HEIGHT;
+
+	font-family: "Sansus";
+	font-size: 20px;
+
+	padding: 0 @BUTTON_PADDING_RIGHT 0 0;
+	border: 0;
+	outline: none;
+
+	background-color: transparent;
+	background-repeat: no-repeat, no-repeat;
+	background-position: 100% 0, 0% 0;
+
+	background-clip: border-box, content-box;
+	-moz-background-clip: border-box, content-box;
+	-webkit-background-clip: border-box, content-box;
+
+	&:hover {
+		color: #fff;
+		background-position: 100% -@BUTTON_HEIGHT*1, 0% -@BUTTON_HEIGHT*1;
+	}
+
+	&:active {
+		background-position: 100% -@BUTTON_HEIGHT*2, 0% -@BUTTON_HEIGHT*2;
+	}
+
+	&:disabled {
+		color: #999;
+		background-position: 100% -@BUTTON_HEIGHT*3, 0% -@BUTTON_HEIGHT*3;
+	}
+}
+
+.redButton(@width){
+
+	.button(@width);
+
+	color: #ede;
+	background-image: url('@{UI_ROOT}button_right.png'), url('@{UI_ROOT}button_left.png');
+}
